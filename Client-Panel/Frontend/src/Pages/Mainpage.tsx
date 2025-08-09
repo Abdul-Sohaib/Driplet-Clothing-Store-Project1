@@ -204,7 +204,7 @@ const Mainpage = () => {
       />
       {/* Fill light for softer shadows */}
       <ambientLight intensity={0.5} color="#ffd9b3" />
-      <TshirtModel position={[0, 12 , 0]} scale={2.5} color="#ff6600" />
+      <TshirtModel position={[0, 16 , 0]} scale={2.5} color="#ff6600" />
     </Stage>
   </Suspense>
 </Canvas>

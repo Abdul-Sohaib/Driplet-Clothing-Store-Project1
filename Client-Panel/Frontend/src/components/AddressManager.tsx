@@ -1,0 +1,282 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+type Address = {
+  fullName: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  pincode: string;
+  country: string;
+};
+
+type User = {
+  name: string;
+  email: string;
+  _id: string;
+};
+
+interface AddressManagerProps {
+  user: User | null;
+  selectedAddress: Address | null;
+  setSelectedAddress: (address: Address | null) => void;
+}
+
+const AddressManager = ({
+  user,
+  selectedAddress,
+  setSelectedAddress,
+}: AddressManagerProps) => {
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [newAddress, setNewAddress] = useState<Address>({
+    fullName: "",
+    phone: "",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    state: "",
+    pincode: "",
+    country: "India",
+  });
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchAddresses = async () => {
+      try {
+        const response = await axios.get(`${API_BASE}/auth/user-details`, { withCredentials: true });
+        setAddresses(response.data.addresses || []);
+      } catch (err) {
+        console.error("Fetch addresses error:", err);
+        setAddresses([]);
+        toast.error("Failed to fetch addresses.");
+      }
+    };
+    fetchAddresses();
+  }, [user]);
+
+  const handleAddAddress = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${API_BASE}/auth/address`, newAddress, { withCredentials: true });
+      const updatedAddresses = response.data.addresses || [];
+      setAddresses(updatedAddresses);
+      setNewAddress({
+        fullName: "", phone: "", addressLine1: "", addressLine2: "",
+        city: "", state: "", pincode: "", country: "India"
+      });
+      setSelectedAddress(updatedAddresses[updatedAddresses.length - 1]);
+      toast.success("Address added successfully!");
+    } catch (err) {
+      console.error("Add address error:", err);
+      toast.error("Failed to add address. Please try again.");
+    }
+  };
+
+  const handleEditAddress = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    if (editIndex === null || !editingAddress) return;
+    try {
+      const response = await axios.put(`${API_BASE}/auth/address/${editIndex}`, editingAddress, { withCredentials: true });
+      const updatedAddresses = response.data.addresses || [];
+      setAddresses(updatedAddresses);
+      setEditingAddress(null);
+      setEditIndex(null);
+      setSelectedAddress(updatedAddresses[editIndex] || null);
+      toast.success("Address updated successfully!");
+    } catch (err) {
+      console.error("Edit address error:", err);
+      toast.error("Failed to update address. Please try again.");
+    }
+  };
+
+  const handleDeleteAddress = async (index: number) => {
+    try {
+      const response = await axios.delete(`${API_BASE}/auth/address/${index}`, { withCredentials: true });
+      const updatedAddresses = response.data.addresses || [];
+      setAddresses(updatedAddresses);
+      if (selectedAddress && selectedAddress === addresses[index]) {
+        setSelectedAddress(null);
+      }
+      toast.success("Address deleted successfully!");
+    } catch (err) {
+      console.error("Delete address error:", err);
+      toast.error("Failed to delete address. Please try again.");
+    }
+  };
+
+  const startEditing = (address: Address, index: number) => {
+    setEditingAddress({ ...address });
+    setEditIndex(index);
+  };
+
+  return (
+    <div className="w-fit mx-auto flex flex-col gap-4 ">
+  <div className="flex flex-col gap-2">
+    <strong className=" text-lg mb-2 navheading tracking-wider">Your Addresses:</strong>
+    {(!addresses || addresses.length === 0) && (
+      <div className="text-black mb-2  tracking-wide">No saved addresses. Please add one.</div>
+    )}
+    {addresses.map((a, idx) => (
+      <div
+        key={idx}
+        className={`p-2  rounded-md cursor-pointer flex justify-between items-center font-semibold ${
+          selectedAddress === a ? "border-2 border-black" : "border-2 border-black"
+        }`}
+      >
+        <div onClick={() => setSelectedAddress(a)} className="text-sm">
+          <div>{a.fullName}, {a.phone}</div>
+          <div>{a.addressLine1}, {a.addressLine2}</div>
+          <div>{a.city}, {a.state} - {a.pincode}, {a.country}</div>
+        </div>
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => startEditing(a, idx)}
+            className="button-add font-semibold text-xs rounded-md navheading tracking-wider"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => handleDeleteAddress(idx)}
+            className="button-add font-semibold rounded-md text-xs navheading tracking-wider"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <form className=" space-y-2 space-x-2 justify-center grid grid-cols-3 items-center" onSubmit={editingAddress ? handleEditAddress : handleAddAddress}>
+    <input
+      type="text"
+      placeholder="Full Name"
+      required
+      value={editingAddress ? editingAddress.fullName : newAddress.fullName}
+      onChange={e => {
+        if (editingAddress) {
+          setEditingAddress({ ...editingAddress, fullName: e.target.value });
+        } else {
+          setNewAddress({ ...newAddress, fullName: e.target.value });
+        }
+      }}
+      className="w-fit border border-black rounded px-3 py-2 text-sm"
+    />
+    <input
+      type="text"
+      placeholder="Phone"
+      required
+      value={editingAddress ? editingAddress.phone : newAddress.phone}
+      onChange={e => {
+        if (editingAddress) {
+          setEditingAddress({ ...editingAddress, phone: e.target.value });
+        } else {
+          setNewAddress({ ...newAddress, phone: e.target.value });
+        }
+      }}
+      className="w-fit border border-black rounded px-3 py-2 text-sm"
+    />
+    <input
+      type="text"
+      placeholder="Address Line 1"
+      required
+      value={editingAddress ? editingAddress.addressLine1 : newAddress.addressLine1}
+      onChange={e => {
+        if (editingAddress) {
+          setEditingAddress({ ...editingAddress, addressLine1: e.target.value });
+        } else {
+          setNewAddress({ ...newAddress, addressLine1: e.target.value });
+        }
+      }}
+      className="w-fit border border-black rounded px-3 py-2 text-sm"
+    />
+    <input
+      type="text"
+      placeholder="Address Line 2"
+      value={editingAddress ? editingAddress.addressLine2 : newAddress.addressLine2}
+      onChange={e => {
+        if (editingAddress) {
+          setEditingAddress({ ...editingAddress, addressLine2: e.target.value });
+        } else {
+          setNewAddress({ ...newAddress, addressLine2: e.target.value });
+        }
+      }}
+      className="w-fit border border-black rounded px-3 py-2 text-sm"
+    />
+    <input
+      type="text"
+      placeholder="City"
+      required
+      value={editingAddress ? editingAddress.city : newAddress.city}
+      onChange={e => {
+        if (editingAddress) {
+          setEditingAddress({ ...editingAddress, city: e.target.value });
+        } else {
+          setNewAddress({ ...newAddress, city: e.target.value });
+        }
+      }}
+      className="w-fit border border-black rounded px-3 py-2 text-sm"
+    />
+    <input
+      type="text"
+      placeholder="State"
+      required
+      value={editingAddress ? editingAddress.state : newAddress.state}
+      onChange={e => {
+        if (editingAddress) {
+          setEditingAddress({ ...editingAddress, state: e.target.value });
+        } else {
+          setNewAddress({ ...newAddress, state: e.target.value });
+        }
+      }}
+      className="w-fit border border-black rounded px-3 py-2 text-sm"
+    />
+    <input
+      type="text"
+      placeholder="Pincode"
+      required
+      value={editingAddress ? editingAddress.pincode : newAddress.pincode}
+      onChange={e => {
+        if (editingAddress) {
+          setEditingAddress({ ...editingAddress, pincode: e.target.value });
+        } else {
+          setNewAddress({ ...newAddress, pincode: e.target.value });
+        }
+      }}
+      className="w-fit border border-black rounded px-3 py-2 text-sm"
+    />
+
+    {/* Submit and Cancel Buttons */}
+    <div className="flex items-center justify-center gap-5 w-full">
+      <button
+        type="submit"
+        className="button-add font-bold rounded-md  text-xs navheading tracking-wider"
+      >
+        {editingAddress ? "Update Address" : "Add Address"}
+      </button>
+      {editingAddress && (
+        <button
+          type="button"
+          onClick={() => {
+            setEditingAddress(null);
+            setEditIndex(null);
+          }}
+          className=" button-add font-bold rounded-md text-xs navheading tracking-wider"
+        >
+          Cancel
+        </button>
+      )}
+    </div>
+  </form>
+</div>
+
+  );
+};
+
+export default AddressManager;

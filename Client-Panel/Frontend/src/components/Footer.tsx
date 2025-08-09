@@ -1,0 +1,274 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
+import fashion from "@/assets/fashion.gif"; // Assuming you have a fashion imag
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+interface Category {
+  id: number;
+  name: string;
+  ID: string;
+  parent?: string;
+}
+
+interface User {
+  name: string;
+  email: string;
+}
+
+export default function Footer() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const catRes = await axios.get(`${API_BASE}/categories`, { withCredentials: true });
+        setCategories(catRes.data || []);
+      } catch (err) {
+        console.error("Fetch categories error:", err);
+      }
+    };
+
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/auth/user`, { withCredentials: true });
+        setUser(res.data.user || null);
+      } catch (err) {
+        console.error("Auth check error:", err);
+        setUser(null);
+      }
+    };
+
+    fetchData();
+    checkAuth();
+  }, []);
+
+  const topLevelCategories = categories.filter(cat => !cat.parent);
+
+  const handleAuthLinkClick = () => {
+    if (user) {
+      toast.info(`You are already logged in as ${user.name}!`, {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    }
+    return !user; // Return true to allow navigation if not logged in
+  };
+
+  return (
+    <div className="flex flex-col bg-[#111211] text-white w-full rounded-t-xl">
+      {/* Marquee Section */}
+<div className="w-full overflow-hidden bg-[#FBCA1F] py-2 border-t border-black ">
+  <div className="marquee flex text-lg text-black gap-60 navfonts font-semibold uppercase">
+    <div className="marquee-content flex gap-60 items-center">
+      <span className="mx-4 flex items-center gap-2">
+        <img src={fashion} alt="" className="w-8 " />
+         <span>Streetwear Essentials</span>
+      </span>
+      <span className="mx-4 flex items-center gap-2">
+        <img src={fashion} alt="" className="w-8 " />
+        <span>Luxury Fits</span>
+      </span>
+      <span className="mx-4 flex items-center gap-2">
+        <img src={fashion} alt="" className="w-8 " />
+        <span>Seasonal Drops</span>
+      </span>
+      <span className="mx-4 flex items-center gap-2">
+        <img src={fashion} alt="" className="w-8 " />
+        <span>Personal Styling</span>
+      </span>
+    </div>
+
+    {/* Duplicate for seamless looping */}
+    <div className="marquee-content text-lg text-black navfonts font-semibold uppercase flex gap-60 items-center">
+      <span className="mx-4 flex items-center gap-2">
+        <img src={fashion} alt="" className="w-8 " />
+        <span>Curated Collections</span>
+      </span>
+      <span className="mx-4 flex items-center gap-2">
+        <img src={fashion} alt="" className="w-8 " />
+        <span>Limited Edition Drops</span>
+      </span>
+      <span className="mx-4 flex items-center gap-2">
+        <img src={fashion} alt="" className="w-8 " />
+        <span>On-Point Streetwear</span>
+      </span>
+      <span className="mx-4 flex items-center gap-2">
+        <img src={fashion} alt="" className="w-8 " />
+        <span>Style Consultations</span>
+      </span>
+    </div>
+  </div>
+
+  <style>
+    {`
+      .marquee {
+        width: max-content;
+        animation: scroll-marquee 20s linear infinite;
+      }
+
+      @keyframes scroll-marquee {
+        0% {
+          transform: translateX(0%);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+    `}
+  </style>
+</div>
+
+
+
+      {/* Main Footer */}
+      <footer className="relative overflow-hidden px-4 md:px-10 py-10 flex flex-col">
+        {/* Brand Watermark Background */}
+        <div className="absolute inset-0 flex justify-center items-center pointer-events-none select-none z-0">
+          <span className="font-extrabold text-center w-full text-[12rem] text-yellow-400 opacity-10 tracking-widest uppercase custom-footer-watermark">
+            DRIPLET
+          </span>
+        </div>
+
+        {/* Footer Content Grid */}
+        <div className="relative z-10 max-w-full mx-auto grid grid-cols-1 md:grid-cols-5 gap-8">
+          {/* Discovery Call / About Section */}
+          <div className="flex flex-col ">
+            <h3 className="font-bold text-lg mb-4 uppercase">Let's Connect</h3>
+            <p className="mb-4 text-gray-300">Know the drip. Feel the fit. Book your style session or explore our curated collection built for every moment that matters.</p>
+            <div className="flex flex-col gap-3 ">
+              <a
+                href="/collections"
+                className="text-black font-bold py-2 px-4 rounded-full w-max bg-yellow-400 hover:bg-yellow-300 transition"
+              >
+                See Our Collections
+              </a>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex flex-col justify-center ">
+            <h3 className="font-bold text-lg mb-4 uppercase">Navigation</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  to="/login"
+                  onClick={handleAuthLinkClick}
+                  className="hover:underline"
+                >
+                  Log In
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/register"
+                  onClick={handleAuthLinkClick}
+                  className="hover:underline"
+                >
+                  Sign Up
+                </Link>
+              </li>
+              {topLevelCategories.map((category) => (
+                <li key={category.ID}>
+                  <Link
+                    to={`/${category.name.toLowerCase().replace(/\s+/g, "-")}`}
+                    className="hover:underline"
+                  >
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <a href="/faqs" className="hover:underline">FAQs</a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal Info */}
+          <div className="flex flex-col justify-center ">
+            <h3 className="font-bold text-lg mb-4 uppercase">Legal</h3>
+            <ul className="space-y-2">
+              <li>
+                <a href="/terms" className="hover:underline">Terms & Conditions</a>
+              </li>
+              <li>
+                <a href="/privacy" className="hover:underline">Privacy Policy</a>
+              </li>
+              <li>
+                <a href="/shipping" className="hover:underline">Shipping & Returns</a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div className="flex flex-col justify-center ">
+            <h3 className="font-bold text-lg mb-4 uppercase">Contact Us</h3>
+            <ul className="space-y-2 flex flex-col justify-center ">
+              <li>
+                Email: <a href="mailto:support@driplet.com" className="underline">support@driplet.com</a>
+              </li>
+              <li>
+                <a
+                  href="/contact"
+                  className="text-black font-bold py-2 px-4 rounded-full w-max bg-yellow-400 hover:bg-yellow-300 transition flex "
+                >
+                  Chat with Us
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Connect */}
+          <div className="flex flex-col justify-center ">
+            <h3 className="font-bold text-lg mb-4 uppercase">Connect</h3>
+            <div className="flex flex-col gap-3">
+              <a
+                href="https://instagram.com/driplet"
+                className="border border-gray-500 py-2 px-4 rounded-full hover:bg-gray-800 transition text-center"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Follow Us on Instagram
+              </a>
+              <a
+                href="https://twitter.com/driplet"
+                className="border border-gray-500 py-2 px-4 rounded-full hover:bg-gray-800 transition text-center"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Follow Us on X
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Go to Top Button and Copyright */}
+        <div className="relative z-10 w-full mx-auto mt-6 flex justify-between items-center">
+          <div className="text-center md:text-left text-gray-500 text-sm">
+            &copy; {new Date().getFullYear()} DRIPLET. All rights reserved.
+          </div>
+          <div className="flex justify-center md:justify-end">
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              aria-label="Back to top"
+              className="bg-gray-900 hover:bg-gray-700 p-2 rounded-full border border-gray-600 transition"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-gray-200"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -12,7 +12,7 @@ interface TshirtModelProps {
 }
 
 export default function TshirtModel({
-  color = "#ffffff", // default white
+  color = "#ffffff", // default 
   ...props
 }: TshirtModelProps) {
   const { scene } = useGLTF("/models/tshirt.glb", true, true);

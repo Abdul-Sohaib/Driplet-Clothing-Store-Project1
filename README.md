@@ -8,10 +8,10 @@ Includes a **custom-built Admin Panel** & **Client Panel** with seamless UI/UX, 
 ## 📸 Screenshots
 
 ### 🖥️ Admin Panel
-![Admin Panel](assets/admin-dashboard.png)
+![Admin Panel](assets/Adminpannel.png)
 
 ### 👕 Client Panel
-![Client Storefront](assets/client-home.png)
+![Client Storefront](assets/Clientpannel.png)
 
 > *Note:* Replace `assets/admin-dashboard.png` and `assets/client-home.png` with actual screenshots from your project.
 

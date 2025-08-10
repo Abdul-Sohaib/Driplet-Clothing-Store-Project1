@@ -20,7 +20,7 @@ const Textarea = () => {
 
   const cardStyles = (index: number) => {
     const base =
-      " w-full h-full flex justify-center items-center rounded-3xl border-2  transition-transform duration-300 transform cursor-pointer shadow-[rgba(0,0,0,0.2)_0px_20px_30px,-8px_0px_30px_#ffd70040]";
+      " w-full h-full flex justify-center items-center rounded-2xl sm:rounded-3xl border-2 transition-transform duration-300 transform cursor-pointer shadow-[rgba(0,0,0,0.2)_0px_20px_30px,-8px_0px_30px_#ffd70040]";
 
     const scale =
       hoveredIndex === null
@@ -31,11 +31,11 @@ const Textarea = () => {
 
     const position =
       index === 0
-        ? "-translate-x-6 -translate-y-4 -rotate-9 relative left-16"
+        ? "sm:-translate-x-6 sm:-translate-y-4 sm:-rotate-9 sm:relative sm:left-16"
       : index === 1
-        ? "translate-x-0 translate-y-0 relative rotate-1"
+        ? "translate-x-0 translate-y-0 sm:relative sm:rotate-1"
         : index === 2
-        ? "translate-x-6 -translate-y-4 rotate-9 relative right-16"
+        ? "sm:translate-x-6 sm:-translate-y-4 sm:rotate-9 sm:relative sm:right-16"
         : "";
 
     const background = `bg-cover bg-center ${backgroundImages[index]}`;
@@ -44,9 +44,9 @@ const Textarea = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full ">
-      <h2 className="text-5xl font-extrabold textheading uppercase mt-10">This ain’t fashion. It’s Driplet</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-full h-[60vh] mt-20 mb-5 justify-center items-center">
+    <div className="flex flex-col items-center w-full px-3 sm:px-4">
+      <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold textheading uppercase mt-6 sm:mt-8 md:mt-10 text-center">This ain't fashion. It's Driplet</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 w-full max-w-full h-[40vh] sm:h-[50vh] md:h-[60vh] mt-10 sm:mt-15 md:mt-20 mb-3 sm:mb-5 justify-center items-center">
         {quotes.map((quote, index) => (
           <motion.div
             key={index}
@@ -62,7 +62,7 @@ const Textarea = () => {
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
           >
-            <span className="uppercase text-xl px-6 text-white font-extrabold tracking-wider navheading text-center">
+            <span className="uppercase text-sm sm:text-base md:text-lg lg:text-xl px-3 sm:px-4 md:px-6 text-white font-extrabold tracking-wider navheading text-center">
               {quote}
             </span>
           </motion.div>

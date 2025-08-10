@@ -3,6 +3,7 @@
 import { memo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AiFillStar } from "react-icons/ai";
+import { IoCartOutline, IoHeartOutline } from "react-icons/io5";
 import gsap from "gsap";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -231,8 +232,10 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
   return (
     <div
       className={`grid grid-cols-1 sm:grid-cols-2 ${
-        isFilterVisible ? "lg:grid-cols-3" : "lg:grid-cols-4"
-      } gap-6 px-4 justify-center`}
+        isFilterVisible 
+          ? "lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" 
+          : "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+      } gap-4 sm:gap-6 px-3 sm:px-4 lg:px-6 justify-center`}
     >
       {products.map((product, index) => {
         const variantIndex = selectedVariants[product.id] ?? 0;
@@ -258,7 +261,7 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
             onClick={() => navigate(`/product/${product.id}`)}
           >
             
-       <div className="w-full h-[60vh] overflow-hidden relative">
+       <div className="w-full h-[45vh] sm:h-[50vh] md:h-[55vh] lg:h-[60vh] overflow-hidden relative">
   {/* BEST SELLER Tag in top-right */}
   <div className="text-xs font-bold button-55 text-black bg-transparent w-fit text-center p-1 navfonts border-purple-400 absolute top-1 left-1 z-10 navfonts">
     BEST SELLER
@@ -270,7 +273,7 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
       <img
         src={cartgif}
         alt="Loading..."
-        className="w-28"
+        className="w-20 sm:w-24 md:w-28"
         onError={() => handleImageError(product.id, cartgif)}
       />
     </div>
@@ -298,25 +301,25 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
   </div>
 </div>
 
-            <div className="flex justify-between px-3 py-2 text-sm items-center">
+            <div className="flex justify-between px-2 sm:px-3 py-2 text-xs sm:text-sm items-center">
               <div className="flex items-center gap-1 text-orange-500">
-                <AiFillStar className="text-[14px]" />
+                <AiFillStar className="text-[12px] sm:text-[14px]" />
                 4.5 <span className="text-gray-600 ml-1">(241)</span>
               </div>
               <div className="text-xs button-55 text-black bg-transparent w-fit text-center p-1 font-bold">
                 {totalStock} left
               </div>
             </div>
-            <div className="px-3 flex gap-2 items-center">
-              <p className="text-lg font-semibold text-black">₹{price}</p>
-              <p className="text-sm line-through text-gray-500">₹{mrp}</p>
-              <p className="text-sm text-green-600 font-semibold">{discount}% OFF</p>
+            <div className="px-2 sm:px-3 flex gap-2 items-center">
+              <p className="text-base sm:text-lg font-semibold text-black">₹{price}</p>
+              <p className="text-xs sm:text-sm line-through text-gray-500">₹{mrp}</p>
+              <p className="text-xs sm:text-sm text-green-600 font-semibold">{discount}% OFF</p>
             </div>
-            <div className="px-3 py-1 text-sm text-black font-semibold line-clamp-2">
+            <div className="px-2 sm:px-3 py-1 text-sm sm:text-base text-black font-semibold line-clamp-2">
               {product.name}
             </div>
-            <div className="mx-3 mb-3">
-              <div className="flex gap-2 flex-wrap mb-2">
+            <div className="mx-2 sm:mx-3 mb-3">
+              <div className="flex gap-1 sm:gap-2 flex-wrap mb-2">
                 {product.variants.map((variant, vIndex) => (
                   <button
                     key={vIndex}
@@ -324,7 +327,7 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
                       e.stopPropagation();
                       setSelectedVariants({ ...selectedVariants, [product.id]: vIndex });
                     }}
-                    className={`px-3 py-1 border-2 rounded-md text-sm font-semibold navfonts cursor-pointer ${
+                    className={`px-2 sm:px-3 py-1 border-2 rounded-md text-xs sm:text-sm font-semibold navfonts cursor-pointer ${
                       selectedVariants[product.id] === vIndex
                         ? "border-purple-500 bg-purple-100 text-purple-600"
                         : "border-purple-300 text-black hover:bg-purple-50"
@@ -334,7 +337,7 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
                   </button>
                 ))}
               </div>
-              <div className="flex gap-2 flex-wrap mb-2">
+              <div className="flex gap-1 sm:gap-2 flex-wrap mb-2">
                 {product.variants[variantIndex]?.sizes.map((size, i) => (
                   <button
                     key={i}
@@ -342,7 +345,7 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
                       e.stopPropagation();
                       if (size.stock > 0) setSelectedSizes({ ...selectedSizes, [product.id]: size.size });
                     }}
-                    className={`px-3 py-1 border-2 rounded-md text-sm font-semibold navfonts uppercase cursor-pointer ${
+                    className={`px-2 sm:px-3 py-1 border-2 rounded-md text-xs sm:text-sm font-semibold navfonts uppercase cursor-pointer ${
                       selectedSizes[product.id] === size.size
                         ? "border-purple-500 bg-purple-100 text-purple-600"
                         : size.stock > 0
@@ -355,27 +358,33 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
                   </button>
                 ))}
               </div>
-              <div className="grid grid-cols-5 gap-2 border-3 border-black rounded-lg overflow-hidden">
+              <div className="grid grid-cols-5 gap-1 sm:gap-2 border-3 border-black rounded-lg overflow-hidden">
                 <button
-                  className="col-span-4 text-sm font-semibold button-add text-black rounded-md navfonts cursor-pointer flex items-center justify-center gap-2"
+                  className="col-span-4 text-xs sm:text-sm font-semibold button-add text-black rounded-md navfonts cursor-pointer flex items-center justify-center gap-1 sm:gap-2 py-2"
                   onClick={(e) => handleAddToCart(product.id, e)}
                   disabled={isAdding[product.id]}
                 >
                   {isAdding[product.id] ? (
-                    <img src={cartgif} alt="Loading..." className="w-10" onError={() => handleImageError(product.id, cartgif)} />
+                    <img src={cartgif} alt="Loading..." className="w-6 sm:w-8 md:w-10" onError={() => handleImageError(product.id, cartgif)} />
                   ) : (
-                    "ADD TO CART"
+                    <>
+                      <IoCartOutline className="text-sm sm:text-base" />
+                      <span className="hidden sm:inline">ADD TO CART</span>
+                      <span className="sm:hidden">CART</span>
+                    </>
                   )}
                 </button>
                 <button
-                  className="flex items-center justify-center text-2xl text-gray-600 hover:text-black cursor-pointer"
+                  className="flex items-center justify-center text-lg sm:text-xl md:text-2xl text-gray-600 hover:text-black cursor-pointer p-1"
                   onClick={(e) => handleAddToWishlist(product.id, e)}
                   disabled={isWishlisting[product.id]}
                 >
                   {isWishlisting[product.id] ? (
-                    <span className="text-sm"><img src={wishlistlike} alt="" className="w-5" onError={() => handleImageError(product.id, wishlistlike)} /></span>
+                    <span className="text-xs sm:text-sm">
+                      <img src={wishlistlike} alt="" className="w-4 sm:w-5" onError={() => handleImageError(product.id, wishlistlike)} />
+                    </span>
                   ) : (
-                    <img src={wishlistlike} alt="" className="w-8" onError={() => handleImageError(product.id, wishlistlike)} />
+                    <img src={wishlistlike} alt="" className="w-6 sm:w-8" onError={() => handleImageError(product.id, wishlistlike)} />
                   )}
                 </button>
               </div>

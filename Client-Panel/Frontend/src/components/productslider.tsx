@@ -122,11 +122,11 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
   const StarRating = ({ rating }: { rating?: number }) => {
     const stars = rating ? Math.round(rating) : 0;
     return (
-      <div className="flex justify-center items-center ">
+      <div className="flex justify-center items-center">
         {[...Array(5)].map((_, i) => (
           <svg
             key={i}
-            className={`w-5 h-5 ${i < stars ? "text-yellow-400" : "text-white"}`}
+            className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 ${i < stars ? "text-yellow-400" : "text-white"}`}
             fill="currentColor"
             viewBox="0 0 20 20"
             xmlns="http://www.w3.org/2000/svg"
@@ -139,8 +139,8 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
   };
 
   return (
-    <section id="product-carousel" className="h-full w-full   rounded-3xl bg-gradient-to-br from-[#fff9e6] via-[#fff5cc] to-[#ffefb3] border-2 border-black  shadow-xl flex justify-center items-center ">
-      <div className="w-fit h-full  sm:px-6 lg:px-8 min-w-[20vw] md:min-w-[50vw]   rounded-3xl p-9">
+    <section id="product-carousel" className="h-full w-full rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#fff9e6] via-[#fff5cc] to-[#ffefb3] border-2 border-black shadow-xl flex justify-center items-center">
+      <div className="w-fit h-full px-2 sm:px-3 md:px-6 lg:px-8 min-w-[90vw] sm:min-w-[80vw] md:min-w-[70vw] lg:min-w-[60vw] xl:min-w-[50vw] 2xl:min-w-[40vw] rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-9">
         <div
           className="relative"
           style={{ height: `${cardHeight}px` }}
@@ -153,7 +153,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
         >
           <div
             className={cn(
-              "absolute top-0 left-0 w-full   h-full flex items-center justify-center",
+              "absolute top-0 left-0 w-full h-full flex items-center justify-center",
               carouselClassName
             )}
             style={{ backgroundColor }}
@@ -163,7 +163,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
                 <motion.div
                   key={product.id}
                   className={cn(
-                    "absolute top-0 w-full max-w-md  cursor-pointer transform transition-all duration-500 shadow-md rounded-3xl",
+                    "absolute top-0 w-full max-w-[280px] sm:max-w-xs md:max-w-sm lg:max-w-md xl:max-w-lg cursor-pointer transform transition-all duration-500 shadow-md rounded-2xl sm:rounded-3xl",
                     getCardAnimationClass(index),
                     cardClassName
                   )}
@@ -172,11 +172,11 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
                   exit={{ scale: 0.9, opacity: 0 }}
                 >
                   <div
-                    className="border-2 border-black rounded-3xl bg-[#DADAD0] shadow-md hover:shadow-xl transition duration-300 overflow-hidden"
+                    className="border-2 border-black rounded-2xl sm:rounded-3xl bg-[#DADAD0] shadow-md hover:shadow-xl transition duration-300 overflow-hidden"
                     style={{ height: `${cardHeight}px` }}
                   >
                     <div
-                      className="relative w-full h-full flex flex-col "
+                      className="relative w-full h-full flex flex-col"
                       style={{
                         backgroundImage: `url(${product.variants[0]?.imageUrls[0] || ''})`,
                         backgroundSize: "cover",
@@ -196,6 +196,8 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
           </div>
 
        
+        
+        
          
         </div>
         

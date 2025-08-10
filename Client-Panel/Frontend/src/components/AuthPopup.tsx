@@ -2,6 +2,7 @@
 import { useState, useCallback } from "react";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from 'date-fns';
 
@@ -117,12 +118,12 @@ const year = format(now, 'yyyy'); // '2025'
     }
   }, [formData, handleApiError]);
 
-  const inputClass = "w-full px-4 py-3 border border-gray-300 rounded-3xl focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white/50 text-black placeholder-black navfonts";
-  const buttonClass = "button-add rounded-3xl font-bold uppercase w-full";
+  const inputClass = "w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-2xl sm:rounded-3xl focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white/50 text-black placeholder-black navfonts text-sm sm:text-base";
+  const buttonClass = "button-add rounded-2xl sm:rounded-3xl font-bold uppercase w-full text-sm sm:text-base py-2 sm:py-3";
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center z-50 bg-black/80  backdrop-blur-sm">
-      <div className="grid grid-cols-[1fr,2fr] grid-rows-[auto,1fr] w-full max-w-4xl relative rounded-xl overflow-hidden gap-4">
+    <div className="fixed top-[50vh] inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-3 sm:p-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr,2fr] grid-rows-[auto,auto,auto] lg:grid-rows-[auto,1fr] w-full max-w-4xl relative rounded-xl overflow-hidden gap-3 sm:gap-4">
         {/* First grid: Login/Register details */}
         <AnimatePresence>
           <motion.div
@@ -130,9 +131,9 @@ const year = format(now, 'yyyy'); // '2025'
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, delay: 0 }}
-            className="p-6 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl shadow-lg col-span-1 row-span-1 flex flex-col gap-6"
+            className="p-4 sm:p-6 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl shadow-lg col-span-1 row-span-1 flex flex-col gap-4 sm:gap-6"
           >
-            <h2 className="text-3xl font-extrabold textheading text-center text-[#FBCA1F] uppercase mb-4">
+            <h2 className="text-2xl sm:text-3xl font-extrabold textheading text-center text-[#FBCA1F] uppercase mb-2 sm:mb-4">
               {forgotMode ? "Reset Password" : isLogin ? "Log in" : "Sign up"}
             </h2>
 
@@ -183,7 +184,7 @@ const year = format(now, 'yyyy'); // '2025'
                     onClick={togglePasswordVisibility}
                     className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-600 hover:text-gray-800 cursor-pointer"
                   >
-                    {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+                    {showPassword ? <FaEyeSlash size={16} className="sm:w-5 sm:h-5" /> : <FaEye size={16} className="sm:w-5 sm:h-5" />}
                   </button>
                 </div>
                 <button
@@ -211,7 +212,7 @@ const year = format(now, 'yyyy'); // '2025'
                     onClick={togglePasswordVisibility}
                     className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-600 hover:text-gray-800 cursor-pointer"
                   >
-                    {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+                    {showPassword ? <FaEyeSlash size={16} className="sm:w-5 sm:h-5" /> : <FaEye size={16} className="sm:w-5 sm:h-5" />}
                   </button>
                 </div>
                 {!forgotMode && (
@@ -228,7 +229,7 @@ const year = format(now, 'yyyy'); // '2025'
             {isLogin && !forgotMode && (
               <p
                 onClick={() => setForgotMode(true)}
-                className="text-sm text-center font-semibold text-white mt-2 cursor-pointer hover:underline"
+                className="text-xs sm:text-sm text-center font-semibold text-white mt-2 cursor-pointer hover:underline"
               >
                 Forgot Password
               </p>
@@ -243,7 +244,7 @@ const year = format(now, 'yyyy'); // '2025'
               </button>
             )}
 
-            <p className="text-sm text-center text-white mt-4 font-semibold">
+            <p className="text-xs sm:text-sm text-center text-white mt-2 sm:mt-4 font-semibold">
               {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
               <span
                 className="text-[#FBCA1F] cursor-pointer hover:underline"
@@ -267,16 +268,16 @@ const year = format(now, 'yyyy'); // '2025'
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="p-6 bg-white/10 backdrop-blur-xl border-3 border-white/20 rounded-3xl shadow-lg col-span-1 row-span-1 flex items-center justify-center relative showcaseback3"
+            className="p-4 sm:p-6 bg-white/10 backdrop-blur-xl border-3 border-white/20 rounded-2xl sm:rounded-3xl shadow-lg col-span-1 row-span-1 flex items-center justify-center relative showcaseback3"
           >
-            <div className="absolute left-1 flex justify-center h-[54vh] w-1/2 bg-white/5 backdrop-blur-xs border-2 border-white/20 rounded-3xl z-10" >
-             <div className="flex flex-col w-full h-full justify-between p-7">
-              <div className="flex flex-col gap-2 ">
-            <h1 className="text-5xl font-semibold text-black  textheading">{month}</h1>
-            <h2 className="text-2xl font-medium text-black navfonts">{year}</h2>
+            <div className="absolute left-1 flex justify-center h-[40vh] sm:h-[50vh] lg:h-[54vh] w-1/2 bg-white/5 backdrop-blur-xs border-2 border-white/20 rounded-2xl sm:rounded-3xl z-10" >
+             <div className="flex flex-col w-full h-full justify-between p-4 sm:p-7">
+              <div className="flex flex-col gap-1 sm:gap-2 ">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-black textheading">{month}</h1>
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-medium text-black navfonts">{year}</h2>
             </div>
 
-            <div className="text-xl text-center font-bold text-[#FBCA1F] textheading">
+            <div className="text-lg sm:text-xl text-center font-bold text-[#FBCA1F] textheading">
             <h1>DRIPLET</h1>
           </div>
           </div>
@@ -292,20 +293,20 @@ const year = format(now, 'yyyy'); // '2025'
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="p-6 bg-black text-white col-span-2 row-span-1 border-3 border-white/20 flex items-center justify-between showcaseback2 rounded-3xl"
+            className="p-4 sm:p-6 bg-black text-white col-span-1 lg:col-span-2 row-span-1 border-3 border-white/20 flex flex-col sm:flex-row items-center justify-between showcaseback2 rounded-2xl sm:rounded-3xl gap-3 sm:gap-0"
           >
-            <div className="flex justify-center items-center">
-              <span className="text-xl font-bold textheading text-[#FBCA1F]">"Wear your attitude. The world will follow your silhouette."</span>
+            <div className="flex justify-center items-center text-center sm:text-left">
+              <span className="text-base sm:text-lg lg:text-xl font-bold textheading text-[#FBCA1F]">"Wear your attitude. The world will follow your silhouette."</span>
             </div>
-            <button className="button-add rounded-3xl font-bold text-black navfonts">Discover</button>
+            <button className="button-add rounded-2xl sm:rounded-3xl font-bold text-black navfonts text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3">Discover</button>
           </motion.div>
         </AnimatePresence>
 
         <button
           onClick={() => onClose({ name: "", email: "" })}
-          className="absolute top-1 font-bold right-2 text-3xl text-red-500 hover:text-red-600 cursor-pointer bg-transparent"
+          className="absolute top-1 right-2 text-2xl sm:text-3xl text-red-500 hover:text-red-600 cursor-pointer bg-transparent z-10"
         >
-          ×
+          <IoClose />
         </button>
       </div>
     </div>

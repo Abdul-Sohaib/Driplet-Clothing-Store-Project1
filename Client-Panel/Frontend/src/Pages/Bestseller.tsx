@@ -66,19 +66,19 @@ const Bestseller = () => {
     });
   };
 
-  if (loading) return <div className="flex justify-center items-center w-screen "><Loading/></div>;
-  if (error) return <div className="text-center text-red-500">{error}</div>;
+  if (loading) return <div className="flex justify-center items-center w-screen"><Loading/></div>;
+  if (error) return <div className="text-center text-red-500 text-sm sm:text-base">{error}</div>;
 
   return (
-    <div className="flex flex-col gap-10 px-4 inset-0 bg-[#F5F5DC]">
-      <div className="flex flex-col lg:flex-row justify-between items-center mt-12 w-full mx-auto">
+    <div className="flex flex-col gap-6 sm:gap-8 md:gap-10 px-3 sm:px-4 inset-0 bg-[#F5F5DC]">
+      <div className="flex flex-col lg:flex-row justify-between items-center mt-8 sm:mt-10 md:mt-12 w-full mx-auto gap-4 sm:gap-6">
         <button
           onClick={() => window.history.back()}
           className="relative group bg-transparent outline-none cursor-pointer uppercase"
         >
           <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-          <div className="relative flex items-center justify-between py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 -ml-1 transition duration-250 group-hover:-translate-x-1">
+          <div className="relative flex items-center justify-between py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+            <svg viewBox="0 0 20 20" fill="currentColor" className="w-3 sm:w-4 -ml-1 transition duration-250 group-hover:-translate-x-1">
               <path
                 clipRule="evenodd"
                 fillRule="evenodd"
@@ -89,7 +89,7 @@ const Bestseller = () => {
           </div>
         </button>
 
-        <h1 className="text-4xl font-extrabold text-center textheading uppercase flex justify-center">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center textheading uppercase flex justify-center">
           Bestsellers Of Driplet
         </h1>
 
@@ -98,8 +98,8 @@ const Bestseller = () => {
           className="relative group bg-transparent outline-none cursor-pointer uppercase w-fit"
         >
           <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-          <div className="relative flex items-center justify-between py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
-            <VscListFlat className="w-5 transition duration-250 group-hover:-translate-x-1" />
+          <div className="relative flex items-center justify-between py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+            <VscListFlat className="w-4 sm:w-5 transition duration-250 group-hover:-translate-x-1" />
             <span className="select-none text-xs navfonts font-semibold">Sort Price: {sortOrder === "low-to-high" ? "Low → High" : "High → Low"}</span>
           </div>
         </button>

@@ -157,9 +157,9 @@ const Mainpage = () => {
           <Loading />
         </div>
       ) : (
-        <div className="flex flex-col items-center w-screen gap-8 md:gap-12 lg:gap-16">
+        <div className="flex flex-col items-center w-screen gap-6 sm:gap-8 md:gap-12 lg:gap-16">
           {/* Hero Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 justify-center items-center align-middle w-screen p-4 sm:p-6 md:p-8 lg:p-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 justify-center items-center align-middle w-screen p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
             <motion.div
               variants={slideLeft}
               initial="hidden"
@@ -169,13 +169,13 @@ const Mainpage = () => {
               <AdContainer1 />
             </motion.div>
             <div
-              className="flex flex-col h-[60vh] sm:h-[70vh] lg:h-[80vh] min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] rounded-3xl gap-4 items-center justify-center threed"
+              className="flex flex-col h-[50vh] sm:h-[55vh] md:h-[60vh] lg:h-[65vh] xl:h-[70vh] 2xl:h-[75vh] min-h-[250px] sm:min-h-[300px] md:min-h-[350px] lg:min-h-[400px] rounded-2xl sm:rounded-3xl gap-4 items-center justify-center threed"
             >
               <motion.div
                 variants={slideRight(0.5)}
                 initial="hidden"
                 animate="visible"
-                className="flex w-full h-full rounded-3xl items-center justify-center"
+                className="flex w-full h-full rounded-2xl sm:rounded-3xl items-center justify-center"
               >
                 <Canvas
                   dpr={[1, 1.5]} // keeps clarity but lighter GPU load
@@ -207,7 +207,7 @@ const Mainpage = () => {
           </div>
 
           {/* Bestseller Intro */}
-          <div className="w-screen flex justify-center items-center mt-8 md:mt-12">
+          <div className="w-screen flex justify-center items-center mt-4 sm:mt-6 md:mt-8 lg:mt-10 xl:mt-12">
             <Bestsellerintro />
           </div>
 
@@ -216,21 +216,21 @@ const Mainpage = () => {
             variants={slideup(1)}
             initial="hidden"
             animate="visible"
-            className="px-4"
+            className="px-3 sm:px-4"
           >
             <button
               onClick={() => navigate("/bestsellers")}
-              className="relative group bg-transparent outline-none cursor-pointer uppercase ml-2"
+              className="relative group bg-transparent outline-none cursor-pointer uppercase ml-1 sm:ml-2"
             >
               <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-[250ms] group-active:translate-y-px"></span>
-              <div className="relative flex items-center justify-between py-3 px-4 sm:px-6 text-base sm:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-[250ms] group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
-                <span className="select-none text-base sm:text-lg navfonts font-semibold">
+              <div className="relative flex items-center justify-between py-2 sm:py-3 px-3 sm:px-4 md:px-6 text-sm sm:text-base md:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-[250ms] group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+                <span className="select-none text-sm sm:text-base md:text-lg navfonts font-semibold">
                   MORE BESTSELLERS
                 </span>
                 <svg
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-4 sm:w-5 -ml-1 transition duration-250 group-hover:-translate-x-1"
+                  className="w-3 sm:w-4 md:w-5 -ml-1 transition duration-250 group-hover:-translate-x-1"
                 >
                   <path
                     clipRule="evenodd"
@@ -243,16 +243,16 @@ const Mainpage = () => {
           </motion.div>
 
           {/* Textarea Section */}
-          <div className="flex h-full rounded-3xl justify-center items-center p-3 w-full">
+          <div className="flex h-full rounded-2xl sm:rounded-3xl justify-center items-center p-2 sm:p-3 w-full">
             <div className="flex justify-center items-center w-full">
               <Textarea />
             </div>
           </div>
 
           {/* Product Slider Section */}
-          <div className="h-[70vh] sm:h-[80vh] lg:h-[90vh] w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] items-center justify-center mt-8 md:mt-10 mb-8 md:mb-10 gap-3 p-3">
-            <div className="col-span-1 text-center px-4">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold textheading uppercase">closets of driplet</h1>
+          <div className="h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[75vh] xl:h-[80vh] 2xl:h-[85vh] w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] items-center justify-center mt-4 sm:mt-6 md:mt-8 lg:mt-10 xl:mt-12 mb-4 sm:mb-6 md:mb-8 lg:mb-10 xl:mb-12 gap-2 sm:gap-3 p-2 sm:p-3">
+            <div className="col-span-1 text-center px-2 sm:px-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold textheading uppercase">closets of driplet</h1>
             </div>
             <div className="row-start-2 col-start-1 flex items-center justify-center w-full">
               <ProductSlider products={products} />

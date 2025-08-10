@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
+
 import type { Product } from "../Pages/Products";
 import { FiEdit2, FiTrash2, FiPackage, FiTag, FiDollarSign, FiGrid } from "react-icons/fi";
 
@@ -10,7 +10,7 @@ type ProductListProps = {
   loading: boolean;
 };
 
-const ProductList: React.FC<ProductListProps> = ({ products, onDelete, onEdit, loading }) => {
+const ProductList = ({ products, onDelete, onEdit, loading }: ProductListProps) => {
   return (
     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg border border-gray-200">
       <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-2">

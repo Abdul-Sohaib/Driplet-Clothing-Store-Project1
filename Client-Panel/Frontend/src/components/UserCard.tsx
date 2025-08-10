@@ -19,7 +19,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, onLogout, onClose }) => {
 
   return (
     <div
-      className="absolute right-0 top-[11vh] bg-[#F5F5DC] rounded-md shadow-lg p-4 text-sm z-50 w-[18vw] border-2 border-[#101A13] flex flex-col items-center justify-center font-bold navfonts gap-4"
+      className="absolute right-0 top-[11vh] bg-[#F5F5DC] rounded-md shadow-lg p-3 sm:p-4 text-xs sm:text-sm z-50 w-[200px] sm:w-[250px] lg:w-[18vw] max-w-[300px] border-2 border-[#101A13] flex flex-col items-center justify-center font-bold navfonts gap-3 sm:gap-4"
       onMouseLeave={onClose}
     >
       {user ? (
@@ -32,9 +32,9 @@ const UserCard: React.FC<UserCardProps> = ({ user, onLogout, onClose }) => {
             className="relative group bg-transparent outline-none cursor-pointer uppercase w-full"
           >
             <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-            <div className="relative flex items-center justify-between py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+            <div className="relative flex items-center justify-between py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
               <span className="select-none text-xs navfonts font-semibold">Account</span>
-              <FaUser className="w-5 transition duration-250 group-hover:-translate-x-1" />
+              <FaUser className="w-4 sm:w-5 transition duration-250 group-hover:-translate-x-1" />
             </div>
           </button>
           <button
@@ -45,9 +45,9 @@ const UserCard: React.FC<UserCardProps> = ({ user, onLogout, onClose }) => {
             className="relative group bg-transparent outline-none cursor-pointer uppercase w-full"
           >
             <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-            <div className="relative flex items-center justify-between py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+            <div className="relative flex items-center justify-between py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
               <span className="select-none text-xs navfonts font-semibold">My Orders</span>
-              <FaBoxOpen className="w-5 transition duration-250 group-hover:-translate-x-1" />
+              <FaBoxOpen className="w-4 sm:w-5 transition duration-250 group-hover:-translate-x-1" />
             </div>
           </button>
           <button
@@ -58,9 +58,9 @@ const UserCard: React.FC<UserCardProps> = ({ user, onLogout, onClose }) => {
             className="relative group bg-transparent outline-none cursor-pointer uppercase w-full"
           >
             <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-            <div className="relative flex items-center justify-between py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+            <div className="relative flex items-center justify-between py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
               <span className="select-none text-xs navfonts font-semibold">Return/Exchange</span>
-              <FaExchangeAlt className="w-5 transition duration-250 group-hover:-translate-x-1" />
+              <FaExchangeAlt className="w-4 sm:w-5 transition duration-250 group-hover:-translate-x-1" />
             </div>
           </button>
           <button
@@ -71,21 +71,21 @@ const UserCard: React.FC<UserCardProps> = ({ user, onLogout, onClose }) => {
             className="relative group bg-transparent outline-none cursor-pointer uppercase w-full"
           >
             <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-            <div className="relative flex items-center justify-between py-3 px-6 text-lg text-white rounded-lg transform -translate-y-1 bg-red-500 gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+            <div className="relative flex items-center justify-between py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg text-white rounded-lg transform -translate-y-1 bg-red-500 gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
               <span className="select-none text-xs navfonts font-semibold">Logout</span>
-              <RiLogoutCircleRFill className="w-5 transition duration-250 group-hover:-translate-x-1" />
+              <RiLogoutCircleRFill className="w-4 sm:w-5 transition duration-250 group-hover:-translate-x-1" />
             </div>
           </button>
         </>
       ) : (
-        <div className="navfonts uppercase flex flex-col gap-6 justify-center items-center">
-          <p className="text-black text-xl font-semibold">Please log in</p>
+        <div className="navfonts uppercase flex flex-col gap-4 sm:gap-6 justify-center items-center">
+          <p className="text-black text-lg sm:text-xl font-semibold text-center">Please log in</p>
           <button
             onClick={handleLoginRedirect}
             className="relative group bg-transparent outline-none cursor-pointer uppercase w-full"
           >
             <span className="absolute top-0 left-0 w-full h-full bg-purple-300 bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-            <div className="relative flex items-center justify-center py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-purple-300 hover:border-purple-500 active:border-purple-700">
+            <div className="relative flex items-center justify-center py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-purple-300 hover:border-purple-500 active:border-purple-700">
               <span className="select-none text-xs navfonts font-semibold">Go to Login</span>
             </div>
           </button>

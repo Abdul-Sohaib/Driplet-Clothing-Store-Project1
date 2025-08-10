@@ -137,6 +137,12 @@ const AddressManager = ({
         </div>
         <div className="flex items-center justify-center gap-1 sm:gap-2">
           <button
+            onClick={() => setSelectedAddress(a)}
+            className="button-add font-semibold text-xs rounded-md navheading tracking-wider px-2 sm:px-3 py-1 sm:py-2"
+          >
+            Select
+          </button>
+          <button
             onClick={() => startEditing(a, idx)}
             className="button-add font-semibold text-xs rounded-md navheading tracking-wider px-2 sm:px-3 py-1 sm:py-2"
           >

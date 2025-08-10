@@ -40,9 +40,9 @@ const authMiddleware = (req, res, next) => {
       }
       req.auth = decoded;
       console.log("Token verified for user:", decoded.sub);
-next();
-}
-);
+      next();
+    }
+  );
 };
 
 module.exports = authMiddleware;

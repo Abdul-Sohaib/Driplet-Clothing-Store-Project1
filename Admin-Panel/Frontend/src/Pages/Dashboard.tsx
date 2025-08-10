@@ -12,6 +12,7 @@ import Sales from "./Sales";
 import Categories from "./Categories";
 import PackingAndShipping from "./Packing_and_shipping";
 import Loading from "@/Components/Loading";
+import { FiMenu, FiX } from "react-icons/fi";
 
 export interface Product {
   id: string | number;
@@ -64,6 +65,7 @@ const Dashboard = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { getToken } = useAuth();
 
   const fetchCategories = useCallback(async () => {
@@ -146,31 +148,70 @@ const Dashboard = () => {
     );
   }
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   return (
-    <div className="flex h-screen w-screen">
-      <div className="w-fit">
-        <Sidebar />
+    <div className="flex h-screen w-screen overflow-hidden">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={closeMobileMenu}
+        />
+      )}
+
+      {/* Sidebar - Hidden on mobile, visible on desktop */}
+      <div className={`fixed lg:relative z-50 transition-transform duration-300 ease-in-out ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
+        <Sidebar onClose={closeMobileMenu} />
       </div>
-      <div className="flex-1 flex flex-col bg-gray-100">
-        <div className="h-20 flex items-center px-6">
-          <Navbar />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col bg-gray-100 min-w-0">
+        {/* Top Bar with Mobile Menu Toggle */}
+        <div className="h-20 flex items-center px-4 lg:px-6 bg-gray-100 border-b border-gray-200">
+          {/* Mobile Menu Button */}
+          <button
+            onClick={toggleMobileMenu}
+            className="lg:hidden mr-4 p-2 rounded-lg hover:bg-gray-200 transition-colors"
+            aria-label="Toggle mobile menu"
+          >
+            {isMobileMenuOpen ? (
+              <FiX className="w-6 h-6 text-gray-700" />
+            ) : (
+              <FiMenu className="w-6 h-6 text-gray-700" />
+            )}
+          </button>
+          
+          {/* Navbar */}
+          <div className="flex-1">
+            <Navbar />
+          </div>
         </div>
-        <div className="flex-1 p-6 overflow-y-auto">
+
+        {/* Page Content */}
+        <div className="flex-1 p-4 lg:p-6 overflow-y-auto">
           <ErrorBoundary>
             <Routes>
-  <Route path="/" element={<Userdashboard categories={categories} />} />
-  <Route path="/products" element={<Products />} />
-  <Route path="/packing-and-shipping" element={<PackingAndShipping />} />
-  <Route path="/categories" element={<Categories />} />
-  <Route path="/sales" element={<Sales />} />
-  <Route path="/support" element={<Support />} />
-  <Route path="/site-settings" element={<Setting />} />
-  
-  {/* 🔽 Newly added routes below */}
-  <Route path="/product/:id" element={<Products />} />
-  <Route path="/category/:id" element={<Categories />} />
-</Routes>
-
+              <Route path="/" element={<Userdashboard categories={categories} />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/packing-and-shipping" element={<PackingAndShipping />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/sales" element={<Sales />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/site-settings" element={<Setting />} />
+              
+              {/* 🔽 Newly added routes below */}
+              <Route path="/product/:id" element={<Products />} />
+              <Route path="/category/:id" element={<Categories />} />
+            </Routes>
           </ErrorBoundary>
         </div>
       </div>

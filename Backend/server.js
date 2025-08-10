@@ -58,10 +58,64 @@ if (!fs.existsSync(imagesPath)) {
 app.use(helmet());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174", "*"],
+    origin: function (origin, callback) {
+      console.log(`🌐 CORS Check - Origin: ${origin}`);
+      
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) {
+        console.log(`✅ Allowing request with no origin`);
+        return callback(null, true);
+      }
+      
+      // Allow localhost origins
+      if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
+        console.log(`✅ Allowing localhost origin: ${origin}`);
+        return callback(null, true);
+      }
+      
+      // Allow dev tunnel origins (including various tunnel services)
+      if (origin.includes('devtunnels.ms') || 
+          origin.includes('ngrok.io') || 
+          origin.includes('tunnel.local') ||
+          origin.includes('loca.lt') ||
+          origin.includes('serveo.net') ||
+          origin.includes('ngrok-free.app')) {
+        console.log(`✅ Allowing dev tunnel origin: ${origin}`);
+        return callback(null, true);
+      }
+      
+      // Allow specific production domains (add your actual domain here)
+      const allowedDomains = [
+        'https://yourdomain.com',
+        'https://www.yourdomain.com'
+      ];
+      
+      if (allowedDomains.includes(origin)) {
+        console.log(`✅ Allowing production domain: ${origin}`);
+        return callback(null, true);
+      }
+      
+      // For development, allow all origins temporarily
+      // IMPORTANT: Remove this in production and only allow specific domains
+      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
+        console.log(`🔓 Development mode: Allowing origin: ${origin}`);
+        return callback(null, true);
+      }
+      
+      console.log(`🚫 CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    exposedHeaders: ['X-Cache'],
+    optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+    preflightContinue: false
   })
 );
+
+// Add CORS preflight handling
+app.options('*', cors());
 app.use(cookieParser());
 app.use(compression());
 app.use(express.json());
@@ -76,6 +130,17 @@ app.use(
 // 🧾 Log all requests
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}, Origin: ${req.headers.origin}, Cookies:`, req.cookies || "None");
+  
+  // Log CORS-related headers for debugging
+  if (req.method === 'OPTIONS') {
+    console.log(`🔄 CORS Preflight Request - Origin: ${req.headers.origin}`);
+    console.log(`🔄 CORS Headers:`, {
+      'access-control-request-method': req.headers['access-control-request-method'],
+      'access-control-request-headers': req.headers['access-control-request-headers'],
+      'origin': req.headers.origin
+    });
+  }
+  
   next();
 });
 
@@ -119,6 +184,31 @@ app.use("/api/site-settings", siteSettingsRoutes);
 app.use("/api/sales", cacheMiddleware(300), salesRoutes);
 app.use("/api/auth", authRoutes);
 
+// 🧪 CORS Test Endpoint
+app.get('/api/cors-test', (req, res) => {
+  res.json({
+    message: 'CORS is working!',
+    timestamp: new Date().toISOString(),
+    origin: req.headers.origin,
+    method: req.method,
+    headers: req.headers
+  });
+});
+
+// 🏥 Health Check Endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    cors: {
+      origin: req.headers.origin,
+      method: req.method
+    }
+  });
+});
+
 //  Custom middleware for images to handle 404 and serve default
 app.use('/images', (req, res, next) => {
   const filePath = path.join(__dirname, 'images', req.path);
@@ -133,6 +223,22 @@ app.use('/images', (req, res, next) => {
 
 // ❌ Global Error Handler
 app.use((err, req, res, next) => {
+  // Handle CORS errors specifically
+  if (err.message === 'Not allowed by CORS') {
+    console.error("🚫 CORS Error:", {
+      message: err.message,
+      origin: req.headers.origin,
+      method: req.method,
+      url: req.url,
+    });
+    return res.status(403).json({ 
+      message: "CORS Error: Origin not allowed", 
+      error: err.message,
+      origin: req.headers.origin,
+      allowedOrigins: "Check server logs for allowed origins"
+    });
+  }
+
   console.error(" Global Error:", {
     message: err.message,
     stack: err.stack,

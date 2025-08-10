@@ -104,7 +104,9 @@ const SearchBar = () => {
                   transition={{ duration: 0.4 }}
                   className="block"
                 >
-                  Try searching “{placeholderTexts[currentIndex]}”
+                  <span className="hidden sm:inline">Try searching "</span>
+                  {placeholderTexts[currentIndex]}
+                  <span className="hidden sm:inline">"</span>
                 </motion.span>
               </AnimatePresence>
             </div>
@@ -120,7 +122,7 @@ const SearchBar = () => {
       </form>
 
       {showDropdown && results.length > 0 && (
-        <div className="absolute bg-white border-2 border-[#101A13] shadow-lg rounded-lg mt-2 w-[25vw] z-50 max-h-60 overflow-y-auto divide-y divide-black">
+        <div className="absolute bg-white border-2 border-[#101A13] shadow-lg rounded-lg mt-2 w-full sm:w-[25vw] max-w-md z-50 max-h-60 overflow-y-auto divide-y divide-black">
           {results.map((item: any) => (
             <div
               key={item._id}

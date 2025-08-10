@@ -78,77 +78,75 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, user, onClose, onChecko
 
   return (
     <div
-      className={`fixed top-0 right-0 h-full w-[40vw] md:w-[30vw]  bg-[#F5F5DC] shadow-lg z-50 border-l border-black rounded-md flex flex-col transition-transform duration-300 transform ${
+      className={`fixed top-0 right-0 h-full w-[90vw] sm:w-[70vw] md:w-[50vw] lg:w-[40vw] xl:w-[30vw] bg-[#F5F5DC] shadow-lg z-50 border-l border-black rounded-md flex flex-col transition-transform duration-300 transform ${
         isOpen ? "translate-x-0" : "translate-x-full"
       }`}
     >
-      <div className="flex justify-between items-center p-4 border-b-2 border-black">
-        <h2 className="text-lg font-bold text-black  textheading uppercase">Your Cart</h2>
+      <div className="flex justify-between items-center p-3 sm:p-4 border-b-2 border-black">
+        <h2 className="text-base sm:text-lg font-bold text-black textheading uppercase">Your Cart</h2>
         <button
           onClick={onClose}
-          className="text-2xl text-red-300 hover:text-red-400 cursor-pointer transition"
+          className="text-xl sm:text-2xl text-red-300 hover:text-red-400 cursor-pointer transition"
         >
           <IoClose />
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4">
         {cartLoading ? (
           <div className="text-center bg-transparent "><Loading/></div>
         ) : cartError ? (
           <div className="text-center text-red-600">{cartError}</div>
         ) : cartItems.length === 0 ? (
-          <div className="text-center text-black font-semibold navfonts text-lg  flex justify-center items-center uppercase  flex-col gap-10">
-            your cart is empty
-            <img src={cartempty} alt="" className="w-60"/>
+          <div className="text-center text-black font-semibold navfonts text-base sm:text-lg flex justify-center items-center uppercase flex-col gap-6 sm:gap-10">
+            <img src={cartempty} alt="Empty Cart" className="w-32 sm:w-40 h-auto" />
+            <p>Your cart is empty</p>
+            <p className="text-sm sm:text-base font-normal normal-case">Add some products to get started!</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            {cartItems.map((item) => (
-              <div
-                key={`${item.productId}-${item.size}`}
-                className="flex items-center gap-4 border-b-1 border-black pb-4 navfonts"
-              >
-                <img
-                  src={item.product.imageUrls[0] || "/placeholder.jpg"}
-                  alt={item.product.name}
-                  className="w-16 h-16 object-cover rounded-md"
-                  onError={() => console.error(`Failed to load cart item image: ${item.product.imageUrls[0]}`)}
-                />
-                <div className="flex-1 navfonts">
-                  <p className="text-sm font-semibold text-black navfonts">{item.product.name}</p>
-                  <p className="text-sm text-gray-600">Size: {item.size}</p>
-                  <p className="text-sm text-gray-600">₹{item.product.price} x {item.quantity}</p>
-                  <p className="text-sm text-green-600 navfonts font-semibold">
-                    Total: ₹{item.product.price * item.quantity}
-                  </p>
-                </div>
-                <button
-                  onClick={() => handleRemoveFromCart(item.productId, item.size)}
-                  className="relative group bg-transparent outline-none cursor-pointer uppercase"
-                >
-                  <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-                  <div className="relative flex items-center justify-center py-2 px-4 text-sm text-black rounded-lg transform -translate-y-1 bg-white transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
-                    <span className="select-none text-xs navfonts font-semibold text-red-400">Remove</span>
+          <div className="space-y-4">
+            {cartItems.map((item, index) => (
+              <div key={`${item.productId}-${item.size}-${index}`} className="border border-gray-300 rounded-lg p-3 sm:p-4 bg-white shadow-sm">
+                <div className="flex items-start gap-3">
+                  <img
+                    src={item.product.imageUrls[0]}
+                    alt={item.product.name}
+                    className="w-16 sm:w-20 h-16 sm:h-20 object-cover rounded-lg flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-black text-sm sm:text-base truncate">{item.product.name}</h3>
+                    <p className="text-gray-600 text-sm">Size: {item.size}</p>
+                    <p className="text-gray-600 text-sm">Quantity: {item.quantity}</p>
+                    <p className="font-bold text-black text-sm sm:text-base">₹{item.product.price}</p>
                   </div>
-                </button>
+                  <button
+                    onClick={() => handleRemoveFromCart(item.productId, item.size)}
+                    className="text-red-500 hover:text-red-700 transition-colors p-1"
+                    aria-label="Remove item"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+      
       {cartItems.length > 0 && (
-        <div className="p-4 border-t border-purple-300">
-          <p className="text-lg font-bold text-green-600 navfonts">
-            Total: ₹{cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0)}
-          </p>
+        <div className="border-t-2 border-black p-3 sm:p-4">
+          <div className="flex justify-between items-center mb-4">
+            <span className="font-bold text-black text-lg">Total:</span>
+            <span className="font-bold text-black text-lg">
+              ₹{cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0)}
+            </span>
+          </div>
           <button
-            className="relative group bg-transparent outline-none cursor-pointer uppercase w-full mt-2"
             onClick={onCheckout}
+            className="w-full bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors text-base sm:text-lg"
           >
-            <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-            <div className="relative flex items-center justify-center py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
-              <span className="select-none text-sm navfonts font-semibold">Checkout</span>
-            </div>
+            Proceed to Checkout
           </button>
         </div>
       )}

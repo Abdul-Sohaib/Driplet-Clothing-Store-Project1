@@ -21,24 +21,34 @@ const menuItems = [
   { label: 'Settings', icon: <IoSettingsSharp className='text-2xl' />, path: '/site-settings' },
 ];
 
-const Sidebar = () => {
-  return (
-    <div className='flex flex-col items-center gap-6  text-black w-fit border-r-1 h-full rounded-r-2xl'>
-      <div className='flex flex-col justify-around items-center h-full p-4'>
-      {/* Logo */}
-      <img src={logo} alt="Driplet Logo" className='w-36' />
+interface SidebarProps {
+  onClose?: () => void;
+}
 
-      {/* Menu Buttons */}
-      <div className='flex flex-col h-fit justify-between items-center gap-5 w-full '>
-        {menuItems.map(({ label, icon, path }) => (
-          <Link to={path} key={label}>
-            <button className='flex gap-2 items-center justify-center  text-white px-5 py-2 rounded-lg  shadow-md transition-all duration-300 w-60 cursor-pointer button-50'>
-              {icon}
-              <span className='font-bold text-sm '>{label}</span>
-            </button>
-          </Link>
-        ))}
-      </div>
+const Sidebar = ({ onClose }: SidebarProps) => {
+  const handleLinkClick = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  return (
+    <div className='flex flex-col items-center gap-6 text-black w-64 lg:w-72 border-r border-gray-200 h-full bg-white shadow-lg lg:shadow-none'>
+      <div className='flex flex-col justify-around items-center h-full p-4 w-full'>
+        {/* Logo */}
+        <img src={logo} alt="Driplet Logo" className='w-32 lg:w-36' />
+
+        {/* Menu Buttons */}
+        <div className='flex flex-col h-fit justify-between items-center gap-4 lg:gap-5 w-full'>
+          {menuItems.map(({ label, icon, path }) => (
+            <Link to={path} key={label} onClick={handleLinkClick} className="w-full">
+              <button className='flex gap-2 items-center justify-center text-white px-4 lg:px-5 py-2 rounded-lg shadow-md transition-all duration-300 w-full cursor-pointer button-50 hover:scale-105'>
+                {icon}
+                <span className='font-bold text-sm'>{label}</span>
+              </button>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

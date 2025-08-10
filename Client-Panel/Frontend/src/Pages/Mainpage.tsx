@@ -157,8 +157,9 @@ const Mainpage = () => {
           <Loading />
         </div>
       ) : (
-        <div className="flex flex-col items-center w-screen gap-16">
-          <div className="grid grid-cols-2 gap-4 justify-center items-center align-middle w-screen p-12">
+        <div className="flex flex-col items-center w-screen gap-8 md:gap-12 lg:gap-16">
+          {/* Hero Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 justify-center items-center align-middle w-screen p-4 sm:p-6 md:p-8 lg:p-12">
             <motion.div
               variants={slideLeft}
               initial="hidden"
@@ -168,7 +169,7 @@ const Mainpage = () => {
               <AdContainer1 />
             </motion.div>
             <div
-              className="flex flex-col h-[80vh] min-h-[400px] rounded-3xl gap-4 items-center justify-center threed"
+              className="flex flex-col h-[60vh] sm:h-[70vh] lg:h-[80vh] min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] rounded-3xl gap-4 items-center justify-center threed"
             >
               <motion.div
                 variants={slideRight(0.5)}
@@ -176,63 +177,60 @@ const Mainpage = () => {
                 animate="visible"
                 className="flex w-full h-full rounded-3xl items-center justify-center"
               >
-         <Canvas
-  dpr={[1, 2]}
-  camera={{ position: [0, 1, 10], fov: 45 }}
-  style={{ width: '100%', height: '100%' }}
->
-  <Suspense
-    fallback={
-      <mesh>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="red" />
-      </mesh>
-    }
-  >
-    <Stage
-      environment="sunset" // warm-toned HDRI
-      adjustCamera={false}
-      intensity={0.9} // slightly softer light
-      shadows="contact" // realistic ground shadows
-    >
-      {/* Warm key light */}
-      <directionalLight
-        position={[5, 5, 5]}
-        intensity={1.5}
-        color="#ffcc88"
-        castShadow
-      />
-      {/* Fill light for softer shadows */}
-      <ambientLight intensity={0.5} color="#ffd9b3" />
-      <TshirtModel position={[0, 16 , 0]} scale={2.5} color="#ff6600" />
-    </Stage>
-  </Suspense>
-</Canvas>
-
+                <Canvas
+                  dpr={[1, 1.5]} // keeps clarity but lighter GPU load
+                  camera={{ position: [0, 1, 6], fov: 45 }}
+                  style={{ width: "100%", height: "100%" }}
+                  shadows
+                >
+                  <Suspense
+                    fallback={
+                      <mesh>
+                        <boxGeometry args={[1, 1, 1]} />
+                        <meshBasicMaterial color="red" /> {/* Basic for speed */}
+                      </mesh>
+                    }
+                  >
+                    <Stage
+                      environment="sunset"
+                      adjustCamera={false}
+                      intensity={1}
+                      shadows="contact"
+                    >
+                      {/* Tshirt Model centered closer to camera */}
+                      <TshirtModel position={[0, 7, 0]} scale={1.5} color="#ff6600" />
+                    </Stage>
+                  </Suspense>
+                </Canvas>
               </motion.div>
             </div>
           </div>
-          <div className="w-screen flex justify-center items-center mt-12">
+
+          {/* Bestseller Intro */}
+          <div className="w-screen flex justify-center items-center mt-8 md:mt-12">
             <Bestsellerintro />
           </div>
+
+          {/* More Bestsellers Button */}
           <motion.div
             variants={slideup(1)}
             initial="hidden"
             animate="visible"
+            className="px-4"
           >
             <button
               onClick={() => navigate("/bestsellers")}
               className="relative group bg-transparent outline-none cursor-pointer uppercase ml-2"
             >
               <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-[250ms] group-active:translate-y-px"></span>
-              <div className="relative flex items-center justify-between py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-[250ms] group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
-                <span className="select-none text-lg navfonts font-semibold">
+              <div className="relative flex items-center justify-between py-3 px-4 sm:px-6 text-base sm:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-[250ms] group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+                <span className="select-none text-base sm:text-lg navfonts font-semibold">
                   MORE BESTSELLERS
                 </span>
                 <svg
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  className="w-5 -ml-1 transition duration-250 group-hover:-translate-x-1"
+                  className="w-4 sm:w-5 -ml-1 transition duration-250 group-hover:-translate-x-1"
                 >
                   <path
                     clipRule="evenodd"
@@ -243,19 +241,25 @@ const Mainpage = () => {
               </div>
             </button>
           </motion.div>
-          <div className="flex h-full rounded-3xl justify-center items-center p-3">
-            <div className="flex justify-center items-center">
+
+          {/* Textarea Section */}
+          <div className="flex h-full rounded-3xl justify-center items-center p-3 w-full">
+            <div className="flex justify-center items-center w-full">
               <Textarea />
             </div>
           </div>
-          <div className="h-[90vh] w-full grid grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr_auto] items-center justify-center mt-10 mb-10 gap-3 p-3">
-            <div className="col-span-3 text-center">
-              <h1 className="text-5xl font-extrabold textheading uppercase">closets of driplet</h1>
+
+          {/* Product Slider Section */}
+          <div className="h-[70vh] sm:h-[80vh] lg:h-[90vh] w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] items-center justify-center mt-8 md:mt-10 mb-8 md:mb-10 gap-3 p-3">
+            <div className="col-span-1 text-center px-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold textheading uppercase">closets of driplet</h1>
             </div>
-            <div className="row-start-2 col-start-2 flex items-center justify-center">
+            <div className="row-start-2 col-start-1 flex items-center justify-center w-full">
               <ProductSlider products={products} />
             </div>
           </div>
+
+          {/* Footer */}
           <div className="flex w-screen justify-center">
             <Footer />
           </div>

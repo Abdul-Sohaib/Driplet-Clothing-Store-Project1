@@ -198,7 +198,7 @@ const Mainpage = () => {
                       shadows="contact"
                     >
                       {/* Tshirt Model centered closer to camera */}
-                      <TshirtModel position={[0, 7, 0]} scale={1.5} color="#ff6600" />
+                      <TshirtModel position={[0, 9, 0]} scale={1.5} color="#ff6600" />
                     </Stage>
                   </Suspense>
                 </Canvas>

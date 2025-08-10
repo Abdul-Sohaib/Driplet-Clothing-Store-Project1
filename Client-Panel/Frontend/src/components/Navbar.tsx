@@ -162,7 +162,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
                   >
                     <Link
                       to={link.to}
-                      className={classNames("text-black font-bold hover:text-purple-600 navfonts text-sm xl:text-md 2xl:text-lg uppercase transition-colors duration-200")}
+                      className={classNames("text-black font-bold hover:text-purple-600 navfonts text-sm xl:text-md 2xl:text-sm uppercase transition-colors duration-200")}
                     >
                       {link.name}
                     </Link>
@@ -242,7 +242,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
           </div>
 
           {/* Mobile Search Bar (shown when menu is closed) */}
-          <div className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
+          <div className={`lg:hidden md:hidden transition-all duration-300 ease-in-out overflow-hidden ${
             !isMobileMenuOpen ? 'max-h-16 opacity-100' : 'max-h-0 opacity-0'
           }`}>
             <div className="px-3 sm:px-4 pb-3">
@@ -332,7 +332,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
                     <Link
                       key={child.name}
                       to={child.to}
-                      className="text-sm xl:text-md 2xl:text-lg text-black hover:text-purple-600 uppercase navfonts font-semibold transition-colors duration-200"
+                      className="text-sm xl:text-md 2xl:text-sm text-black hover:text-purple-600 uppercase navfonts font-semibold transition-colors duration-200"
                     >
                       {child.name}
                     </Link>

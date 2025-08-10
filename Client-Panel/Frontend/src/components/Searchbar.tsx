@@ -80,7 +80,7 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg" ref={ref}>
+    <div className="relative w-full max-w-xs sm:max-w-sm  lg:max-w-lg" ref={ref}>
       <form
         onSubmit={(e) => e.preventDefault()}
         className="flex rounded-lg overflow-hidden border-2 border-[#101A13] shadow-lg px-2 sm:px-3 md:px-4 py-1 bg-[#f9f6ff] relative"

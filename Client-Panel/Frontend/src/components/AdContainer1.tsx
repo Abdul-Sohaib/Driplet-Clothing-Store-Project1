@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { VscRunAll } from "react-icons/vsc";
+// import { VscRunAll } from "react-icons/vsc";
 import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -145,7 +145,7 @@ const AdContainer1 = () => {
               <img
                 src={url}
                 alt={`Banner ${idx}`}
-                className="w-full h-full object-contain object-center"
+                className="w-full h-full object-cover object-center p-2 rounded-3xl"
                 loading="lazy"
               />
 
@@ -180,7 +180,7 @@ const AdContainer1 = () => {
               <button
                 key={idx}
                 className={`
-                  w-1.5 sm:w-2 md:w-3 h-1.5 sm:h-2 md:h-3
+                  w-2 sm:w-2 md:w-3  
                   rounded-full 
                   transition-all duration-300 
                   border 

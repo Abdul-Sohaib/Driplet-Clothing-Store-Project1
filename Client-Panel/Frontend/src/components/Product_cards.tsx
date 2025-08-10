@@ -3,7 +3,7 @@
 import { memo, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AiFillStar } from "react-icons/ai";
-import { IoCartOutline, IoHeartOutline } from "react-icons/io5";
+import { IoCartOutline } from "react-icons/io5";
 import gsap from "gsap";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -233,8 +233,8 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
     <div
       className={`grid grid-cols-1 sm:grid-cols-2 ${
         isFilterVisible 
-          ? "lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" 
-          : "lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+          ? "lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3" 
+          : "lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4"
       } gap-4 sm:gap-6 px-3 sm:px-4 lg:px-6 justify-center`}
     >
       {products.map((product, index) => {

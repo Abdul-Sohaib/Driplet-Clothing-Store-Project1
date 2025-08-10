@@ -159,52 +159,53 @@ const Mainpage = () => {
       ) : (
         <div className="flex flex-col items-center w-screen gap-6 sm:gap-8 md:gap-12 lg:gap-16">
           {/* Hero Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 justify-center items-center align-middle w-screen p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12">
-            <motion.div
-              variants={slideLeft}
-              initial="hidden"
-              animate="visible"
-              className="w-full flex justify-center items-center"
-            >
-              <AdContainer1 />
-            </motion.div>
-            <div
-              className="flex flex-col h-[50vh] sm:h-[55vh] md:h-[60vh] lg:h-[65vh] xl:h-[70vh] 2xl:h-[75vh] min-h-[250px] sm:min-h-[300px] md:min-h-[350px] lg:min-h-[400px] rounded-2xl sm:rounded-3xl gap-4 items-center justify-center threed"
-            >
-              <motion.div
-                variants={slideRight(0.5)}
-                initial="hidden"
-                animate="visible"
-                className="flex w-full h-full rounded-2xl sm:rounded-3xl items-center justify-center"
-              >
-                <Canvas
-                  dpr={[1, 1.5]} // keeps clarity but lighter GPU load
-                  camera={{ position: [0, 1, 6], fov: 45 }}
-                  style={{ width: "100%", height: "100%" }}
-                  shadows
-                >
-                  <Suspense
-                    fallback={
-                      <mesh>
-                        <boxGeometry args={[1, 1, 1]} />
-                        <meshBasicMaterial color="red" /> {/* Basic for speed */}
-                      </mesh>
-                    }
-                  >
-                    <Stage
-                      environment="sunset"
-                      adjustCamera={false}
-                      intensity={1}
-                      shadows="contact"
-                    >
-                      {/* Tshirt Model centered closer to camera */}
-                      <TshirtModel position={[0, 9, 0]} scale={1.5} color="#ff6600" />
-                    </Stage>
-                  </Suspense>
-                </Canvas>
-              </motion.div>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-screen p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 items-stretch">
+  {/* Left Column */}
+  <motion.div
+    variants={slideLeft}
+    initial="hidden"
+    animate="visible"
+    className="w-full flex justify-center items-center h-full"
+  >
+    <AdContainer1 />
+  </motion.div>
+
+  {/* Right Column */}
+  <div className="flex flex-col rounded-2xl sm:rounded-3xl gap-4 items-center justify-center threed h-fit">
+    <motion.div
+      variants={slideRight(0.5)}
+      initial="hidden"
+      animate="visible"
+      className="flex w-full h-full rounded-2xl sm:rounded-3xl items-center justify-center"
+    >
+      <Canvas
+        dpr={[1, 1.5]}
+        camera={{ position: [0, 1, 6], fov: 45 }}
+        style={{ width: "100%", height: "100%" }}
+        shadows
+      >
+        <Suspense
+          fallback={
+            <mesh>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshBasicMaterial color="red" />
+            </mesh>
+          }
+        >
+          <Stage
+            environment="sunset"
+            adjustCamera={false}
+            intensity={1}
+            shadows="contact"
+          >
+            <TshirtModel position={[0, 9, 0]} scale={1.5} color="#ff6600" />
+          </Stage>
+        </Suspense>
+      </Canvas>
+    </motion.div>
+  </div>
+</div>
+
 
           {/* Bestseller Intro */}
           <div className="w-screen flex justify-center items-center mt-4 sm:mt-6 md:mt-8 lg:mt-10 xl:mt-12">

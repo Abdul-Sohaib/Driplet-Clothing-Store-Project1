@@ -106,11 +106,11 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, user, onClose, onChecko
           <div className="space-y-4">
             {cartItems.map((item, index) => (
               <div key={`${item.productId}-${item.size}-${index}`} className="border border-gray-300 rounded-lg p-3 sm:p-4 bg-white shadow-sm">
-                <div className="flex items-start gap-3">
+                <div className="flex items-center gap-5 justify-center">
                   <img
                     src={item.product.imageUrls[0]}
                     alt={item.product.name}
-                    className="w-16 sm:w-20 h-16 sm:h-20 object-cover rounded-lg flex-shrink-0"
+                    className="w-28 sm:w-20 h-20 sm:h-20 object-cover rounded-lg flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-black text-sm sm:text-base truncate">{item.product.name}</h3>
@@ -120,10 +120,10 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, user, onClose, onChecko
                   </div>
                   <button
                     onClick={() => handleRemoveFromCart(item.productId, item.size)}
-                    className="text-red-500 hover:text-red-700 transition-colors p-1"
+                    className="text-red-500 hover:text-red-700 transition-colors p-1 cursor-pointer"
                     aria-label="Remove item"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
@@ -144,7 +144,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, user, onClose, onChecko
           </div>
           <button
             onClick={onCheckout}
-            className="w-full bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors text-base sm:text-lg"
+            className="w-full bg-black text-white py-3 px-4 rounded-lg font-semibold hover:scale-105 transition-transform text-base sm:text-lg cursor-pointer"
           >
             Proceed to Checkout
           </button>

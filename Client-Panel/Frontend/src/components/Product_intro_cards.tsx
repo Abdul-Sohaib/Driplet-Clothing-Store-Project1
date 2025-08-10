@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { AiFillStar } from "react-icons/ai";
+import { IoCartOutline } from "react-icons/io5";
 import gsap from "gsap";
 import { useNavigate } from "react-router-dom";
 import Loading from "./Loading";
@@ -179,11 +180,11 @@ const Bestseller_cards = () => {
   };
 
   if (loading) return <Loading />;
-  if (error) return <div className="text-center text-red-500">{error}</div>;
-  if (products.length === 0) return <div className="text-center text-gray-600">No products available.</div>;
+  if (error) return <div className="text-center text-red-500 text-sm sm:text-base">{error}</div>;
+  if (products.length === 0) return <div className="text-center text-gray-600 text-sm sm:text-base">No products available.</div>;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-3 sm:px-4">
       {products.map((product, index) => {
         let images = product.variants[0]?.imageUrls || [];
         if (!images || images.length === 0) {
@@ -236,14 +237,14 @@ const Bestseller_cards = () => {
   ))
 ) : (
   <div className="w-full h-full flex items-center justify-center bg-gray-200">
-    <span className="text-gray-600 font-semibold">No Image Available</span>
+    <span className="text-gray-600 font-semibold text-sm sm:text-base">No Image Available</span>
   </div>
 )}
 
 
-            <div className="flex justify-between px-3 py-2 text-sm items-center">
+            <div className="flex justify-between px-2 sm:px-3 py-2 text-xs sm:text-sm items-center">
               <div className="flex items-center gap-1 text-orange-500">
-                <AiFillStar className="text-[14px]" />
+                <AiFillStar className="text-[12px] sm:text-[14px]" />
                 4.5 <span className="text-gray-600 ml-1">(241)</span>
               </div>
               <div className="text-xs button-55 text-black bg-transparent w-fit text-center p-1 font-bold navfonts">
@@ -251,26 +252,26 @@ const Bestseller_cards = () => {
               </div>
             </div>
 
-            <div className="px-3 flex gap-2 items-center">
-              <p className="text-lg font-semibold text-black">₹{price}</p>
-              <p className="text-sm line-through text-gray-500">₹{mrp}</p>
-              <p className="text-sm text-green-600 font-semibold">{discount}% OFF</p>
+            <div className="px-2 sm:px-3 flex gap-2 items-center">
+              <p className="text-base sm:text-lg font-semibold text-black">₹{price}</p>
+              <p className="text-xs sm:text-sm line-through text-gray-500">₹{mrp}</p>
+              <p className="text-xs sm:text-sm text-green-600 font-semibold">{discount}% OFF</p>
             </div>
 
-            <div className="px-3 py-1 text-sm text-gray-800 line-clamp-2">
+            <div className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-800 line-clamp-2">
               {product.description}
             </div>
 
             <div
-              className="mx-3 mb-3"
+              className="mx-2 sm:mx-3 mb-3"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex gap-2 flex-wrap mb-2">
+              <div className="flex gap-1 sm:gap-2 flex-wrap mb-2">
                 {product.variants[0]?.sizes.map((size, i) => (
                   <button
                     key={i}
                     onClick={() => setSelectedSizes({ ...selectedSizes, [product.id]: size.size })}
-                    className={`px-3 py-1 border-2 rounded-md text-sm font-semibold navfonts uppercase cursor-pointer ${
+                    className={`px-2 sm:px-3 py-1 border-2 rounded-md text-xs sm:text-sm font-semibold navfonts uppercase cursor-pointer ${
                       selectedSizes[product.id] === size.size
                         ? "border-purple-500 bg-purple-100 text-purple-600"
                         : size.stock > 0
@@ -283,27 +284,33 @@ const Bestseller_cards = () => {
                   </button>
                 ))}
               </div>
-              <div className="grid grid-cols-5 gap-2 border-3 border-black rounded-lg overflow-hidden">
+              <div className="grid grid-cols-5 gap-1 sm:gap-2 border-3 border-black rounded-lg overflow-hidden">
                 <button
-                  className="col-span-4 text-sm font-semibold button-add rounded-md text-black navfonts cursor-pointer flex justify-center items-center"
+                  className="col-span-4 text-xs sm:text-sm font-semibold button-add rounded-md text-black navfonts cursor-pointer flex justify-center items-center gap-1 sm:gap-2 py-2"
                   onClick={() => handleAddToCart(product.id, product.name)}
                   disabled={isAdding[product.id]}
                 >
                   {isAdding[product.id] ? (
-                    <img src={cartgif} alt="Loading..." className="w-10 bg-transparent " />
+                    <img src={cartgif} alt="Loading..." className="w-6 sm:w-8 md:w-10 bg-transparent " />
                   ) : (
-                    "ADD TO CART"
+                    <>
+                      <IoCartOutline className="text-sm sm:text-base" />
+                      <span className="hidden sm:inline">ADD TO CART</span>
+                      <span className="sm:hidden">CART</span>
+                    </>
                   )}
                 </button>
                 <button
-                  className="flex items-center justify-center text-2xl text-gray-600 hover:text-black cursor-pointer"
+                  className="flex items-center justify-center text-lg sm:text-xl md:text-2xl text-gray-600 hover:text-black cursor-pointer p-1"
                   onClick={() => handleAddToWishlist(product.id, product.name)}
                   disabled={isWishlisting[product.id]}
                 >
                   {isWishlisting[product.id] ? (
-                    <span className="text-sm text-red-500 navfonts"><img src={wishlistlike} alt="" className="w-5" /></span>
+                    <span className="text-xs sm:text-sm text-red-500 navfonts">
+                      <img src={wishlistlike} alt="" className="w-4 sm:w-5" />
+                    </span>
                   ) : (
-                    <img src={wishlistlike} alt="" className="w-8" />
+                    <img src={wishlistlike} alt="" className="w-6 sm:w-8" />
                   )}
                 </button>
               </div>

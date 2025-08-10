@@ -80,21 +80,21 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="relative w-full max-w-md" ref={ref}>
+    <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg" ref={ref}>
       <form
         onSubmit={(e) => e.preventDefault()}
-        className="flex rounded-lg overflow-hidden border-2 border-[#101A13] shadow-lg px-4 py-1 bg-[#f9f6ff] relative"
+        className="flex rounded-lg overflow-hidden border-2 border-[#101A13] shadow-lg px-2 sm:px-3 md:px-4 py-1 bg-[#f9f6ff] relative"
       >
         <div className="relative w-full">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-transparent outline-none text-sm text-black placeholder-transparent"
+            className="w-full bg-transparent outline-none text-xs sm:text-sm text-black placeholder-transparent"
           />
           {/* Animated Placeholder */}
           {!query && (
-            <div className="absolute top-1/2 left-0 transform -translate-y-1/2 pointer-events-none text-xs text-black/50 h-[20px] overflow-hidden">
+            <div className="absolute top-1/2 left-0 transform -translate-y-1/2 pointer-events-none text-xs text-black/50 h-[16px] sm:h-[20px] overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={currentIndex}
@@ -115,19 +115,19 @@ const SearchBar = () => {
 
         <button
           type="submit"
-          className="cursor-pointer px-2 py-2 text-[#101A13] hover:text-purple-800 transition-colors"
+          className="cursor-pointer px-1 sm:px-2 py-1 sm:py-2 text-[#101A13] hover:text-purple-800 transition-colors"
         >
-          <TbSearch className="size-6" />
+          <TbSearch className="size-4 sm:size-5 md:size-6" />
         </button>
       </form>
 
       {showDropdown && results.length > 0 && (
-        <div className="absolute bg-white border-2 border-[#101A13] shadow-lg rounded-lg mt-2 w-full sm:w-[25vw] max-w-md z-50 max-h-60 overflow-y-auto divide-y divide-black">
+        <div className="absolute bg-white border-2 border-[#101A13] shadow-lg rounded-lg mt-1 sm:mt-2 w-full z-50 max-h-48 sm:max-h-60 overflow-y-auto divide-y divide-black">
           {results.map((item: any) => (
             <div
               key={item._id}
               onClick={() => handleResultClick(item._id)}
-              className="px-4 py-2 hover:bg-purple-50 cursor-pointer transition-colors"
+              className="px-3 sm:px-4 py-2 hover:bg-purple-50 cursor-pointer transition-colors text-sm sm:text-base"
             >
               {item.name}
             </div>

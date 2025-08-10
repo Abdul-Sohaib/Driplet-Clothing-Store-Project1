@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { Category } from "../Pages/Categories";
 import { FiPlus, FiTrash2, FiSave, FiPackage, FiImage, FiTag } from "react-icons/fi";
 

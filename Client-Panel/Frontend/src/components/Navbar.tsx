@@ -9,6 +9,7 @@ import UserCard from "./UserCard";
 import { BsBox2HeartFill } from "react-icons/bs";
 import { MdOutlineShoppingCartCheckout } from "react-icons/md";
 import { HiMenu, HiX } from "react-icons/hi";
+import { IoPersonCircleOutline } from "react-icons/io5";
 import userprofileimg from '@/assets/back.png';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -140,17 +141,17 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
           }}
         >
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center justify-between px-6 py-3">
-            <div className="flex items-center gap-10">
+          <div className="hidden lg:flex items-center justify-between px-4 xl:px-6 2xl:px-8 py-3">
+            <div className="flex items-center gap-6 xl:gap-10">
               <Link to="/" className="flex items-center">
                 {logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="w-20 object-contain" />
+                  <img src={logoUrl} alt="Logo" className="w-16 xl:w-20 2xl:w-24 object-contain" />
                 ) : (
-                  <span className="text-2xl font-bold">Driplet</span>
+                  <span className="text-xl xl:text-2xl 2xl:text-3xl font-bold">Driplet</span>
                 )}
               </Link>
               <nav
-                className="flex items-center gap-6 relative w-full"
+                className="flex items-center gap-4 xl:gap-6 2xl:gap-8 relative w-full"
                 onMouseEnter={() => setIsHoveringNav(true)}
               >
                 {navLinks.map((link) => (
@@ -161,7 +162,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
                   >
                     <Link
                       to={link.to}
-                      className={classNames("text-black font-bold hover:text-purple-600 navfonts text-md uppercase transition")}
+                      className={classNames("text-black font-bold hover:text-purple-600 navfonts text-sm xl:text-md 2xl:text-lg uppercase transition-colors duration-200")}
                     >
                       {link.name}
                     </Link>
@@ -170,16 +171,16 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
                 ))}
               </nav>
             </div>
-            <div className="flex items-center gap-6 justify-center">
+            <div className="flex items-center gap-4 xl:gap-6 2xl:gap-8 justify-center">
               <SearchBar />
               <div
                 className="relative hover:border-b-3 border-purple-500 active:border-b-3"
                 onMouseEnter={() => setShowUserCard(true)}
               >
                 <button
-                  className="text-2xl text-black hover:text-purple-600 transition cursor-pointer"
+                  className="text-xl xl:text-2xl 2xl:text-3xl text-black hover:text-purple-600 transition-colors duration-200"
                 >
-                  <img src={userprofileimg} alt="Profile" className="rounded-full w-16 bg-transparent" />
+                  <img src={userprofileimg} alt="Profile" className="rounded-full w-12 xl:w-16 2xl:w-20 bg-transparent" />
                 </button>
                 {showUserCard && user && (
                   <UserCard
@@ -191,13 +192,13 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
               </div>
               <button
                 onClick={onWishlistClick}
-                className="text-xl text-red-400 hover:text-red-500 transition cursor-pointer"
+                className="text-lg xl:text-xl 2xl:text-2xl text-red-400 hover:text-red-500 transition-colors duration-200 cursor-pointer"
               >
                 <BsBox2HeartFill />
               </button>
               <button
                 onClick={handleCartClick}
-                className="text-2xl text-black hover:text-purple-600 transition cursor-pointer"
+                className="text-xl xl:text-2xl 2xl:text-3xl text-black hover:text-purple-600 transition-colors duration-200 cursor-pointer"
               >
                 <MdOutlineShoppingCartCheckout />
               </button>
@@ -205,35 +206,47 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
           </div>
 
           {/* Mobile Navigation Header */}
-          <div className="lg:hidden flex items-center justify-between px-4 py-3">
+          <div className="lg:hidden flex items-center justify-between px-3 sm:px-4 py-3">
             <Link to="/" className="flex items-center">
               {logoUrl ? (
-                <img src={logoUrl} alt="Logo" className="w-16 object-contain" />
+                <img src={logoUrl} alt="Logo" className="w-12 sm:w-16 object-contain" />
               ) : (
-                <span className="text-xl font-bold">Driplet</span>
+                <span className="text-lg sm:text-xl font-bold">Driplet</span>
               )}
             </Link>
             
-            <div className="flex items-center gap-4">
-              <SearchBar />
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="hidden sm:block">
+                <SearchBar />
+              </div>
               <button
                 onClick={onWishlistClick}
-                className="text-lg text-red-400 hover:text-red-500 transition cursor-pointer"
+                className="text-lg sm:text-xl text-red-400 hover:text-red-500 transition-colors duration-200 cursor-pointer p-1"
               >
                 <BsBox2HeartFill />
               </button>
               <button
                 onClick={handleCartClick}
-                className="text-lg text-black hover:text-purple-600 transition cursor-pointer"
+                className="text-lg sm:text-xl text-black hover:text-purple-600 transition-colors duration-200 cursor-pointer p-1"
               >
                 <MdOutlineShoppingCartCheckout />
               </button>
               <button
                 onClick={toggleMobileMenu}
-                className="text-2xl text-black hover:text-purple-600 transition cursor-pointer"
+                className="text-xl sm:text-2xl text-black hover:text-purple-600 transition-colors duration-200 cursor-pointer p-1"
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               >
                 {isMobileMenuOpen ? <HiX /> : <HiMenu />}
               </button>
+            </div>
+          </div>
+
+          {/* Mobile Search Bar (shown when menu is closed) */}
+          <div className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
+            !isMobileMenuOpen ? 'max-h-16 opacity-100' : 'max-h-0 opacity-0'
+          }`}>
+            <div className="px-3 sm:px-4 pb-3">
+              <SearchBar />
             </div>
           </div>
 
@@ -241,23 +254,24 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
           <div className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
             isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
           }`}>
-            <div className="px-4 pb-4 border-t border-gray-200">
+            <div className="px-3 sm:px-4 pb-4 border-t border-gray-200">
               {/* User Profile Section */}
               <div className="py-4 border-b border-gray-200">
                 {user ? (
                   <div className="flex items-center gap-3">
-                    <img src={userprofileimg} alt="Profile" className="rounded-full w-12 bg-transparent" />
-                    <div>
-                      <p className="font-semibold text-black">{user.name}</p>
-                      <p className="text-sm text-gray-600">{user.email}</p>
+                    <img src={userprofileimg} alt="Profile" className="rounded-full w-10 sm:w-12 bg-transparent" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-black text-sm sm:text-base truncate">{user.name}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 truncate">{user.email}</p>
                     </div>
                   </div>
                 ) : (
                   <button
                     onClick={() => setShowAuth(true)}
-                    className="w-full text-left py-2 px-3 bg-purple-100 hover:bg-purple-200 rounded-lg transition-colors"
+                    className="w-full text-left py-3 px-4 bg-purple-100 hover:bg-purple-200 rounded-lg transition-colors duration-200 flex items-center gap-2"
                   >
-                    Sign In / Register
+                    <IoPersonCircleOutline className="text-lg" />
+                    <span className="font-semibold">Sign In / Register</span>
                   </button>
                 )}
               </div>
@@ -269,7 +283,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
                     <Link
                       to={link.to}
                       onClick={closeMobileMenu}
-                      className="block py-2 px-3 text-black font-semibold hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors navfonts uppercase"
+                      className="block py-3 px-4 text-black font-semibold hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors duration-200 navfonts uppercase text-sm sm:text-base"
                     >
                       {link.name}
                     </Link>
@@ -280,7 +294,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
                             key={child.name}
                             to={child.to}
                             onClick={closeMobileMenu}
-                            className="block py-1 px-3 text-sm text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors navfonts"
+                            className="block py-2 px-4 text-sm text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors duration-200 navfonts"
                           >
                             {child.name}
                           </Link>
@@ -299,7 +313,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
                       handleLogout();
                       closeMobileMenu();
                     }}
-                    className="w-full text-left py-2 px-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="w-full text-left py-3 px-4 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 font-semibold"
                   >
                     Sign Out
                   </button>
@@ -310,15 +324,15 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
 
           {/* Desktop Dropdown Menu */}
           {activeParent && (
-            <div className="hidden lg:block px-28 pb-4 mt-8 mb-4">
-              <div className="grid grid-cols-3 w-full md:grid-cols-3 gap-10 navfonts">
+            <div className="hidden lg:block px-6 xl:px-28 2xl:px-32 pb-4 mt-8 mb-4">
+              <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 w-full gap-6 xl:gap-10 navfonts">
                 {navLinks
                   .find((p) => p.name === activeParent)
                   ?.children?.map((child) => (
                     <Link
                       key={child.name}
                       to={child.to}
-                      className="text-md text-black hover:text-purple-600 uppercase navfonts font-semibold"
+                      className="text-sm xl:text-md 2xl:text-lg text-black hover:text-purple-600 uppercase navfonts font-semibold transition-colors duration-200"
                     >
                       {child.name}
                     </Link>

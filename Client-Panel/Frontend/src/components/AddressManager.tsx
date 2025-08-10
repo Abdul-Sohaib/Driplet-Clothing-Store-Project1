@@ -117,34 +117,34 @@ const AddressManager = ({
   };
 
   return (
-    <div className="w-fit mx-auto flex flex-col gap-4 ">
+    <div className="w-full max-w-4xl mx-auto flex flex-col gap-3 sm:gap-4">
   <div className="flex flex-col gap-2">
-    <strong className=" text-lg mb-2 navheading tracking-wider">Your Addresses:</strong>
+    <strong className="text-base sm:text-lg mb-2 navheading tracking-wider">Your Addresses:</strong>
     {(!addresses || addresses.length === 0) && (
-      <div className="text-black mb-2  tracking-wide">No saved addresses. Please add one.</div>
+      <div className="text-black mb-2 tracking-wide text-sm sm:text-base">No saved addresses. Please add one.</div>
     )}
     {addresses.map((a, idx) => (
       <div
         key={idx}
-        className={`p-2  rounded-md cursor-pointer flex justify-between items-center font-semibold ${
+        className={`p-2 sm:p-3 rounded-md cursor-pointer flex flex-col sm:flex-row justify-between items-start sm:items-center font-semibold gap-2 sm:gap-4 ${
           selectedAddress === a ? "border-2 border-black" : "border-2 border-black"
         }`}
       >
-        <div onClick={() => setSelectedAddress(a)} className="text-sm">
+        <div onClick={() => setSelectedAddress(a)} className="text-xs sm:text-sm flex-1">
           <div>{a.fullName}, {a.phone}</div>
           <div>{a.addressLine1}, {a.addressLine2}</div>
           <div>{a.city}, {a.state} - {a.pincode}, {a.country}</div>
         </div>
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-1 sm:gap-2">
           <button
             onClick={() => startEditing(a, idx)}
-            className="button-add font-semibold text-xs rounded-md navheading tracking-wider"
+            className="button-add font-semibold text-xs rounded-md navheading tracking-wider px-2 sm:px-3 py-1 sm:py-2"
           >
             Edit
           </button>
           <button
             onClick={() => handleDeleteAddress(idx)}
-            className="button-add font-semibold rounded-md text-xs navheading tracking-wider"
+            className="button-add font-semibold rounded-md text-xs navheading tracking-wider px-2 sm:px-3 py-1 sm:py-2"
           >
             Delete
           </button>
@@ -153,7 +153,7 @@ const AddressManager = ({
     ))}
   </div>
 
-  <form className=" space-y-2 space-x-2 justify-center grid grid-cols-3 items-center" onSubmit={editingAddress ? handleEditAddress : handleAddAddress}>
+  <form className="space-y-2 sm:space-y-3 justify-center grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 items-center" onSubmit={editingAddress ? handleEditAddress : handleAddAddress}>
     <input
       type="text"
       placeholder="Full Name"
@@ -166,7 +166,7 @@ const AddressManager = ({
           setNewAddress({ ...newAddress, fullName: e.target.value });
         }
       }}
-      className="w-fit border border-black rounded px-3 py-2 text-sm"
+      className="w-full border border-black rounded px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm"
     />
     <input
       type="text"
@@ -180,7 +180,7 @@ const AddressManager = ({
           setNewAddress({ ...newAddress, phone: e.target.value });
         }
       }}
-      className="w-fit border border-black rounded px-3 py-2 text-sm"
+      className="w-full border border-black rounded px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm"
     />
     <input
       type="text"
@@ -194,7 +194,7 @@ const AddressManager = ({
           setNewAddress({ ...newAddress, addressLine1: e.target.value });
         }
       }}
-      className="w-fit border border-black rounded px-3 py-2 text-sm"
+      className="w-full border border-black rounded px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm"
     />
     <input
       type="text"
@@ -207,7 +207,7 @@ const AddressManager = ({
           setNewAddress({ ...newAddress, addressLine2: e.target.value });
         }
       }}
-      className="w-fit border border-black rounded px-3 py-2 text-sm"
+      className="w-full border border-black rounded px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm"
     />
     <input
       type="text"
@@ -221,7 +221,7 @@ const AddressManager = ({
           setNewAddress({ ...newAddress, city: e.target.value });
         }
       }}
-      className="w-fit border border-black rounded px-3 py-2 text-sm"
+      className="w-full border border-black rounded px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm"
     />
     <input
       type="text"
@@ -235,7 +235,7 @@ const AddressManager = ({
           setNewAddress({ ...newAddress, state: e.target.value });
         }
       }}
-      className="w-fit border border-black rounded px-3 py-2 text-sm"
+      className="w-full border border-black rounded px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm"
     />
     <input
       type="text"
@@ -249,14 +249,14 @@ const AddressManager = ({
           setNewAddress({ ...newAddress, pincode: e.target.value });
         }
       }}
-      className="w-fit border border-black rounded px-3 py-2 text-sm"
+      className="w-full border border-black rounded px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm"
     />
 
     {/* Submit and Cancel Buttons */}
-    <div className="flex items-center justify-center gap-5 w-full">
+    <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-5 w-full col-span-1 sm:col-span-2 lg:col-span-3">
       <button
         type="submit"
-        className="button-add font-bold rounded-md  text-xs navheading tracking-wider"
+        className="button-add font-bold rounded-md text-xs navheading tracking-wider px-3 sm:px-4 py-2 w-full sm:w-auto"
       >
         {editingAddress ? "Update Address" : "Add Address"}
       </button>
@@ -267,7 +267,7 @@ const AddressManager = ({
             setEditingAddress(null);
             setEditIndex(null);
           }}
-          className=" button-add font-bold rounded-md text-xs navheading tracking-wider"
+          className="button-add font-bold rounded-md text-xs navheading tracking-wider px-3 sm:px-4 py-2 w-full sm:w-auto"
         >
           Cancel
         </button>

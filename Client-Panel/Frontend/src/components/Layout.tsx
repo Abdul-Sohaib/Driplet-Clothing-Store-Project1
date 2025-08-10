@@ -140,7 +140,7 @@ const Layout = () => {
         />
       </motion.div>
 
-      <div className="flex mt-16 lg:mt-20">
+      <div className="flex mt-12 sm:mt-14 md:mt-16 lg:mt-18 xl:mt-20">
         <Outlet />
       </div>
 

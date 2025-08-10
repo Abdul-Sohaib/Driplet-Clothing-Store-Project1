@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { VscRunAll } from "react-icons/vsc";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -121,7 +122,7 @@ const AdContainer1 = () => {
   const loopedBanners = [banners[banners.length - 1], ...banners, banners[0]];
 
   return (
-    <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] bg-gradient-to-br from-[#131313] via-[#1a1a1a] to-[#2b2b2b] rounded-3xl overflow-hidden">
+    <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] xl:h-[75vh] 2xl:h-[80vh] bg-gradient-to-br from-[#131313] via-[#1a1a1a] to-[#2b2b2b] rounded-2xl sm:rounded-3xl overflow-hidden">
       {/* Carousel Container */}
       <div
         className="w-full h-full cursor-pointer"
@@ -144,7 +145,7 @@ const AdContainer1 = () => {
               <img
                 src={url}
                 alt={`Banner ${idx}`}
-                className="w-full h-fit object-contain object-center"
+                className="w-full h-full object-contain object-center"
                 loading="lazy"
               />
 
@@ -152,18 +153,18 @@ const AdContainer1 = () => {
               {idx === current && (
                 <>
                   <button
-                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-purple-300 bg-transparent transition-colors p-1 sm:p-2 rounded-full cursor-pointer z-10"
+                    className="absolute left-1 sm:left-2 md:left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-purple-300 bg-black/20 hover:bg-black/40 backdrop-blur-sm transition-all duration-300 p-1 sm:p-2 md:p-3 rounded-full cursor-pointer z-10 border border-white/20 hover:border-white/40"
                     onClick={handlePrev}
                     aria-label="Previous banner"
                   >
-                    <VscRunAll className="text-lg sm:text-2xl scale-x-[-1]" />
+                    <IoChevronBack className="text-sm sm:text-lg md:text-2xl" />
                   </button>
                   <button
-                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-purple-300 bg-transparent transition-colors p-1 sm:p-2 rounded-full cursor-pointer z-10"
+                    className="absolute right-1 sm:right-2 md:right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-purple-300 bg-black/20 hover:bg-black/40 backdrop-blur-sm transition-all duration-300 p-1 sm:p-2 md:p-3 rounded-full cursor-pointer z-10 border border-white/20 hover:border-white/40"
                     onClick={handleNext}
                     aria-label="Next banner"
                   >
-                    <VscRunAll className="text-lg sm:text-2xl" />
+                    <IoChevronForward className="text-sm sm:text-lg md:text-2xl" />
                   </button>
                 </>
               )}
@@ -172,18 +173,21 @@ const AdContainer1 = () => {
         </div>
 
         {/* Dots */}
-        <div className="absolute bottom-1 w-full flex justify-center gap-2 sm:gap-3 z-20">
+        <div className="absolute bottom-2 sm:bottom-3 md:bottom-4 w-full flex justify-center gap-1 sm:gap-2 md:gap-3 z-20 px-2">
           {banners.map((_, idx) => {
             const isActive = current === idx + 1;
             return (
               <button
                 key={idx}
                 className={`
-                  w-2 sm:w-3 
+                  w-1.5 sm:w-2 md:w-3 h-1.5 sm:h-2 md:h-3
                   rounded-full 
                   transition-all duration-300 
-                  border-2 
-                  ${isActive ? "bg-gradient-to-br from-[#0b0b0b] via-[#1a1a1a] to-[#2e2e2e] border-black scale-110 shadow-lg" : "bg-gray-300 border-gray-400 hover:scale-105 hover:border-black"}
+                  border 
+                  ${isActive 
+                    ? "bg-gradient-to-br from-[#0b0b0b] via-[#1a1a1a] to-[#2e2e2e] border-white scale-110 shadow-lg" 
+                    : "bg-gray-300 border-gray-400 hover:scale-105 hover:border-white"
+                  }
                 `}
                 onClick={() => {
                   setCurrent(idx + 1);

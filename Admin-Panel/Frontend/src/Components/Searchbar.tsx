@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { FiSearch } from "react-icons/fi";
 
 let debounceTimeout: NodeJS.Timeout;
 
@@ -70,74 +71,81 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-96 relative" ref={dropdownRef}>
-      <div className="flex items-center border-2 border-black rounded-lg overflow-hidden">
+    <div className="w-full sm:w-80 lg:w-96 xl:w-[28rem] relative" ref={dropdownRef}>
+      <div className="flex items-center border-2 border-gray-300 hover:border-gray-400 focus-within:border-purple-500 rounded-lg overflow-hidden transition-colors">
+        <div className="pl-3 pr-2">
+          <FiSearch className="w-4 h-4 text-gray-400" />
+        </div>
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search products or categories..."
-          className="w-full px-4 py-2 focus:outline-none"
+          className="w-full px-3 py-2 focus:outline-none text-sm sm:text-base"
         />
       </div>
 
-      
-
       {error && (
-        <div className="absolute bg-white text-red-600 p-4 rounded-lg mt-2 w-full z-10 shadow-md">{error}</div>
+        <div className="absolute bg-white text-red-600 p-3 rounded-lg mt-2 w-full z-10 shadow-md border border-red-200 text-sm">
+          {error}
+        </div>
       )}
 
-{(showDropdown || loading) && (
-  <div className="absolute bg-white shadow-lg p-4 rounded-lg mt-2 w-full z-10 max-h-60 overflow-y-auto">
-    {loading ? (
-      <div className="flex justify-center items-center h-20 w-full">
-        loading.....
-      </div>
-    ) : (results.products.length > 0 || results.categories.length > 0) ? (
-      <>
-        <h3 className="font-bold mb-7 text-xl text-center">Results</h3>
+      {(showDropdown || loading) && (
+        <div className="absolute bg-white shadow-lg p-3 rounded-lg mt-2 w-full z-10 max-h-60 overflow-y-auto border border-gray-200">
+          {loading ? (
+            <div className="flex justify-center items-center h-16 w-full text-gray-500 text-sm">
+              Searching...
+            </div>
+          ) : (results.products.length > 0 || results.categories.length > 0) ? (
+            <>
+              <h3 className="font-bold mb-4 text-lg text-center text-gray-800">Search Results</h3>
 
-        {results.products.length > 0 && (
-          <>
-            <h4 className="font-bold text-lg text-black">Products</h4>
-            {results.products.map((p: any) => (
-              <p
-                key={p._id}
-                onClick={() => handleNavigate("product")}
-                className="cursor-pointer hover:text-blue-600 py-1"
-              >
-                {p.name} <span className="text-xs text-gray-500">(Product)</span>
-              </p>
-            ))}
-          </>
-        )}
+              {results.products.length > 0 && (
+                <>
+                  <h4 className="font-bold text-base text-gray-700 mb-2">Products</h4>
+                  <div className="space-y-1">
+                    {results.products.map((p: any) => (
+                      <div
+                        key={p._id}
+                        onClick={() => handleNavigate("product")}
+                        className="cursor-pointer hover:bg-gray-50 py-2 px-2 rounded text-sm transition-colors"
+                      >
+                        <span className="text-gray-800">{p.name}</span>
+                        <span className="text-xs text-gray-500 ml-2">(Product)</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
 
-        {results.categories.length > 0 && (
-          <>
-            <h4 className="font-bold text-lg text-black mt-2">Categories</h4>
-            {results.categories.map((c: any) => (
-              <p
-                key={c._id}
-                onClick={() => handleNavigate("category")}
-                className="cursor-pointer hover:text-blue-600 py-1"
-              >
-                {c.name} <span className="text-xs text-gray-500">(Category)</span>
-              </p>
-            ))}
-          </>
-        )}
-      </>
-    ) : (
-      <p className="text-gray-600">No results found.</p>
-    )}
-  </div>
-)}
+              {results.categories.length > 0 && (
+                <>
+                  <h4 className="font-bold text-base text-gray-700 mb-2 mt-3">Categories</h4>
+                  <div className="space-y-1">
+                    {results.categories.map((c: any) => (
+                      <div
+                        key={c._id}
+                        onClick={() => handleNavigate("category")}
+                        className="cursor-pointer hover:bg-gray-50 py-2 px-2 rounded text-sm transition-colors"
+                      >
+                        <span className="text-gray-800">{c.name}</span>
+                        <span className="text-xs text-gray-500 ml-2">(Category)</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <p className="text-gray-600 text-sm text-center py-2">No results found.</p>
+          )}
+        </div>
+      )}
 
-
-
-      {showDropdown && results.products.length === 0 && results.categories.length === 0 && (
-        <div className="absolute bg-white shadow-lg p-4 rounded-lg mt-2 w-full z-10">
-          <p className="text-gray-600">No results found.</p>
+      {showDropdown && results.products.length === 0 && results.categories.length === 0 && !loading && (
+        <div className="absolute bg-white shadow-lg p-3 rounded-lg mt-2 w-full z-10 border border-gray-200">
+          <p className="text-gray-600 text-sm text-center">No results found.</p>
         </div>
       )}
     </div>

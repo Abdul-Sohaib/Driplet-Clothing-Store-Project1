@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        .error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .info {
+            border-color: #17a2b8;
+            background-color: #d1ecf1;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 CORS Test Tool</h1>
+    <p>Use this tool to test CORS configuration for your backend server.</p>
+    
+    <div class="test-section">
+        <h3>🌐 Server Information</h3>
+        <p><strong>Backend URL:</strong> <span id="backend-url">http://localhost:5000</span></p>
+        <p><strong>Current Origin:</strong> <span id="current-origin"></span></p>
+        <button onclick="updateBackendUrl()">Change Backend URL</button>
+    </div>
+
+    <div class="test-section">
+        <h3>🏥 Health Check</h3>
+        <p>Test basic connectivity to your backend server.</p>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="health-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🧪 CORS Test</h3>
+        <p>Test CORS configuration with the current origin.</p>
+        <button onclick="testCors()">Test CORS Endpoint</button>
+        <div id="cors-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📁 Categories Test</h3>
+        <p>Test the categories endpoint that was causing CORS issues.</p>
+        <button onclick="testCategories()">Test Categories Endpoint</button>
+        <div id="categories-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔍 Preflight Test</h3>
+        <p>Test CORS preflight request handling.</p>
+        <button onclick="testPreflight()">Test Preflight Request</button>
+        <div id="preflight-result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Display current origin
+        document.getElementById('current-origin').textContent = window.location.origin;
+
+        function updateBackendUrl() {
+            const newUrl = prompt('Enter new backend URL:', 'http://localhost:5000');
+            if (newUrl) {
+                document.getElementById('backend-url').textContent = newUrl;
+            }
+        }
+
+        function getBackendUrl() {
+            return document.getElementById('backend-url').textContent;
+        }
+
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = content;
+            element.style.display = 'block';
+            element.className = `result ${type}`;
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch(`${getBackendUrl()}/api/health`);
+                const data = await response.json();
+                showResult('health-result', 
+                    `✅ Health Check Successful!\n\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('health-result', 
+                    `❌ Health Check Failed!\n\nError: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testCors() {
+            try {
+                const response = await fetch(`${getBackendUrl()}/api/cors-test`);
+                const data = await response.json();
+                showResult('cors-result', 
+                    `✅ CORS Test Successful!\n\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('cors-result', 
+                    `❌ CORS Test Failed!\n\nError: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testCategories() {
+            try {
+                const response = await fetch(`${getBackendUrl()}/api/categories`);
+                const data = await response.json();
+                showResult('categories-result', 
+                    `✅ Categories Test Successful!\n\nStatus: ${response.status}\nCategories Count: ${data.length}\nResponse: ${JSON.stringify(data, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('categories-result', 
+                    `❌ Categories Test Failed!\n\nError: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        async function testPreflight() {
+            try {
+                const response = await fetch(`${getBackendUrl()}/api/health`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers'),
+                    'Access-Control-Allow-Credentials': response.headers.get('Access-Control-Allow-Credentials')
+                };
+
+                showResult('preflight-result', 
+                    `✅ Preflight Test Successful!\n\nStatus: ${response.status}\nCORS Headers: ${JSON.stringify(corsHeaders, null, 2)}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('preflight-result', 
+                    `❌ Preflight Test Failed!\n\nError: ${error.message}`, 
+                    'error'
+                );
+            }
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', () => {
+            console.log('🔧 CORS Test Tool loaded');
+            console.log('Current origin:', window.location.origin);
+            console.log('Backend URL:', getBackendUrl());
+        });
+    </script>
+</body>
+</html>

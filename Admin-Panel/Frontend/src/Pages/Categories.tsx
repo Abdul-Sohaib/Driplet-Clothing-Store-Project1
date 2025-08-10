@@ -98,9 +98,9 @@ const Categories = () => {
     } catch (err) {
       console.error("Error adding category:", err);
       if (err instanceof Error) {
-        alert(`Error adding category: ${err.message}`);
+        alert(err.message);
       } else {
-        alert("Error adding category: An unknown error occurred.");
+        alert("Failed to add category due to an error.");
       }
     } finally {
       setLoading(false);
@@ -181,24 +181,28 @@ const Categories = () => {
   }
 
   return (
-    <>
-    <div className="p-6 space-y-6 bg-gray-100 h-screen">
-    <div className="flex justify-between items-center">
+    <div className="p-2 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6 bg-gray-100 min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
         <button
           onClick={() => navigate("/")}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-all duration-300 cursor-pointer"
+          className="bg-blue-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded text-sm sm:text-base self-start hover:bg-blue-700 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
           disabled={loading}
         >
-          Back to Home
+          <span className="hidden sm:inline">← Back to Home</span>
+          <span className="sm:hidden">← Back</span>
         </button>
-        <h1 className="text-2xl font-bold text-black">Manage Category</h1>
+        <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-black text-center sm:text-left w-full sm:w-auto mt-2 sm:mt-0">
+          Manage Categories
+        </h1>
       </div>
-    <div className="p-6 space-y-6">
-      <CategoryForm onAdd={handleAdd} categories={categories} setLoading={setLoading} loading={loading} />
-      <CategoryList categories={categories} onDelete={handleDelete} onEdit={handleEdit} loading={loading} />
+      
+      {/* Form and List */}
+      <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+        <CategoryForm onAdd={handleAdd} categories={categories} setLoading={setLoading} loading={loading} />
+        <CategoryList categories={categories} onDelete={handleDelete} onEdit={handleEdit} loading={loading} />
+      </div>
     </div>
-    </div>
-    </>
   );
 };
 

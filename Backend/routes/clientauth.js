@@ -4,6 +4,10 @@ const User = require("../models/Client/clientuser");
 const nodemailer = require("nodemailer");
 const authMiddleware = require("../middleware/clientauthmiddleware");
 const { generateReceiptTemplate } = require("./receiptTemplate");
+
+// Import centralized cookie configuration
+const { setAuthCookie, clearAuthCookie } = require("../middleware/cookies");
+
 require("dotenv").config();
 
 const router = express.Router();
@@ -74,12 +78,8 @@ router.post("/register", async (req, res) => {
       expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // Use centralized cookie configuration
+    setAuthCookie(res, token);
 
     res.status(201).json({ message: "User registered successfully", user: { name: user.name, email: user.email }, token });
   } catch (error) {
@@ -115,12 +115,8 @@ router.post("/login", async (req, res) => {
       expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // Use centralized cookie configuration
+    setAuthCookie(res, token);
 
     res.json({ message: "Login successful", user: { name: user.name, email: user.email }, token });
   } catch (error) {
@@ -131,12 +127,8 @@ router.post("/login", async (req, res) => {
 
 router.post("/logout", async (req, res) => {
   try {
-    res.cookie("token", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      expires: new Date(0),
-    });
+    // Use centralized cookie configuration
+    clearAuthCookie(res);
     res.json({ message: "Logout successful" });
   } catch (error) {
     console.error("Logout error:", error);

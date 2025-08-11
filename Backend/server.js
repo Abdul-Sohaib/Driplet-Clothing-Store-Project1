@@ -8,6 +8,10 @@ const cache = require("memory-cache");
 const dotenv = require("dotenv");
 const path = require("path");
 const fs = require("fs");
+
+// Import centralized middleware
+const { corsOptions, preflightCorsOptions } = require('./middleware/cors');
+
 dotenv.config();
 
 const connectDB = require("./config/db");
@@ -66,92 +70,15 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   crossOriginEmbedderPolicy: false
 }));
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      console.log(`🌐 CORS Check - Origin: ${origin}`);
-      console.log(`🌐 CORS Check - NODE_ENV: ${process.env.NODE_ENV}`);
-      
-      // Always allow in development
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`🔓 Development mode: Allowing origin: ${origin}`);
-        return callback(null, origin);
-      }
-      
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) {
-        console.log(`✅ Allowing request with no origin`);
-        return callback(null, true);
-      }
-      
-      // Allow localhost origins
-      if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
-        console.log(`✅ Allowing localhost origin: ${origin}`);
-        return callback(null, origin);
-      }
-      
-      // Allow dev tunnel origins (including various tunnel services)
-      if (origin.includes('devtunnels.ms') || 
-          origin.includes('ngrok.io') || 
-          origin.includes('tunnel.local') ||
-          origin.includes('loca.lt') ||
-          origin.includes('serveo.net') ||
-          origin.includes('ngrok-free.app')) {
-        console.log(`✅ Allowing dev tunnel origin: ${origin}`);
-        return callback(null, origin);
-      }
-      
-      // Allow specific production domains (add your actual domain here)
-      const allowedDomains = [
-        'https://yourdomain.com',
-        'https://www.yourdomain.com'
-      ];
-      
-      if (allowedDomains.includes(origin)) {
-        console.log(`✅ Allowing production domain: ${origin}`);
-        return callback(null, origin);
-      }
-      
-      // If we get here, the origin is not explicitly allowed
-      console.log(`🚫 CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Cookie'],
-    exposedHeaders: ['X-Cache', 'Set-Cookie'],
-    optionsSuccessStatus: 200, // Some legacy browsers choke on 204
-    preflightContinue: false
-  })
-);
+
+// Apply centralized CORS configuration
+// This configuration automatically handles development vs production environments
+// For production, only allows origins specified in config/production.js
+app.use(cors(corsOptions));
 
 // Add CORS preflight handling for all routes
-app.options('*', cors({
-  origin: function (origin, callback) {
-    console.log(`🔄 CORS Preflight - Origin: ${origin}`);
-    console.log(`🔄 CORS Preflight - NODE_ENV: ${process.env.NODE_ENV}`);
-    
-    // Always allow in development
-    if (process.env.NODE_ENV === 'development') {
-      return callback(null, origin);
-    }
-    
-    if (!origin) return callback(null, true);
-    if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
-      return callback(null, origin);
-    }
-    if (origin.includes('ngrok-free.app') || origin.includes('ngrok.io') || origin.includes('devtunnels.ms')) {
-      return callback(null, origin);
-    }
-    // If we get here, the origin is not explicitly allowed
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Cookie'],
-  exposedHeaders: ['X-Cache', 'Set-Cookie'],
-  optionsSuccessStatus: 200
-}));
+// This handles OPTIONS requests for CORS preflight
+app.options('*', cors(preflightCorsOptions));
 app.use(cookieParser());
 app.use(compression());
 app.use(express.json());

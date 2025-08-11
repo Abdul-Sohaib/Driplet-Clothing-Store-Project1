@@ -1,0 +1,66 @@
+/**
+ * Production Configuration
+ * 
+ * This file contains all production-specific configuration settings.
+ * Update these values when deploying to production.
+ * 
+ * IMPORTANT: After updating this file, restart your server for changes to take effect.
+ */
+
+module.exports = {
+  // ============================================================================
+  // NETLIFY FRONTEND DOMAINS - UPDATE THESE WITH YOUR ACTUAL DOMAINS
+  // ============================================================================
+  
+  // Your Netlify client app URL (replace with actual URL)
+  CLIENT_APP_URL: 'https://your-client-app.netlify.app',
+  
+  // Your Netlify admin app URL (replace with actual URL)
+  ADMIN_APP_URL: 'https://your-admin-app.netlify.app',
+  
+  // Custom domain if you have one (optional)
+  CUSTOM_DOMAIN: 'https://your-custom-domain.com',
+  
+  // ============================================================================
+  // COOKIE SETTINGS
+  // ============================================================================
+  
+  // Cookie domain (leave empty for automatic detection)
+  COOKIE_DOMAIN: '',
+  
+  // Cookie path
+  COOKIE_PATH: '/',
+  
+  // ============================================================================
+  // SECURITY SETTINGS
+  // ============================================================================
+  
+  // Rate limiting (requests per 15 minutes per IP)
+  RATE_LIMIT_MAX: 100,
+  
+  // JWT token expiration (in days)
+  JWT_EXPIRY_DAYS: 7,
+  
+  // ============================================================================
+  // CORS SETTINGS
+  // ============================================================================
+  
+  // Whether to allow credentials in CORS
+  CORS_ALLOW_CREDENTIALS: true,
+  
+  // Allowed HTTP methods
+  CORS_ALLOWED_METHODS: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  
+  // Allowed headers
+  CORS_ALLOWED_HEADERS: [
+    'Content-Type',
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Cookie'
+  ],
+  
+  // Exposed headers
+  CORS_EXPOSED_HEADERS: ['X-Cache', 'Set-Cookie']
+};

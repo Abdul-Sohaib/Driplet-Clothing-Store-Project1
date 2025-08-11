@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { IoClose } from "react-icons/io5";
+import { IoIosCloseCircle } from "react-icons/io";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from 'date-fns';
 
@@ -122,17 +122,29 @@ const year = format(now, 'yyyy'); // '2025'
   const buttonClass = "button-add rounded-2xl sm:rounded-3xl font-bold uppercase w-full text-sm sm:text-base py-2 sm:py-3";
 
   return (
-    <div className="fixed  inset-0 bg-black/80 backdrop-blur-sm flex justify-center h-screen w-screen items-center z-50 p-3 sm:p-4">
-      <div className="grid grid-cols-1 md:grid-col-2 max-w-4xl relative rounded-xl overflow-hidden gap-3 sm:gap-4 ">
-        {/* First grid: Login/Register details */}
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center h-screen w-screen z-50 p-2 sm:p-3">
+      <div
+        className="relative flex flex-col md:grid md:grid-cols-[70%_30%_100%] w-full md:max-w-4xl  gap-3 sm:gap-4 rounded-xl overflow-hidden min-h-fit bg-transparent p-5"
+      >
+        {/* First section: Login/Register details */}
         <AnimatePresence>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, delay: 0 }}
-            className="p-4 sm:p-6 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl shadow-lg col-span-1  flex flex-col gap-4 sm:gap-6"
+            className="flex flex-col flex-1 p-4 sm:p-6 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl shadow-lg gap-4 sm:gap-6 min-w-0 min-h-fit w-full md:w-auto md:col-span-1"
           >
+            {/* Close button for small screens (inside first section) */}
+            <div className=" relative top-2 right-2 md:hidden">
+              <button
+                onClick={() => onClose({ name: "", email: "" })}
+                className="text-2xl sm:text-3xl text-red-500 hover:text-red-600 cursor-pointer bg-transparent z-20 p-2 md:p-3"
+                style={{ lineHeight: 1 }}
+              >
+                <IoIosCloseCircle />
+              </button>
+            </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold textheading text-center text-[#FBCA1F] uppercase mb-2 sm:mb-4">
               {forgotMode ? "Reset Password" : isLogin ? "Log in" : "Sign up"}
             </h2>
@@ -260,54 +272,59 @@ const year = format(now, 'yyyy'); // '2025'
           </motion.div>
         </AnimatePresence>
 
-        {/* Second grid: Minimal text and pink circle */}
+        {/* Second section: Minimal text and pink circle - hidden on small screens, cross button on md+ */}
         <AnimatePresence>
-          
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="p-4 sm:p-6 bg-white/10 backdrop-blur-xl border-3 border-white/20 rounded-2xl w-xs sm:rounded-3xl shadow-lg col-span-1  flex items-center justify-center relative showcaseback3"
+            className="hidden md:flex flex-1 items-center justify-start sm:p-6 bg-white/10 backdrop-blur-xl border-3 border-white/20 rounded-2xl sm:rounded-3xl shadow-lg min-w-0 min-h-[180px] md:min-h-0 w-full md:w-auto md:col-span-1 relative showcaseback3"
           >
-            <div className="absolute left-1 flex justify-center h-full  w-1/2 bg-white/5 backdrop-blur-xs border-2 border-white/20 rounded-2xl sm:rounded-3xl z-10" >
-             <div className="flex flex-col w-full h-full justify-between p-4 sm:p-7">
-              <div className="flex flex-col gap-1 sm:gap-2 ">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-black textheading">{month}</h1>
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-medium text-black navfonts">{year}</h2>
+            {/* Close button on the outer container */}
+            <button
+              onClick={() => onClose({ name: "", email: "" })}
+              className="absolute top-2 right-2 text-xl font-bold sm:text-xl md:text-2xl text-red-500 hover:text-red-600 cursor-pointer bg-transparent z-20 p-1 sm:p-2"
+              style={{ lineHeight: 1 }}
+            >
+              <IoIosCloseCircle />
+            </button>
+            <div className="flex justify-start items-center w-fit h-full bg-white/5 backdrop-blur-xs border-2 border-white/20 rounded-2xl sm:rounded-3xl z-10  min-w-0">
+              <div className="flex flex-col w-full h-full justify-between p-2">
+                <div className="flex flex-col gap-1 sm:gap-2">
+                  <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl font-semibold text-black textheading">{month}</h1>
+                  <h2 className="text-xs sm:text-sm md:text-base lg:text-lg font-medium text-black navfonts">{year}</h2>
+                </div>
+                <div className="text-xs sm:text-sm md:text-base lg:text-lg text-center font-bold text-[#FBCA1F] textheading">
+                  <h1>DRIPLET</h1>
+                </div>
+              </div>
             </div>
-
-            <div className="text-lg sm:text-xl text-center font-bold text-[#FBCA1F] textheading">
-            <h1>DRIPLET</h1>
-          </div>
-          </div>
-            </div>
-
           </motion.div>
         </AnimatePresence>
-
-        {/* Third grid: References */}
+        {/* Third section: References/Quote */}
         <AnimatePresence>
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="p-4 sm:p-6 bg-black text-white col-span-1 lg:col-span-2 row-span-1 border-3 border-white/20 flex flex-col sm:flex-row items-center justify-between showcaseback2 rounded-2xl sm:rounded-3xl gap-3 sm:gap-0"
-          >
-            <div className="flex justify-center items-center text-center sm:text-left">
-              <span className="text-base sm:text-lg lg:text-xl font-bold textheading text-[#FBCA1F]">"Wear your attitude. The world will follow your silhouette."</span>
-            </div>
-            <button className="button-add rounded-2xl sm:rounded-3xl font-bold text-black navfonts text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3">Discover</button>
-          </motion.div>
-        </AnimatePresence>
+        <motion.div
+  initial={{ y: 100, opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  exit={{ y: 100, opacity: 0 }}
+  transition={{ duration: 0.5, delay: 0.4 }}
+  className="flex flex-col sm:flex-row flex-wrap items-center justify-center 
+             p-4 sm:p-6 bg-black text-white border-3 border-white/20 showcaseback2 
+             rounded-2xl sm:rounded-3xl gap-3 sm:gap-4 md:col-span-3 
+             text-center w-fit overflow-hidden break-words"
+>
+  <div className="flex justify-center items-center text-center min-w-0 flex-1">
+    <span className="text-xs sm:text-base md:text-sm lg:text-lg font-bold textheading text-[#FBCA1F] px-2">
+      "Wear your attitude. The world will follow your silhouette."
+    </span>
+  </div>
+  <button className="button-add rounded-2xl sm:rounded-3xl font-bold text-black navfonts text-sm sm:text-base px-3 sm:px-4 md:px-6 py-2 sm:py-3 mt-2 sm:mt-0 flex-shrink-0">
+    Discover
+  </button>
+</motion.div>
 
-        <button
-          onClick={() => onClose({ name: "", email: "" })}
-          className="absolute top-1 right-2 text-2xl sm:text-3xl text-red-500 hover:text-red-600 cursor-pointer bg-transparent z-10"
-        >
-          <IoClose />
-        </button>
+        </AnimatePresence>
       </div>
     </div>
   );

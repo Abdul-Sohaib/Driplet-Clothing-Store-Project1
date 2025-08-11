@@ -16,9 +16,9 @@ import type { Product } from "@/components/productslider";
 import Footer from "@/components/Footer";
 import { gsap } from "gsap";
 import { Canvas } from "@react-three/fiber";
-import { Stage } from "@react-three/drei";
+// import { Stage } from "@react-three/drei";
 import { Suspense } from "react";
-// import TshirtModel from "@/components/TshirtModel";
+import TshirtModel from "@/components/TshirtModel";
 
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollSmoother } from "gsap/ScrollSmoother";
@@ -47,6 +47,14 @@ const slideup = (delay = 0) => ({
     transition: { duration: 1, delay },
   },
 });
+
+// Optimized fallback component for better loading experience
+const LoadingFallback = () => (
+  <mesh position={[0, 0, 0]}>
+    <cylinderGeometry args={[1, 1, 2, 8]} />
+    <meshBasicMaterial color="#cccccc" transparent opacity={0.3} />
+  </mesh>
+);
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -159,53 +167,78 @@ const Mainpage = () => {
       ) : (
         <div className="flex flex-col items-center w-screen gap-6 sm:gap-8 md:gap-12 lg:gap-16">
           {/* Hero Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-screen p-3 sm:p-4 md:p-6 md:mt-5 lg:p-8 xl:p-12 items-center sm:mt-20 xs">
-  {/* Left Column */}
-  <motion.div
-    variants={slideLeft}
-    initial="hidden"
-    animate="visible"
-    className="w-full flex justify-center items-center h-full"
-  >
-    <AdContainer1 />
-  </motion.div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-screen p-3 sm:p-4 md:p-6 md:mt-5 lg:p-8 xl:p-12 items-center sm:mt-20 xs">
+            {/* Left Column */}
+            <motion.div
+              variants={slideLeft}
+              initial="hidden"
+              animate="visible"
+              className="w-full flex justify-center items-center h-full"
+            >
+              <AdContainer1 />
+            </motion.div>
 
-  {/* Right Column */}
-  <div className="flex flex-col rounded-2xl sm:rounded-3xl gap-4 items-center justify-center threed h-full">
-    <motion.div
-      variants={slideRight(0.5)}
-      initial="hidden"
-      animate="visible"
-      className="flex w-full h-full rounded-2xl sm:rounded-3xl items-center justify-center"
-    >
-      <Canvas
-        dpr={[1, 1.5]}
-        camera={{ position: [0, 1, 6], fov: 45 }}
-        style={{ width: "100%", height: "100%" }}
-        shadows
-      >
-        <Suspense
-          fallback={
-            <mesh>
-              <boxGeometry args={[1, 1, 1]} />
-              <meshBasicMaterial color="red" />
-            </mesh>
-          }
-        >
-          <Stage
-            environment="sunset"
-            adjustCamera={false}
-            intensity={1}
-            shadows="contact"
-          >
-            {/* <TshirtModel position={[0, 9, 0]} scale={1.5} color="#ff6600" /> */}
-          </Stage>
-        </Suspense>
-      </Canvas>
-    </motion.div>
-  </div>
-</div>
-
+            {/* Right Column - Optimized 3D Canvas */}
+            <div className="flex flex-col rounded-2xl sm:rounded-3xl gap-4 items-center justify-center threed h-full">
+              <motion.div
+                variants={slideRight(0.5)}
+                initial="hidden"
+                animate="visible"
+                className="flex w-full h-full rounded-2xl sm:rounded-3xl items-center justify-center"
+              >
+                <Canvas
+                  dpr={[1, 1.5]}
+                  camera={{ 
+                    position: [0, 1, 6], 
+                    fov: 45,
+                    near: 0.1,
+                    far: 100
+                  }}
+                  style={{ 
+                    width: "100%", 
+                    height: "100%",
+                    background: "transparent"
+                  }}
+                  gl={{ 
+                    antialias: true,
+                    alpha: true,
+                    premultipliedAlpha: false,
+                    powerPreference: "high-performance"
+                  }}
+                  performance={{ min: 0.5 }}
+                >
+                  <Suspense fallback={<LoadingFallback />}>
+                    <ambientLight intensity={2.5} />
+                    <directionalLight 
+                      position={[2, 2, 2]} 
+                      intensity={3.0}
+                      color="#ffffff"
+                    />
+                    <directionalLight 
+                      position={[-2, 2, -2]} 
+                      intensity={2.0}
+                      color="#ffffff"
+                    />
+                    <pointLight 
+                      position={[0, 5, 3]} 
+                      intensity={2.0} 
+                      color="#ffffff"
+                    />
+                    <pointLight 
+                      position={[0, -5, 3]} 
+                      intensity={1.5} 
+                      color="#ffffff"
+                    />
+                    <TshirtModel 
+                      position={[0, 0, 0]} 
+                      scale={1.2} 
+                      color="#ff6600" 
+                    />
+                  </Suspense>
+                </Canvas>
+              </motion.div>
+            </div>
+          </div>
 
           {/* Bestseller Intro */}
           <div className="w-screen flex justify-center items-center mt-4 sm:mt-6 md:mt-8 lg:mt-10 xl:mt-12">
@@ -252,19 +285,19 @@ const Mainpage = () => {
 
           {/* Product Slider Section */}
           <div className="flex flex-col items-center w-screen md:gap-48 xs:gap-48 down">
-          <div className="h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[75vh] xl:h-[80vh] 2xl:h-[85vh] w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] items-center justify-center mt-4 sm:mt-6 md:mt-8 lg:mt-10 xl:mt-12 mb-4 sm:mb-6 md:mb-8 lg:mb-10 xl:mb-12 gap-2 sm:gap-3 p-2 sm:p-3">
-            <div className="col-span-1 text-center px-2 sm:px-4">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold textheading uppercase">closets of driplet</h1>
+            <div className="h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[75vh] xl:h-[80vh] 2xl:h-[85vh] w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] items-center justify-center mt-4 sm:mt-6 md:mt-8 lg:mt-10 xl:mt-12 mb-4 sm:mb-6 md:mb-8 lg:mb-10 xl:mb-12 gap-2 sm:gap-3 p-2 sm:p-3">
+              <div className="col-span-1 text-center px-2 sm:px-4">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold textheading uppercase">closets of driplet</h1>
+              </div>
+              <div className="row-start-2 col-start-1 flex items-center justify-center w-full">
+                <ProductSlider products={products} />
+              </div>
             </div>
-            <div className="row-start-2 col-start-1 flex items-center justify-center w-full">
-              <ProductSlider products={products} />
-            </div>
-          </div>
 
-          {/* Footer */}
-          <div className="flex w-screen justify-center ">
-            <Footer />
-          </div>
+            {/* Footer */}
+            <div className="flex w-screen justify-center">
+              <Footer />
+            </div>
           </div>
         </div>
       )}

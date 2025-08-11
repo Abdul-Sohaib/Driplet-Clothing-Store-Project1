@@ -35,7 +35,13 @@ interface NavbarProps {
   onWishlistClick: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
+interface NavbarProps {
+  user: { name: string; email: string } | null;
+  onLogout: () => void;
+  onClose: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick,onLogout, onClose }) => {
   const [logoUrl, setLogoUrl] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [showUserCard, setShowUserCard] = useState(false);
@@ -216,7 +222,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
             </Link>
             
             <div className="flex items-center gap-2 sm:gap-4">
-              <div className="hidden sm:block">
+              <div className="">
                 <SearchBar />
               </div>
               <button
@@ -241,14 +247,8 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
             </div>
           </div>
 
-          {/* Mobile Search Bar (shown when menu is closed) */}
-          <div className={`lg:hidden md:hidden transition-all duration-300 ease-in-out overflow-hidden ${
-            !isMobileMenuOpen ? 'max-h-16 opacity-100' : 'max-h-0 opacity-0'
-          }`}>
-            <div className="px-3 sm:px-4 pb-3">
-              <SearchBar />
-            </div>
-          </div>
+         
+         
 
           {/* Mobile Menu */}
           <div className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
@@ -258,13 +258,22 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
               {/* User Profile Section */}
               <div className="py-4 border-b border-gray-200">
                 {user ? (
+                  <div className="flex items-center justify-between ">
                   <div className="flex items-center gap-3">
                     <img src={userprofileimg} alt="Profile" className="rounded-full w-10 sm:w-12 bg-transparent" />
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-black text-sm sm:text-base truncate">{user.name}</p>
                       <p className="text-xs sm:text-sm text-gray-600 truncate">{user.email}</p>
+                     
                     </div>
                   </div>
+                     <button  onClick={() => {
+                      onLogout();
+                      onClose();
+                    }}
+                    className="w-fit bg-black text-red-500 p-2 rounded-lg font-bold hover:scale-105 transition-transform text-base sm:text-lg cursor-pointer"
+                    >Log-out</button>
+                   </div>
                 ) : (
                   <button
                     onClick={() => setShowAuth(true)}

@@ -228,10 +228,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
 
   return (
     <div className="flex flex-col gap-3 justify-center inset-0 bg-[#F5F5DC] items-center w-screen px-10">
-      <div className="flex w-screen mt-12 justify-center items-center">
+      <div className="flex w-screen mt-12 justify-start items-center p-2">
         <button
           onClick={() => navigate("/")}
-          className="relative flex w-fit right-[41vw] group bg-transparent outline-none cursor-pointer uppercase"
+          className="relative flex w-fit  group bg-transparent outline-none cursor-pointer uppercase"
         >
           <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
           <div className="relative flex items-center justify-between py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
@@ -372,9 +372,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
           )}
         </div>
       ) : product ? (
-        <div className="flex flex-col w-fit px-2">
-          <div className="flex flex-col md:flex-row justify-between items-start mt-6">
-            <div className="flex justify-between w-full">
+        <div className="flex flex-col w-screen p-1">
+          <div className="flex flex-col md:flex-row justify-evenly items-center mt-6 px-2 w-screen">
+            <div className="flex justify-between w-full @max-sm:flex-col">
             <div className="md:w-[35vw] rounded-3xl">
               {images.length > 0 ? (
                 <div className="w-full overflow-hidden">
@@ -406,7 +406,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
 
             <div className="md:w-1/2 flex flex-col gap-9">
               <h1 className="text-3xl font-semibold text-black tracking-wider navheading uppercase">{product.name}</h1>
-              <div className="flex items-center gap-40">
+              <div className="flex flex-col gap-8 p-2">
+              <div className="flex items-center justify-between">
                 <div className="flex gap-3 items-center tracking-wider navheading">
                   <p className="text-2xl font-bold text-black">₹{price}</p>
                   <p className="text-base line-through text-gray-500">₹{mrp}</p>
@@ -418,12 +419,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                   <span className="text-sm text-gray-600 ml-1 tracking-wider navheading">(166 reviews)</span>
                 </div>
               </div>
-              <div className="flex items-center gap-52 tracking-wider navheading">
+              <div className="flex items-center justify-between tracking-wider navheading  ">
                 <p className="text-lg text-green-600 font-semibold">Stock: {totalStock} left</p>
                 <p className="text-lg text-red-500 font-semibold">Buy 2 Get 1 Free</p>
               </div>
 
-              <div className="flex gap-52 navfonts">
+              <div className="flex justify-between navfonts">
                 <div className="flex gap-2 flex-wrap flex-col">
                   <h3 className="text-lg font-semibold text-black textheading">Variants</h3>
                   {product.variants.map((variant, index) => (
@@ -465,7 +466,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                 </div>
               </div>
 
-              <div className="flex gap-3 w-full justify-around items-center">
+              <div className="flex gap-3 w-full justify-between items-center">
                 <button
                   className="relative group bg-transparent outline-none cursor-pointer uppercase w-full font-bold navfonts"
                   onClick={() => {
@@ -504,8 +505,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                   </div>
                 </button>
               </div>
-
-              <div className="flex flex-col gap-9 navfonts mt-10 justify-between items-center">
+              </div>
+              <div className="flex flex-col gap-9 navfonts mt-10 justify-between items-center ">
                 <h3 className="text-lg font-bold flex justify-center items-center textheading">PRODUCT DETAILS</h3>
                 <ul className="grid grid-cols-3 gap-10">
                   {[
@@ -528,13 +529,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-10 mt-6  w-full justify-between">
+          <div className="flex flex-col md:flex-row gap-10 mt-6   justify-between w-screen p-3">
             <div className="md:w-1/2">
               <Reviews productId={product.id} />
             </div>
             <div className="md:w-1/2 flex flex-col gap-9 navfonts">
               <h2 className="font-bold text-lg text-center textheading">PRODUCT INFORMATION</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-5">
                 {[
                   { title: "Product description", content: product.description },
                   { title: "7 Days Returns & Exchange", content: "Know about return & exchange policy" },

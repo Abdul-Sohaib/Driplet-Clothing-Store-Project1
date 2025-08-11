@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* breakpoints are configured in tailwind.config.ts */
 
 
 :root {
@@ -597,4 +598,33 @@ body {
     0% calc(100% - 20px),  /* bottom-left inner */
     0% 20px  /* top-left inner */
   );
+}
+
+@media (min-width: 425px) {
+  .down {
+    gap: 33vh;
+  }
+}
+@media (min-width: 375px) {
+  .down {
+    gap: 10vh;
+  }
+}
+@media (min-width: 425px) {
+  .xs {
+    margin-top: 6vh;
+  }
+}
+@media (min-width: 375px) {
+  .xs {
+    margin-top: 6vh;
+  }
+}
+
+@media (max-width: 429px) {
+  .product-carousel-section {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
 }

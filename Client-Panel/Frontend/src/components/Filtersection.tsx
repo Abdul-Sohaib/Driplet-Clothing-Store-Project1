@@ -146,17 +146,17 @@ const FilterSection: React.FC<FilterSectionProps> = ({ products, renderProducts 
     <div className="max-w-screen navfonts">
       {/* Toggle Button */}
       <button
-        className="mb-3 sm:mb-4 relative group bg-transparent outline-none cursor-pointer uppercase ml-1 sm:ml-2 navfonts"
+        className="mb-2 sm:mb-3 relative group bg-transparent outline-none cursor-pointer uppercase ml-0 sm:ml-2 navfonts"
         onClick={toggleFilterVisibility}
       >
         <span
     className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-[250ms] group-active:translate-y-px "
   ></span>
   <div
-    className="relative flex items-center justify-between py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-[250ms] group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700"
+    className="relative flex items-center justify-between py-1.5 px-3 sm:py-2 sm:px-4 md:py-3 md:px-6 text-[10px] sm:text-xs md:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-[250ms] group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700"
   >
-  <VscChecklist className="w-4 sm:w-5" />
-    <span className="select-none text-xs navfonts font-semibold">{isFilterVisible ? "Hide Filters" : "Show Filters"}</span>
+  <VscChecklist className="w-3 sm:w-4" />
+    <span className="select-none text-[10px] sm:text-xs navfonts font-semibold">{isFilterVisible ? "Hide Filters" : "Show Filters"}</span>
   </div>
         
       </button>

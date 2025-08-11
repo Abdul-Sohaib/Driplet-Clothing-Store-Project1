@@ -159,7 +159,7 @@ const Mainpage = () => {
       ) : (
         <div className="flex flex-col items-center w-screen gap-6 sm:gap-8 md:gap-12 lg:gap-16">
           {/* Hero Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-screen p-3 sm:p-4 md:p-6 md:mt-5 lg:p-8 xl:p-12 items-center sm:mt-20 @min-xs:mt-20">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-screen p-3 sm:p-4 md:p-6 md:mt-5 lg:p-8 xl:p-12 items-center sm:mt-20 xs">
   {/* Left Column */}
   <motion.div
     variants={slideLeft}
@@ -251,6 +251,7 @@ const Mainpage = () => {
           </div>
 
           {/* Product Slider Section */}
+          <div className="flex flex-col items-center w-screen md:gap-48 xs:gap-48 down">
           <div className="h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[75vh] xl:h-[80vh] 2xl:h-[85vh] w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] items-center justify-center mt-4 sm:mt-6 md:mt-8 lg:mt-10 xl:mt-12 mb-4 sm:mb-6 md:mb-8 lg:mb-10 xl:mb-12 gap-2 sm:gap-3 p-2 sm:p-3">
             <div className="col-span-1 text-center px-2 sm:px-4">
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold textheading uppercase">closets of driplet</h1>
@@ -261,8 +262,9 @@ const Mainpage = () => {
           </div>
 
           {/* Footer */}
-          <div className="flex w-screen justify-center">
+          <div className="flex w-screen justify-center ">
             <Footer />
+          </div>
           </div>
         </div>
       )}

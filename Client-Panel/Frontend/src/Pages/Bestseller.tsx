@@ -71,13 +71,13 @@ const Bestseller = () => {
 
   return (
     <div className="flex flex-col gap-6 sm:gap-8 md:gap-16 px-3 sm:px-4 inset-0 bg-[#F5F5DC]">
-      <div className="flex  lg:flex-row justify-between items-center mt-8 sm:mt-10 md:mt-12 w-full mx-auto gap-4 sm:gap-6">
+      <div className="flex  sm:flex-row justify-between items-center mt-10 sm:mt-10 md:mt-12 w-full mx-auto gap-3 sm:gap-6">
         <button
           onClick={() => window.history.back()}
           className="relative group bg-transparent outline-none cursor-pointer uppercase"
         >
           <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-          <div className="relative flex items-center justify-between py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+          <div className="relative flex items-center justify-between py-1.5 px-3 sm:py-2 sm:px-4 md:py-3 md:px-6 text-[10px] sm:text-xs md:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
             <svg viewBox="0 0 20 20" fill="currentColor" className="w-3 sm:w-4 -ml-1 transition duration-250 group-hover:-translate-x-1">
               <path
                 clipRule="evenodd"
@@ -85,7 +85,7 @@ const Bestseller = () => {
                 d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
               />
             </svg>
-            <span className="select-none text-xs navfonts font-semibold">Back to Home</span>
+            <span className="select-none text-[10px] sm:text-xs navfonts font-semibold">Back to Home</span>
           </div>
         </button>
 
@@ -96,14 +96,14 @@ const Bestseller = () => {
           className="relative group bg-transparent outline-none cursor-pointer uppercase w-fit"
         >
           <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-          <div className="relative flex items-center justify-between py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
-            <VscListFlat className="w-4 sm:w-5 transition duration-250 group-hover:-translate-x-1" />
-            <span className="select-none text-xs navfonts font-semibold">Sort Price: {sortOrder === "low-to-high" ? "Low → High" : "High → Low"}</span>
+          <div className="relative flex items-center justify-between py-1.5 px-3 sm:py-2 sm:px-4 md:py-3 md:px-6 text-[10px] sm:text-xs md:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+            <VscListFlat className="w-3 sm:w-4 transition duration-250 group-hover:-translate-x-1" />
+            <span className="select-none text-[10px] sm:text-xs navfonts font-semibold">Sort: {sortOrder === "low-to-high" ? "Low → High" : "High → Low"}</span>
           </div>
         </button>
         </div>
 
-         <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center textheading uppercase flex justify-center">
+         <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-extrabold text-center textheading uppercase flex justify-center">
           Bestsellers Of Driplet
         </h1>
       

@@ -45,7 +45,7 @@ const Textarea = () => {
 
   return (
     <div className="flex flex-col items-center w-full px-3 sm:px-4">
-      <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold textheading uppercase mt-6 sm:mt-8 md:mt-10 text-center">This ain't fashion. It's Driplet</h2>
+      <h2 className="text-lg xs:text-2xl sm:text-3xl md:text-3xl lg:text-5xl font-extrabold textheading uppercase mt-6 sm:mt-8 md:mt-10 text-center">This ain't fashion. It's Driplet</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 w-full max-w-full h-[40vh] sm:h-[50vh] md:h-[60vh] mt-10 sm:mt-15 md:mt-20 mb-3 sm:mb-5 justify-center items-center">
         {quotes.map((quote, index) => (
           <motion.div

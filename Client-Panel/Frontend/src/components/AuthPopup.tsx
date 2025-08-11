@@ -122,8 +122,8 @@ const year = format(now, 'yyyy'); // '2025'
   const buttonClass = "button-add rounded-2xl sm:rounded-3xl font-bold uppercase w-full text-sm sm:text-base py-2 sm:py-3";
 
   return (
-    <div className="fixed top-[50vh] inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-3 sm:p-4">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr,2fr] grid-rows-[auto,auto,auto] lg:grid-rows-[auto,1fr] w-full max-w-4xl relative rounded-xl overflow-hidden gap-3 sm:gap-4">
+    <div className="fixed  inset-0 bg-black/80 backdrop-blur-sm flex justify-center h-screen w-screen items-center z-50 p-3 sm:p-4">
+      <div className="grid grid-cols-1 md:grid-col-2 max-w-4xl relative rounded-xl overflow-hidden gap-3 sm:gap-4 ">
         {/* First grid: Login/Register details */}
         <AnimatePresence>
           <motion.div
@@ -131,7 +131,7 @@ const year = format(now, 'yyyy'); // '2025'
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, delay: 0 }}
-            className="p-4 sm:p-6 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl shadow-lg col-span-1 row-span-1 flex flex-col gap-4 sm:gap-6"
+            className="p-4 sm:p-6 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl sm:rounded-3xl shadow-lg col-span-1  flex flex-col gap-4 sm:gap-6"
           >
             <h2 className="text-2xl sm:text-3xl font-extrabold textheading text-center text-[#FBCA1F] uppercase mb-2 sm:mb-4">
               {forgotMode ? "Reset Password" : isLogin ? "Log in" : "Sign up"}
@@ -268,9 +268,9 @@ const year = format(now, 'yyyy'); // '2025'
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="p-4 sm:p-6 bg-white/10 backdrop-blur-xl border-3 border-white/20 rounded-2xl sm:rounded-3xl shadow-lg col-span-1 row-span-1 flex items-center justify-center relative showcaseback3"
+            className="p-4 sm:p-6 bg-white/10 backdrop-blur-xl border-3 border-white/20 rounded-2xl w-xs sm:rounded-3xl shadow-lg col-span-1  flex items-center justify-center relative showcaseback3"
           >
-            <div className="absolute left-1 flex justify-center h-[40vh] sm:h-[50vh] lg:h-[54vh] w-1/2 bg-white/5 backdrop-blur-xs border-2 border-white/20 rounded-2xl sm:rounded-3xl z-10" >
+            <div className="absolute left-1 flex justify-center h-full  w-1/2 bg-white/5 backdrop-blur-xs border-2 border-white/20 rounded-2xl sm:rounded-3xl z-10" >
              <div className="flex flex-col w-full h-full justify-between p-4 sm:p-7">
               <div className="flex flex-col gap-1 sm:gap-2 ">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-black textheading">{month}</h1>

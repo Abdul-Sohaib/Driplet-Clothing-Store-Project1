@@ -13,10 +13,10 @@ module.exports = {
   // ============================================================================
   
   // Your Netlify client app URL (replace with actual URL)
-  CLIENT_APP_URL: 'https://your-client-app.netlify.app',
+  CLIENT_APP_URL: 'https://driplet.netlify.app/',
   
   // Your Netlify admin app URL (replace with actual URL)
-  ADMIN_APP_URL: 'https://your-admin-app.netlify.app',
+  ADMIN_APP_URL: 'https://driplet-admin-pannel.netlify.app',
   
   // Custom domain if you have one (optional)
   CUSTOM_DOMAIN: 'https://your-custom-domain.com',

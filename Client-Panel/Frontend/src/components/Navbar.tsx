@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import classNames from "classnames";
 import SearchBar from "./Searchbar";
 import AuthPopup from "./AuthPopup";
@@ -12,7 +12,7 @@ import { HiMenu, HiX } from "react-icons/hi";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import userprofileimg from '@/assets/back.png';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+// API_BASE is now handled by axiosInstance
 
 interface Category {
   id: number;
@@ -55,8 +55,8 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick,onLogout
     const fetchData = async () => {
       try {
         const [logoRes, catRes] = await Promise.all([
-          axios.get(`${API_BASE}/site-settings`, { withCredentials: true }),
-          axios.get(`${API_BASE}/categories`, { withCredentials: true }),
+          axiosInstance.get(`/site-settings`),
+          axiosInstance.get(`/categories`),
         ]);
         setLogoUrl(logoRes.data.logoUrl || "");
         setCategories(catRes.data || []);
@@ -68,7 +68,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick,onLogout
 
     const checkAuth = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/auth/user`, { withCredentials: true });
+        const res = await axiosInstance.get(`/auth/user`);
         setUser(res.data.user || null);
       } catch (err) {
         console.error("Initial auth check error:", (err as any)?.response?.data?.message || (err as any)?.message);
@@ -82,7 +82,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick,onLogout
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${API_BASE}/auth/logout`, {}, { withCredentials: true });
+      await axiosInstance.post(`/auth/logout`, {});
       setUser(null);
       setShowUserCard(false);
       setTimeout(() => setShowAuth(true), 10000);

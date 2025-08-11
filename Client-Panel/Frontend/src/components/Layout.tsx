@@ -2,14 +2,14 @@ import { motion } from "framer-motion";
 import Navbar from "./Navbar";
 import { Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import CartDrawer from "./CartDrawer";
 import WishlistDrawer from "./WishlistDrawer";
 import CheckoutPage from "../Pages/Checkoutpage";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+// API_BASE is now handled by axiosInstance
 
 type Address = {
   fullName: string;
@@ -48,9 +48,7 @@ const Layout = () => {
     // Fetch user
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/auth/user`, {
-          withCredentials: true,
-        });
+        const res = await axiosInstance.get(`/auth/user`);
         if (res.status === 200) {
           setUser(res.data.user || null);
         }
@@ -99,9 +97,7 @@ const Layout = () => {
       return;
     }
     try {
-      const res = await axios.get(`${API_BASE}/cart`, {
-        withCredentials: true,
-      });
+      const res = await axiosInstance.get(`/cart`);
       if (Array.isArray(res.data)) {
         setCartItems(res.data);
         setIsCheckoutOpen(true);
@@ -136,8 +132,11 @@ const Layout = () => {
       >
         <Navbar
           setIsCartOpen={setIsCartOpen}
-          onWishlistClick={handleWishlistClick}
-        />
+          onWishlistClick={handleWishlistClick} user={null} onLogout={function (): void {
+            throw new Error("Function not implemented.");
+          } } onClose={function (): void {
+            throw new Error("Function not implemented.");
+          } }        />
       </motion.div>
 
       <div className="flex mt-12 sm:mt-14 md:mt-16 lg:mt-18 xl:mt-20">

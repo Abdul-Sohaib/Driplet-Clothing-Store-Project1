@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import { toast } from "react-toastify";
 import fashion from "@/assets/fashion.gif"; // Assuming you have a fashion imag
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+// API_BASE is now handled by axiosInstance
 
 interface Category {
   id: number;
@@ -25,7 +25,7 @@ export default function Footer() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const catRes = await axios.get(`${API_BASE}/categories`, { withCredentials: true });
+        const catRes = await axiosInstance.get(`/categories`);
         setCategories(catRes.data || []);
       } catch (err) {
         console.error("Fetch categories error:", err);
@@ -34,7 +34,7 @@ export default function Footer() {
 
     const checkAuth = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/auth/user`, { withCredentials: true });
+        const res = await axiosInstance.get(`/auth/user`);
         setUser(res.data.user || null);
       } catch (err) {
         console.error("Auth check error:", err);

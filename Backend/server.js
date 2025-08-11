@@ -55,11 +55,28 @@ if (!fs.existsSync(imagesPath)) {
 }
 
 // 🔐 Middleware
-app.use(helmet());
+// Ensure NODE_ENV is set for development
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'development';
+  console.log(`🔧 Setting NODE_ENV to 'development'`);
+}
+console.log(`🔧 Environment: NODE_ENV = ${process.env.NODE_ENV}`);
+
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false
+}));
 app.use(
   cors({
     origin: function (origin, callback) {
       console.log(`🌐 CORS Check - Origin: ${origin}`);
+      console.log(`🌐 CORS Check - NODE_ENV: ${process.env.NODE_ENV}`);
+      
+      // Always allow in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔓 Development mode: Allowing origin: ${origin}`);
+        return callback(null, origin);
+      }
       
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) {
@@ -70,7 +87,7 @@ app.use(
       // Allow localhost origins
       if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
         console.log(`✅ Allowing localhost origin: ${origin}`);
-        return callback(null, true);
+        return callback(null, origin);
       }
       
       // Allow dev tunnel origins (including various tunnel services)
@@ -81,7 +98,7 @@ app.use(
           origin.includes('serveo.net') ||
           origin.includes('ngrok-free.app')) {
         console.log(`✅ Allowing dev tunnel origin: ${origin}`);
-        return callback(null, true);
+        return callback(null, origin);
       }
       
       // Allow specific production domains (add your actual domain here)
@@ -92,30 +109,49 @@ app.use(
       
       if (allowedDomains.includes(origin)) {
         console.log(`✅ Allowing production domain: ${origin}`);
-        return callback(null, true);
+        return callback(null, origin);
       }
       
-      // For development, allow all origins temporarily
-      // IMPORTANT: Remove this in production and only allow specific domains
-      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
-        console.log(`🔓 Development mode: Allowing origin: ${origin}`);
-        return callback(null, true);
-      }
-      
+      // If we get here, the origin is not explicitly allowed
       console.log(`🚫 CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    exposedHeaders: ['X-Cache'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Cookie'],
+    exposedHeaders: ['X-Cache', 'Set-Cookie'],
     optionsSuccessStatus: 200, // Some legacy browsers choke on 204
     preflightContinue: false
   })
 );
 
-// Add CORS preflight handling
-app.options('*', cors());
+// Add CORS preflight handling for all routes
+app.options('*', cors({
+  origin: function (origin, callback) {
+    console.log(`🔄 CORS Preflight - Origin: ${origin}`);
+    console.log(`🔄 CORS Preflight - NODE_ENV: ${process.env.NODE_ENV}`);
+    
+    // Always allow in development
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, origin);
+    }
+    
+    if (!origin) return callback(null, true);
+    if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
+      return callback(null, origin);
+    }
+    if (origin.includes('ngrok-free.app') || origin.includes('ngrok.io') || origin.includes('devtunnels.ms')) {
+      return callback(null, origin);
+    }
+    // If we get here, the origin is not explicitly allowed
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'Cookie'],
+  exposedHeaders: ['X-Cache', 'Set-Cookie'],
+  optionsSuccessStatus: 200
+}));
 app.use(cookieParser());
 app.use(compression());
 app.use(express.json());
@@ -140,6 +176,9 @@ app.use((req, res, next) => {
       'origin': req.headers.origin
     });
   }
+  
+  // CORS headers are handled by the CORS middleware above
+  // No need to manually set them here
   
   next();
 });
@@ -186,12 +225,20 @@ app.use("/api/auth", authRoutes);
 
 // 🧪 CORS Test Endpoint
 app.get('/api/cors-test', (req, res) => {
+  console.log(`🧪 CORS Test Request - Origin: ${req.headers.origin}`);
+  console.log(`🧪 CORS Test - All Headers:`, req.headers);
+  
   res.json({
     message: 'CORS is working!',
     timestamp: new Date().toISOString(),
     origin: req.headers.origin,
     method: req.method,
-    headers: req.headers
+    headers: req.headers,
+    corsInfo: {
+      allowCredentials: true,
+      allowOrigin: req.headers.origin,
+      allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+    }
   });
 });
 

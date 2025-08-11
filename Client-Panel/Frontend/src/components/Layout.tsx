@@ -132,11 +132,8 @@ const Layout = () => {
       >
         <Navbar
           setIsCartOpen={setIsCartOpen}
-          onWishlistClick={handleWishlistClick} user={null} onLogout={function (): void {
-            throw new Error("Function not implemented.");
-          } } onClose={function (): void {
-            throw new Error("Function not implemented.");
-          } }        />
+          onWishlistClick={handleWishlistClick}
+        />
       </motion.div>
 
       <div className="flex mt-12 sm:mt-14 md:mt-16 lg:mt-18 xl:mt-20">

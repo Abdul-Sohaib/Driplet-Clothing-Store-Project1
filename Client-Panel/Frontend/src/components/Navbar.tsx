@@ -10,6 +10,7 @@ import { BsBox2HeartFill } from "react-icons/bs";
 import { MdOutlineShoppingCartCheckout } from "react-icons/md";
 import { HiMenu, HiX } from "react-icons/hi";
 import { IoPersonCircleOutline } from "react-icons/io5";
+import { RiLogoutCircleRFill } from "react-icons/ri";
 import userprofileimg from '@/assets/back.png';
 
 // API_BASE is now handled by axiosInstance
@@ -35,13 +36,7 @@ interface NavbarProps {
   onWishlistClick: () => void;
 }
 
-interface NavbarProps {
-  user: { name: string; email: string } | null;
-  onLogout: () => void;
-  onClose: () => void;
-}
-
-const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick,onLogout, onClose }) => {
+const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
   const [logoUrl, setLogoUrl] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [showUserCard, setShowUserCard] = useState(false);
@@ -247,9 +242,6 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick,onLogout
             </div>
           </div>
 
-         
-         
-
           {/* Mobile Menu */}
           <div className={`lg:hidden transition-all duration-300 ease-in-out overflow-hidden ${
             isMobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
@@ -258,22 +250,28 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick,onLogout
               {/* User Profile Section */}
               <div className="py-4 border-b border-gray-200">
                 {user ? (
-                  <div className="flex items-center justify-between ">
-                  <div className="flex items-center gap-3">
-                    <img src={userprofileimg} alt="Profile" className="rounded-full w-10 sm:w-12 bg-transparent" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-black text-sm sm:text-base truncate">{user.name}</p>
-                      <p className="text-xs sm:text-sm text-gray-600 truncate">{user.email}</p>
-                     
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <img src={userprofileimg} alt="Profile" className="rounded-full w-10 sm:w-12 bg-transparent" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-black text-sm sm:text-base truncate">{user.name}</p>
+                        <p className="text-xs sm:text-sm text-gray-600 truncate">{user.email}</p>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="relative group bg-transparent outline-none cursor-pointer uppercase"
+                    >
+                      <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
+                      <div className="relative flex items-center justify-between py-2 sm:py-3 px-4 sm:px-6 text-base sm:text-lg text-white rounded-lg transform -translate-y-1 bg-red-500 gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+                        <span className="select-none text-xs navfonts font-semibold">Logout</span>
+                        <RiLogoutCircleRFill className="w-4 sm:w-5 transition duration-250 group-hover:-translate-x-1" />
+                      </div>
+                    </button>
                   </div>
-                     <button  onClick={() => {
-                      onLogout();
-                      onClose();
-                    }}
-                    className="w-fit bg-black text-red-500 p-2 rounded-lg font-bold hover:scale-105 transition-transform text-base sm:text-lg cursor-pointer"
-                    >Log-out</button>
-                   </div>
                 ) : (
                   <button
                     onClick={() => setShowAuth(true)}
@@ -313,21 +311,6 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick,onLogout
                   </div>
                 ))}
               </nav>
-
-              {/* User Actions */}
-              {user && (
-                <div className="pt-4 border-t border-gray-200">
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      closeMobileMenu();
-                    }}
-                    className="w-full text-left py-3 px-4 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 font-semibold"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 

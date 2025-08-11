@@ -13,7 +13,7 @@ module.exports = {
   // ============================================================================
   
   // Your Netlify client app URL (replace with actual URL)
-  CLIENT_APP_URL: 'https://driplet.netlify.app/',
+  CLIENT_APP_URL: 'https://driplet.netlify.app',
   
   // Your Netlify admin app URL (replace with actual URL)
   ADMIN_APP_URL: 'https://driplet-admin-pannel.netlify.app',

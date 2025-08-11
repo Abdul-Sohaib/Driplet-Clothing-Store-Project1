@@ -61,12 +61,12 @@ Includes a **custom-built Admin Panel** & **Client Panel** with seamless UI/UX, 
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
-### 🖥️ Admin Panel
+###  Admin Panel
 ![Admin Panel](asset/adminhome.png)
 
-### 👕 Client Panel
+###  Client Panel
 ![Client Storefront](asset/clienthome.png)
 
 > *Note:* Replace `assets/admin-dashboard.png` and `assets/client-home.png` with actual screenshots from your project.
@@ -86,7 +86,7 @@ Includes a **custom-built Admin Panel** & **Client Panel** with seamless UI/UX, 
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer         | Technology |
 |---------------|------------|
@@ -110,18 +110,18 @@ Driplet-Clothing-Store-Project1/
 
 
 
-## ⚡ Getting Started
+##  Getting Started
 
-1️⃣ Clone the repo:
+1️ Clone the repo:
 ```bash
 git clone https://github.com/Abdul-Sohaib/Driplet-Clothing-Store-Project1.git
-2️⃣ Install dependencies for each folder:
+2️ Install dependencies for each folder:
 
 
 cd admin && npm install
 cd ../backend && npm install
 cd ../client && npm install
-3️⃣ Create .env files in each relevant folder with:
+3️ Create .env files in each relevant folder with:
 
 Clerk Keys
 
@@ -133,7 +133,7 @@ MongoDB URI
 
 Cloudinary Credentials
 
-4️⃣ Run the development servers:
+4️ Run the development servers:
 
 # Admin
 cd admin
@@ -146,10 +146,10 @@ npm run dev
 # Client
 cd client
 npm run dev
-📧 Contact
+ Contact
 Developer: Abdul Sohaib
 LinkedIn | GitHub
 
-📜 License
+ License
 This project is licensed under the MIT License.
 >>>>>>> a909a49a74d02d18ae9718545c44e1e464f30903

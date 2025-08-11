@@ -70,8 +70,8 @@ const Bestseller = () => {
   if (error) return <div className="text-center text-red-500 text-sm sm:text-base">{error}</div>;
 
   return (
-    <div className="flex flex-col gap-6 sm:gap-8 md:gap-10 px-3 sm:px-4 inset-0 bg-[#F5F5DC]">
-      <div className="flex flex-col lg:flex-row justify-between items-center mt-8 sm:mt-10 md:mt-12 w-full mx-auto gap-4 sm:gap-6">
+    <div className="flex flex-col gap-6 sm:gap-8 md:gap-16 px-3 sm:px-4 inset-0 bg-[#F5F5DC]">
+      <div className="flex  lg:flex-row justify-between items-center mt-8 sm:mt-10 md:mt-12 w-full mx-auto gap-4 sm:gap-6">
         <button
           onClick={() => window.history.back()}
           className="relative group bg-transparent outline-none cursor-pointer uppercase"
@@ -89,9 +89,7 @@ const Bestseller = () => {
           </div>
         </button>
 
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center textheading uppercase flex justify-center">
-          Bestsellers Of Driplet
-        </h1>
+       
 
         <button
           onClick={handleSortToggle}
@@ -103,7 +101,12 @@ const Bestseller = () => {
             <span className="select-none text-xs navfonts font-semibold">Sort Price: {sortOrder === "low-to-high" ? "Low → High" : "High → Low"}</span>
           </div>
         </button>
-      </div>
+        </div>
+
+         <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center textheading uppercase flex justify-center">
+          Bestsellers Of Driplet
+        </h1>
+      
 
       <FilterSection
         products={products}

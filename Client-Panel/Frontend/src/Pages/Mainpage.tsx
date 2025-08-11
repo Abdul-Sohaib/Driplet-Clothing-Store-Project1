@@ -18,7 +18,7 @@ import { gsap } from "gsap";
 import { Canvas } from "@react-three/fiber";
 import { Stage } from "@react-three/drei";
 import { Suspense } from "react";
-import TshirtModel from "@/components/TshirtModel";
+// import TshirtModel from "@/components/TshirtModel";
 
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollSmoother } from "gsap/ScrollSmoother";
@@ -159,7 +159,7 @@ const Mainpage = () => {
       ) : (
         <div className="flex flex-col items-center w-screen gap-6 sm:gap-8 md:gap-12 lg:gap-16">
           {/* Hero Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-screen p-3 sm:p-4 md:p-6 lg:p-8 xl:p-12 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-screen p-3 sm:p-4 md:p-6 md:mt-5 lg:p-8 xl:p-12 items-center sm:mt-20 @min-xs:mt-20">
   {/* Left Column */}
   <motion.div
     variants={slideLeft}
@@ -171,7 +171,7 @@ const Mainpage = () => {
   </motion.div>
 
   {/* Right Column */}
-  <div className="flex flex-col rounded-2xl sm:rounded-3xl gap-4 items-center justify-center threed h-fit">
+  <div className="flex flex-col rounded-2xl sm:rounded-3xl gap-4 items-center justify-center threed h-full">
     <motion.div
       variants={slideRight(0.5)}
       initial="hidden"
@@ -198,7 +198,7 @@ const Mainpage = () => {
             intensity={1}
             shadows="contact"
           >
-            <TshirtModel position={[0, 9, 0]} scale={1.5} color="#ff6600" />
+            {/* <TshirtModel position={[0, 9, 0]} scale={1.5} color="#ff6600" /> */}
           </Stage>
         </Suspense>
       </Canvas>

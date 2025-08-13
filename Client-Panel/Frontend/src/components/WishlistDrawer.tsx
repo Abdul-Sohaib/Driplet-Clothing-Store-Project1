@@ -103,7 +103,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, user, onClose }
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div
-        className="absolute inset-0 backdrop-blur-md bg-opacity-50"
+        className="absolute inset-0  bg-opacity-50"
         onClick={onClose}
       ></div>
       <div className="w-full xs:w-[90vw] sm:w-[70vw] md:w-[50vw] lg:w-[40vw] xl:w-[30vw] bg-[#F5F5DC] h-full shadow-lg flex flex-col z-50 rounded-md border border-black transition-transform duration-300 ease-in-out">

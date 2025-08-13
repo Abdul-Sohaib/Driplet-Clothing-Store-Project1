@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -47,35 +49,52 @@ const AddressManager = ({
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setAddresses([]);
+      setSelectedAddress(null);
+      return;
+    }
     const fetchAddresses = async () => {
       try {
-        const response = await axios.get(`${API_BASE}/auth/user-details`, { withCredentials: true });
-        setAddresses(response.data.addresses || []);
-      } catch (err) {
-        console.error("Fetch addresses error:", err);
+        const response = await axios.get(`${API_BASE}/auth/addresses`, { withCredentials: true });
+        console.log("Addresses fetch response:", response.data);
+        const fetchedAddresses = response.data.addresses || [];
+        setAddresses(fetchedAddresses);
+        if (fetchedAddresses.length > 0 && !selectedAddress) {
+          setSelectedAddress(fetchedAddresses[fetchedAddresses.length - 1]);
+        }
+      } catch (err: any) {
+        console.error("Fetch addresses error:", err.response?.data?.message || err.message);
         setAddresses([]);
         toast.error("Failed to fetch addresses.");
       }
     };
     fetchAddresses();
-  }, [user]);
+  }, [user, setSelectedAddress]);
 
   const handleAddAddress = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     try {
+      console.log("Add address attempt:", newAddress);
       const response = await axios.post(`${API_BASE}/auth/address`, newAddress, { withCredentials: true });
       const updatedAddresses = response.data.addresses || [];
+      console.log("Add address response:", updatedAddresses);
       setAddresses(updatedAddresses);
       setNewAddress({
-        fullName: "", phone: "", addressLine1: "", addressLine2: "",
-        city: "", state: "", pincode: "", country: "India"
+        fullName: "",
+        phone: "",
+        addressLine1: "",
+        addressLine2: "",
+        city: "",
+        state: "",
+        pincode: "",
+        country: "India",
       });
       setSelectedAddress(updatedAddresses[updatedAddresses.length - 1]);
       toast.success("Address added successfully!");
-    } catch (err) {
-      console.error("Add address error:", err);
-      toast.error("Failed to add address. Please try again.");
+    } catch (err: any) {
+      console.error("Add address error:", err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || "Failed to add address. Please try again.");
     }
   };
 
@@ -83,31 +102,35 @@ const AddressManager = ({
     e.preventDefault();
     if (editIndex === null || !editingAddress) return;
     try {
+      console.log("Edit address attempt:", { index: editIndex, address: editingAddress });
       const response = await axios.put(`${API_BASE}/auth/address/${editIndex}`, editingAddress, { withCredentials: true });
       const updatedAddresses = response.data.addresses || [];
+      console.log("Edit address response:", updatedAddresses);
       setAddresses(updatedAddresses);
       setEditingAddress(null);
       setEditIndex(null);
       setSelectedAddress(updatedAddresses[editIndex] || null);
       toast.success("Address updated successfully!");
-    } catch (err) {
-      console.error("Edit address error:", err);
-      toast.error("Failed to update address. Please try again.");
+    } catch (err: any) {
+      console.error("Edit address error:", err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || "Failed to update address. Please try again.");
     }
   };
 
   const handleDeleteAddress = async (index: number) => {
     try {
+      console.log("Delete address attempt:", { index });
       const response = await axios.delete(`${API_BASE}/auth/address/${index}`, { withCredentials: true });
       const updatedAddresses = response.data.addresses || [];
+      console.log("Delete address response:", updatedAddresses);
       setAddresses(updatedAddresses);
       if (selectedAddress && selectedAddress === addresses[index]) {
-        setSelectedAddress(null);
+        setSelectedAddress(updatedAddresses.length > 0 ? updatedAddresses[updatedAddresses.length - 1] : null);
       }
       toast.success("Address deleted successfully!");
-    } catch (err) {
-      console.error("Delete address error:", err);
-      toast.error("Failed to delete address. Please try again.");
+    } catch (err: any) {
+      console.error("Delete address error:", err.response?.data?.message || err.message);
+      toast.error(err.response?.data?.message || "Failed to delete address. Please try again.");
     }
   };
 

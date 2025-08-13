@@ -54,7 +54,7 @@ export default tseslint.config({
 })
 ```
 =======
-# 🛍️ Driplet Clothing Store – Full-Stack MERN eCommerce Platform
+#  Driplet Clothing Store – Full-Stack MERN eCommerce Platform
 
 A **fashion-focused**, **secure**, and **scalable** full-stack eCommerce platform for customizable T-shirt sales.  
 Includes a **custom-built Admin Panel** & **Client Panel** with seamless UI/UX, secure authentication, and integrated payments.
@@ -75,14 +75,14 @@ Includes a **custom-built Admin Panel** & **Client Panel** with seamless UI/UX, 
 
 ## 🚀 Features
 
-✅ **Custom Admin Panel** – Manage products, orders, and inventory  
-✅ **Client Panel** – Responsive & fashion-first shopping experience  
-✅ **Authentication** – Clerk for Admin, JWT for Clients  
-✅ **Payments** – Razorpay (Test Mode) integration  
-✅ **Cloud Storage** – Cloudinary for images & videos  
-✅ **Automated Emails** – Order confirmation & details sent instantly  
-✅ **Free Shipping Integration**  
-✅ **Responsive UI** – Optimized for all devices  
+ 1.**Custom Admin Panel** – Manage products, orders, and inventory  
+ 2.**Client Panel** – Responsive & fashion-first shopping experience  
+ 3.**Authentication** – Clerk for Admin, JWT for Clients  
+ 4.**Payments** – Razorpay (Test Mode) integration  
+ 5.**Cloud Storage** – Cloudinary for images & videos  
+ 6.**Automated Emails** – Order confirmation & details sent instantly  
+ 7.**Free Shipping Integration**  
+ 8.**Responsive UI** – Optimized for all devices  
 
 ---
 

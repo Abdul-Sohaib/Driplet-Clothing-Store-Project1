@@ -122,7 +122,7 @@ const SearchBar = () => {
       </form>
 
       {showDropdown && results.length > 0 && (
-        <div className="absolute bg-white border-2 border-[#101A13] shadow-lg rounded-lg mt-1 sm:mt-2 w-full z-50 max-h-48 sm:max-h-60 overflow-y-auto divide-y divide-black">
+        <div className="absolute bg-white border-2 border-[#101A13] shadow-lg rounded-lg mt-1 sm:mt-2 w-full  z-50 max-h-48 sm:max-h-60  overflow-y-auto divide-y divide-black">
           {results.map((item: any) => (
             <div
               key={item._id}

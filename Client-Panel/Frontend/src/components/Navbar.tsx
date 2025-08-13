@@ -86,7 +86,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
     }
   };
 
-  const handleAuthSuccess = (user: User) => {
+  const handleAuthSuccess = (user: User | null) => {
     setUser(user);
     setShowAuth(false);
   };

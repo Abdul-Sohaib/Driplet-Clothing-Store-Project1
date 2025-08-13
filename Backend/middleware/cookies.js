@@ -2,7 +2,7 @@
  * Centralized Cookie Configuration
  * 
  * DEVELOPMENT MODE: httpOnly: true, secure: false, sameSite: 'lax'
- * PRODUCTION MODE: httpOnly: true, secure: true, sameSite: 'none'
+ * PRODUCTION MODE: httpOnly: true, secure: true, sameSite: 'strict'
  * 
  * TO UPDATE FOR PRODUCTION:
  * 1. Set NODE_ENV=production
@@ -18,7 +18,7 @@ const prodConfig = require('../config/production');
  * @returns {Object} Cookie configuration object
  */
 const getCookieOptions = (options = {}) => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isDevelopment = process.env.NODE_ENV !== 'production';
   
   const baseOptions = {
     httpOnly: true,
@@ -26,6 +26,8 @@ const getCookieOptions = (options = {}) => {
     path: '/',
     ...options
   };
+  
+  console.log(`🍪 Cookie Options - Environment: ${isDevelopment ? 'development' : 'production'}, Domain: ${prodConfig.COOKIE_DOMAIN || prodConfig.CLIENT_APP_URL}`);
   
   if (isDevelopment) {
     return {
@@ -38,8 +40,8 @@ const getCookieOptions = (options = {}) => {
   return {
     ...baseOptions,
     secure: true,
-    sameSite: 'none', // Test on mobile browsers
-    domain: prodConfig.COOKIE_DOMAIN || prodConfig.CLIENT_APP_URL.replace(/^https?:\/\//, '')
+    sameSite: 'strict', // Changed to 'strict' for better security and compatibility
+    domain: prodConfig.COOKIE_DOMAIN || new URL(prodConfig.CLIENT_APP_URL).hostname
   };
 };
 
@@ -55,6 +57,8 @@ const setAuthCookie = (res, token, options = {}) => {
     ...options
   });
   
+  console.log(`🍪 Setting auth cookie: token=${token.substring(0, 10)}..., options=`, cookieOptions);
+  
   res.cookie('token', token, cookieOptions);
 };
 
@@ -66,6 +70,8 @@ const clearAuthCookie = (res) => {
   const cookieOptions = getCookieOptions({
     expires: new Date(0)
   });
+  
+  console.log(`🍪 Clearing auth cookie`);
   
   res.cookie('token', '', cookieOptions);
 };
@@ -82,6 +88,7 @@ const setCustomCookie = (res, name, value, options = {}) => {
     maxAge: 24 * 60 * 60 * 1000,
     ...options
   });
+  console.log(`🍪 Setting custom cookie: ${name}=${value}, options=`, cookieOptions);
   res.cookie(name, value, cookieOptions);
 };
 
@@ -94,6 +101,8 @@ const clearCustomCookie = (res, name) => {
   const cookieOptions = getCookieOptions({
     expires: new Date(0)
   });
+  
+  console.log(`🍪 Clearing custom cookie: ${name}`);
   
   res.cookie(name, '', cookieOptions);
 };

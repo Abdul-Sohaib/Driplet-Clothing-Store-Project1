@@ -57,10 +57,10 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const existingUsers = await User.find({ email: email.toLowerCase() });
-    if (existingUsers.length > 0) {
-      console.log(`Found ${existingUsers.length} existing users for ${email}. Deleting...`);
-      await User.deleteMany({ email: email.toLowerCase() });
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      console.log(`User already exists for email: ${email}`);
+      return res.status(400).json({ message: "User already exists with this email" });
     }
 
     const user = new User({
@@ -107,7 +107,7 @@ router.post("/login", async (req, res) => {
 
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      console.log("Password mismatch for user:", email);
+      console.log("Password mismatch for email:", email);
       return res.status(400).json({ message: "Invalid credentials: Incorrect password" });
     }
 
@@ -115,55 +115,11 @@ router.post("/login", async (req, res) => {
       expiresIn: "7d",
     });
 
-    // Use centralized cookie configuration
     setAuthCookie(res, token);
 
-    res.json({ message: "Login successful", user: { name: user.name, email: user.email }, token });
+    res.status(200).json({ message: "Login successful", user: { name: user.name, email: user.email }, token });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.post("/logout", async (req, res) => {
-  try {
-    // Use centralized cookie configuration
-    clearAuthCookie(res);
-    res.json({ message: "Logout successful" });
-  } catch (error) {
-    console.error("Logout error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.get("/user", authMiddleware, async (req, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ message: "Not authorized, user not found" });
-    }
-    const user = await User.findById(req.user._id).select("name email _id");
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.json({ user: { name: user.name, email: user.email, _id: user._id } });
-  } catch (error) {
-    console.error("Get user error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.get("/user-details", authMiddleware, async (req, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({ message: "Not authorized, user not found" });
-    }
-    const user = await User.findById(req.user._id).select("addresses");
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.json({ addresses: user.addresses || [] });
-  } catch (error) {
-    console.error("Get user details error:", error);
     res.status(500).json({ message: "Server error" });
   }
 });

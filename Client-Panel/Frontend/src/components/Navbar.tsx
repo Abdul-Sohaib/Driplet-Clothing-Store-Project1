@@ -63,17 +63,22 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
 
     const checkAuth = async () => {
       try {
-        const res = await axiosInstance.get(`/auth/user`);
+        const res = await axiosInstance.get(`/auth/user`, { withCredentials: true });
+        console.log("Auth check response:", res.data);
         setUser(res.data.user || null);
-      } catch (err) {
-        console.error("Initial auth check error:", (err as any)?.response?.data?.message || (err as any)?.message);
+      } catch (err: any) {
+        console.error("Initial auth check error:", {
+          message: err.response?.data?.message || err.message,
+          status: err.response?.status,
+          headers: err.response?.headers,
+        });
         setUser(null);
         const timeout = setTimeout(() => setShowAuth(true), 2000);
         return () => clearTimeout(timeout);
       }
     };
     checkAuth();
-  }, []);
+  }, [showAuth]);
 
   const handleLogout = async () => {
     try {
@@ -314,7 +319,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
             </div>
           </div>
 
-          {/* Desktop Dropdown Menu */}
+        
           {activeParent && (
             <div className="hidden lg:block px-6 xl:px-28 2xl:px-32 pb-4 mt-8 mb-4">
               <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 w-full gap-6 xl:gap-10 navfonts">

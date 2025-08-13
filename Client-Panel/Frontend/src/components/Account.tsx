@@ -97,23 +97,34 @@ const Account: React.FC = () => {
         const res = await axios.get(`${API_BASE}/auth/user`, {
           withCredentials: true,
         });
-        setUser(res.data.user);
-        setGender(res.data.user.gender || "");
-      } catch (err) {
+        console.log("User fetch response:", {
+          data: res.data,
+          status: res.status,
+          headers: res.headers,
+        });
+        setUser(res.data.user || null);
+        setGender(res.data.user?.gender || "");
+      } catch (err: any) {
         const errorMsg =
-          (err as any).response?.data?.message ||
-          (err as any).message ||
-          "Failed to fetch user data";
-        console.error("Error fetching user:", errorMsg);
+          err.response?.data?.message || err.message || "Failed to fetch user data";
+        console.error("Error fetching user:", {
+          message: errorMsg,
+          status: err.response?.status,
+          headers: err.response?.headers,
+        });
         setError(errorMsg);
-        toast.error(
-          `Failed to fetch user data: ${errorMsg}. Please try again.`
-        );
+        toast.error(`Failed to fetch user data: ${errorMsg}. Please try again.`);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchUser();
+
+    // Listen for auth changes
+    const handleAuthChange = () => fetchUser();
+    window.addEventListener("authChange", handleAuthChange);
+    return () => window.removeEventListener("authChange", handleAuthChange);
   }, []);
 
   const handleGenderChange = async (value: string) => {
@@ -121,18 +132,27 @@ const Account: React.FC = () => {
     setGender(newGender);
     setIsLoading(true);
     try {
-      await axios.put(
+      const response = await axios.put(
         `${API_BASE}/auth/user`,
         { gender: newGender },
         { withCredentials: true }
       );
+      console.log("Gender update response:", {
+        data: response.data,
+        status: response.status,
+        headers: response.headers,
+      });
+      setUser(response.data.user || null);
+      setGender(response.data.user?.gender || "");
       toast.success("Gender updated successfully!");
-    } catch (err) {
+    } catch (err: any) {
       const errorMsg =
-        (err as any).response?.data?.message ||
-        (err as any).message ||
-        "Failed to update gender";
-      console.error("Error updating gender:", errorMsg);
+        err.response?.data?.message || err.message || "Failed to update gender";
+      console.error("Error updating gender:", {
+        message: errorMsg,
+        status: err.response?.status,
+        headers: err.response?.headers,
+      });
       toast.error(`Failed to update gender: ${errorMsg}. Please try again.`);
     } finally {
       setIsLoading(false);
@@ -168,7 +188,7 @@ const Account: React.FC = () => {
       <div className="w-full h-full grid grid-cols-2 gap-6 place-items-center items-center">
         <div className="col-span-1 flex flex-col justify-between gap-10">
           <div className="flex flex-col gap-8">
-            <h2 className="text-4xl font-bold text-black mb-4 text-left textheading">{user.name}</h2>
+            <h2 className="text-4xl font-bold text-black mb-4 textheading">{user.name}</h2>
 
             {/* Animated Paragraph */}
             <motion.div
@@ -233,7 +253,7 @@ const Account: React.FC = () => {
           </div>
         </div>
 
-        {/* Animated Image Cards */}
+      
         <div className="col-span-1 flex justify-center items-center">
           <motion.div
             className="relative w-full h-[60vh]"
@@ -241,7 +261,7 @@ const Account: React.FC = () => {
             initial="hidden"
             animate="show"
           >
-            {/* Card 1 */}
+        
             <motion.div
               variants={cardVariants}
               className="absolute top-0 right-[2vw] w-[20vw] h-fit bg-pink-200 rounded-lg shadow-lg rotate-[-4deg] z-10 overflow-hidden"
@@ -249,7 +269,7 @@ const Account: React.FC = () => {
               <img src={img} alt="Image 1" className="object-cover w-full h-full" />
             </motion.div>
 
-            {/* Card 2 */}
+          
             <motion.div
               variants={cardVariants}
               className="absolute left-[0vw] w-[22vw] h-fit bg-orange-300 rounded-lg shadow-lg rotate-[4deg] z-20 overflow-hidden"
@@ -257,7 +277,7 @@ const Account: React.FC = () => {
               <img src={img2} alt="Image 2" className="object-cover w-full h-full" />
             </motion.div>
 
-            {/* Card 3 */}
+            
             <motion.div
               variants={cardVariants}
               className="absolute top-[17vh] -left-[9vw] w-[14vw] h-fit bg-white rounded-lg shadow-lg rotate-[-1deg] z-30 overflow-hidden"

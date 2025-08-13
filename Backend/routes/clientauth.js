@@ -46,6 +46,50 @@ const sendOrderReceipt = async (user, order) => {
   }
 };
 
+// Get authenticated user details
+router.get("/user", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password -resetCode");
+    if (!user) {
+      console.log("User not found for ID:", req.user._id);
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log("User fetched successfully:", { email: user.email, id: user._id });
+    res.status(200).json({ user: { name: user.name, email: user.email } });
+  } catch (error) {
+    console.error("Fetch user error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Get user addresses
+router.get("/addresses", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("addresses");
+    if (!user) {
+      console.log("User not found for ID:", req.user._id);
+      return res.status(404).json({ message: "User not found" });
+    }
+    console.log("Addresses fetched successfully:", { userId: user._id, addresses: user.addresses });
+    res.status(200).json({ addresses: user.addresses || [] });
+  } catch (error) {
+    console.error("Fetch addresses error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Logout endpoint
+router.post("/logout", (req, res) => {
+  try {
+    console.log("Logout request received");
+    clearAuthCookie(res);
+    res.status(200).json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -78,7 +122,6 @@ router.post("/register", async (req, res) => {
       expiresIn: "7d",
     });
 
-    // Use centralized cookie configuration
     setAuthCookie(res, token);
 
     res.status(201).json({ message: "User registered successfully", user: { name: user.name, email: user.email }, token });
@@ -128,14 +171,17 @@ router.post("/address", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
+      console.log("User not found for ID:", req.user._id);
       return res.status(404).json({ message: "User not found" });
     }
+    console.log("Add address request:", { userId: user._id, address: req.body });
     user.addresses = user.addresses || [];
     user.addresses.push(req.body);
     await user.save();
+    console.log("Address saved successfully:", { userId: user._id, addresses: user.addresses });
     res.json({ message: "Address added", addresses: user.addresses });
   } catch (err) {
-    console.error("Add address error:", err);
+    console.error("Add address error:", { message: err.message, stack: err.stack, address: req.body });
     res.status(500).json({ message: "Failed to add address" });
   }
 });
@@ -145,16 +191,20 @@ router.put("/address/:index", authMiddleware, async (req, res) => {
     const { index } = req.params;
     const user = await User.findById(req.user._id);
     if (!user) {
+      console.log("User not found for ID:", req.user._id);
       return res.status(404).json({ message: "User not found" });
     }
     if (!user.addresses || user.addresses.length <= parseInt(index)) {
+      console.log("Address not found for index:", index, "userId:", user._id);
       return res.status(404).json({ message: "Address not found" });
     }
+    console.log("Update address request:", { userId: user._id, index, address: req.body });
     user.addresses[parseInt(index)] = req.body;
     await user.save();
+    console.log("Address updated successfully:", { userId: user._id, addresses: user.addresses });
     res.json({ message: "Address updated", addresses: user.addresses });
   } catch (err) {
-    console.error("Update address error:", err);
+    console.error("Update address error:", { message: err.message, stack: err.stack, index, address: req.body });
     res.status(500).json({ message: "Failed to update address" });
   }
 });
@@ -164,16 +214,20 @@ router.delete("/address/:index", authMiddleware, async (req, res) => {
     const { index } = req.params;
     const user = await User.findById(req.user._id);
     if (!user) {
+      console.log("User not found for ID:", req.user._id);
       return res.status(404).json({ message: "User not found" });
     }
     if (!user.addresses || user.addresses.length <= parseInt(index)) {
+      console.log("Address not found for index:", index, "userId:", user._id);
       return res.status(404).json({ message: "Address not found" });
     }
+    console.log("Delete address request:", { userId: user._id, index });
     user.addresses.splice(parseInt(index), 1);
     await user.save();
+    console.log("Address deleted successfully:", { userId: user._id, addresses: user.addresses });
     res.json({ message: "Address deleted", addresses: user.addresses });
   } catch (err) {
-    console.error("Delete address error:", err);
+    console.error("Delete address error:", { message: err.message, stack: err.stack, index });
     res.status(500).json({ message: "Failed to delete address" });
   }
 });
@@ -183,12 +237,14 @@ router.post("/forgot-password", async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
+      console.log("User not found for email:", email);
       return res.status(404).json({ message: "User not found" });
     }
 
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
     user.resetCode = resetCode;
     await user.save();
+    console.log("Reset code saved for user:", { email: user.email, resetCode });
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -198,6 +254,7 @@ router.post("/forgot-password", async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
+    console.log("Reset code sent to:", email);
     res.json({ message: "Reset code sent to your email" });
   } catch (error) {
     console.error("Forgot password error:", error);
@@ -210,12 +267,14 @@ router.post("/verify-code", async (req, res) => {
     const { email, code, newPassword } = req.body;
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user || user.resetCode !== code) {
+      console.log("Invalid reset code for email:", email);
       return res.status(400).json({ message: "Invalid code" });
     }
 
     user.password = newPassword;
     user.resetCode = undefined;
     await user.save();
+    console.log("Password reset successful for user:", { email: user.email });
 
     res.json({ message: "Password reset successful" });
   } catch (error) {

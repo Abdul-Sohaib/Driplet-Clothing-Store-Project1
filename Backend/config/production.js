@@ -35,8 +35,8 @@ module.exports = {
   // SECURITY SETTINGS
   // ============================================================================
   
-  // Rate limiting (requests per 15 minutes per IP)
-  RATE_LIMIT_MAX: 100,
+  // Rate limiting (increased to 1000 requests per 15 minutes per IP to reduce rate limit errors)
+  RATE_LIMIT_MAX: 1000,
   
   // JWT token expiration (in days)
   JWT_EXPIRY_DAYS: 7,
@@ -51,16 +51,17 @@ module.exports = {
   // Allowed HTTP methods
   CORS_ALLOWED_METHODS: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   
-  // Allowed headers
+  // Allowed headers (added 'x-razorpay-signature' for Razorpay webhook compatibility)
   CORS_ALLOWED_HEADERS: [
     'Content-Type',
     'Authorization', 
     'X-Requested-With',
     'Accept',
     'Origin',
-    'Cookie'
+    'Cookie',
+    'x-razorpay-signature'
   ],
   
-  // Exposed headers
-  CORS_EXPOSED_HEADERS: ['X-Cache', 'Set-Cookie']
+  // Exposed headers (added 'X-RateLimit-Limit' and 'X-RateLimit-Remaining' for debugging rate limits)
+  CORS_EXPOSED_HEADERS: ['X-Cache', 'Set-Cookie', 'X-RateLimit-Limit', 'X-RateLimit-Remaining']
 };

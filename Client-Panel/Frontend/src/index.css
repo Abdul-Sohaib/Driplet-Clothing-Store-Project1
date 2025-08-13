@@ -605,9 +605,9 @@ body {
     gap: 33vh;
   }
 }
-@media (min-width: 375px) {
+@media (min-width: 700px) {
   .down {
-    gap: 10vh;
+    justify-content: space-between;
   }
 }
 @media (min-width: 425px) {
@@ -621,7 +621,7 @@ body {
   }
 }
 
-@media (max-width: 429px) {
+@media (max-width: 700px) {
   .product-carousel-section {
     background: none !important;
     border: none !important;

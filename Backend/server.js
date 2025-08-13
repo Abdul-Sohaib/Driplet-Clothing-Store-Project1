@@ -59,7 +59,6 @@ if (!fs.existsSync(imagesPath)) {
 }
 
 // 🔐 Middleware
-// Ensure NODE_ENV is set for development
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'development';
   console.log(`🔧 Setting NODE_ENV to 'development'`);
@@ -68,16 +67,17 @@ console.log(`🔧 Environment: NODE_ENV = ${process.env.NODE_ENV}`);
 
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://*.razorpay.com"], // Allow Razorpay scripts
+      frameSrc: ["'self'", "https://*.razorpay.com"] // Allow Razorpay iframes
+    }
+  }
 }));
 
-// Apply centralized CORS configuration
-// This configuration automatically handles development vs production environments
-// For production, only allows origins specified in config/production.js
 app.use(cors(corsOptions));
-
-// Add CORS preflight handling for all routes
-// This handles OPTIONS requests for CORS preflight
 app.options('*', cors(preflightCorsOptions));
 app.use(cookieParser());
 app.use(compression());
@@ -86,7 +86,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per window
+    max: 1000 // Increased to 1000 to reduce rate limit errors
   })
 );
 
@@ -94,7 +94,6 @@ app.use(
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}, Origin: ${req.headers.origin}, Cookies:`, req.cookies || "None");
   
-  // Log CORS-related headers for debugging
   if (req.method === 'OPTIONS') {
     console.log(`🔄 CORS Preflight Request - Origin: ${req.headers.origin}`);
     console.log(`🔄 CORS Headers:`, {
@@ -104,15 +103,17 @@ app.use((req, res, next) => {
     });
   }
   
-  // CORS headers are handled by the CORS middleware above
-  // No need to manually set them here
+  // Log Razorpay webhook requests for debugging
+  if (req.url.includes('/api/transactions') && req.headers['x-razorpay-signature']) {
+    console.log(`💳 Razorpay Webhook - Signature: ${req.headers['x-razorpay-signature']}, Payload:`, req.body);
+  }
   
   next();
 });
 
-// 🗄️ Cache Middleware for GET routes only
+// 🗄️ Cache Middleware for GET routes only (excluding cart/wishlist)
 const cacheMiddleware = (duration) => (req, res, next) => {
-  if (req.method !== "GET") {
+  if (req.method !== "GET" || req.url.includes('/api/cart') || req.url.includes('/api/wishlist')) {
     console.log(`🗄️ Bypassing cache for ${req.method} ${req.url}`);
     return next();
   }
@@ -183,8 +184,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-//  Custom middleware for images to handle 404 and serve default
+//  Custom middleware for images with caching
 app.use('/images', (req, res, next) => {
+  res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache images for 1 year
   const filePath = path.join(__dirname, 'images', req.path);
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
@@ -197,7 +199,6 @@ app.use('/images', (req, res, next) => {
 
 // ❌ Global Error Handler
 app.use((err, req, res, next) => {
-  // Handle CORS errors specifically
   if (err.message === 'Not allowed by CORS') {
     console.error("🚫 CORS Error:", {
       message: err.message,

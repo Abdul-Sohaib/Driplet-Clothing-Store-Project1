@@ -167,7 +167,7 @@ const Mainpage = () => {
       ) : (
         <div className="flex flex-col items-center w-screen gap-6 sm:gap-8 md:gap-12 lg:gap-16">
           {/* Hero Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-screen p-3 sm:p-4 md:p-6 md:mt-5 lg:p-8 xl:p-12 items-center sm:mt-20 xs">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-screen p-3 sm:p-4 md:p-6 md:mt-5 lg:p-8 xl:p-12 items-center sm:mt-20 xs h-full">
             {/* Left Column */}
             <motion.div
               variants={slideLeft}
@@ -180,63 +180,107 @@ const Mainpage = () => {
 
             {/* Right Column - Optimized 3D Canvas */}
             <div className="flex flex-col rounded-2xl sm:rounded-3xl gap-4 items-center justify-center threed h-full">
-              <motion.div
-                variants={slideRight(0.5)}
-                initial="hidden"
-                animate="visible"
-                className="flex w-full h-full rounded-2xl sm:rounded-3xl items-center justify-center"
-              >
-                <Canvas
-                  dpr={[1, 1.5]}
-                  camera={{ 
-                    position: [0, 1, 6], 
-                    fov: 45,
-                    near: 0.1,
-                    far: 100
-                  }}
-                  style={{ 
-                    width: "100%", 
-                    height: "100%",
-                    background: "transparent"
-                  }}
-                  gl={{ 
-                    antialias: true,
-                    alpha: true,
-                    premultipliedAlpha: false,
-                    powerPreference: "high-performance"
-                  }}
-                  performance={{ min: 0.5 }}
-                >
-                  <Suspense fallback={<LoadingFallback />}>
-                    <ambientLight intensity={2.5} />
-                    <directionalLight 
-                      position={[2, 2, 2]} 
-                      intensity={3.0}
-                      color="#ffffff"
-                    />
-                    <directionalLight 
-                      position={[-2, 2, -2]} 
-                      intensity={2.0}
-                      color="#ffffff"
-                    />
-                    <pointLight 
-                      position={[0, 5, 3]} 
-                      intensity={2.0} 
-                      color="#ffffff"
-                    />
-                    <pointLight 
-                      position={[0, -5, 3]} 
-                      intensity={1.5} 
-                      color="#ffffff"
-                    />
-                    <TshirtModel 
-                      position={[0, 0, 0]} 
-                      scale={1.2} 
-                      color="#ff6600" 
-                    />
-                  </Suspense>
-                </Canvas>
-              </motion.div>
+            <motion.div                 
+  variants={slideRight(0.5)}                 
+  initial="hidden"                 
+  animate="visible"                 
+  className="flex w-full h-full rounded-2xl sm:rounded-3xl items-center justify-center"               
+>                 
+  <Canvas                   
+    dpr={[1, 1.5]}                   
+    camera={{                      
+      position: [0, 1, 6],                      
+      fov: 45,                     
+      near: 0.1,                     
+      far: 100                   
+    }}                   
+    style={{                      
+      width: "100%",                      
+      height: "100%",                     
+      background: "transparent"                   
+    }}                   
+    gl={{                      
+      antialias: true,                     
+      alpha: true,                     
+      premultipliedAlpha: false,                     
+      powerPreference: "high-performance"                   
+    }}                   
+    performance={{ min: 0.5 }}                 
+  >                   
+    <Suspense fallback={<LoadingFallback />}>                     
+      {/* Enhanced ambient light for overall brightness */}
+      <ambientLight intensity={0.4} color="#f8f8ff" />
+      
+      {/* Main key light - positioned like studio lighting */}
+      <directionalLight                        
+        position={[3, 4, 5]}                        
+        intensity={4.5}                       
+        color="#ffffff"                    
+      />
+      
+      {/* Fill light - softer, from opposite side */}
+      <directionalLight                        
+        position={[-2, 3, 4]}                        
+        intensity={2.5}                       
+        color="#f0f8ff"                     
+      />
+      
+      {/* Rim light - for edge definition */}
+      <directionalLight                        
+        position={[0, 2, -3]}                        
+        intensity={3.0}                       
+        color="#ffffff"                     
+      />
+      
+      {/* Top light - simulates ceiling lighting */}
+      <pointLight                        
+        position={[0, 6, 2]}                        
+        intensity={3.5}                        
+        color="#ffffff"
+        distance={15}
+        decay={2}                     
+      />
+      
+      {/* Bottom fill light - reduces harsh shadows */}
+      <pointLight                        
+        position={[0, -3, 3]}                        
+        intensity={2.0}                        
+        color="#f5f5f5"
+        distance={12}
+        decay={2}                     
+      />
+      
+      {/* Side accent lights for more dimension */}
+      <pointLight                        
+        position={[4, 1, 1]}                        
+        intensity={1.8}                        
+        color="#ffffff"
+        distance={10}
+        decay={2}                     
+      />
+      
+      <pointLight                        
+        position={[-4, 1, 1]}                        
+        intensity={1.8}                        
+        color="#ffffff"  
+        distance={10}
+        decay={2}                   
+      />
+      
+      {/* Environment light for realistic reflections */}
+      <hemisphereLight
+        color="#87CEEB"
+        groundColor="#f0f0f0"
+        intensity={1.5}
+      />
+      
+      <TshirtModel                        
+        position={[0, 0, 0]}                        
+        scale={1.2}                                             
+      />                   
+    </Suspense>                 
+  </Canvas>               
+</motion.div>
             </div>
           </div>
 
@@ -284,12 +328,12 @@ const Mainpage = () => {
           </div>
 
           {/* Product Slider Section */}
-          <div className="flex flex-col items-center w-screen md:gap-48 xs:gap-48 down">
+          <div className="flex flex-col items-center w-screen h-fit down">
             <div className="h-[60vh] sm:h-[65vh] md:h-[70vh] lg:h-[75vh] xl:h-[80vh] 2xl:h-[85vh] w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] items-center justify-center mt-4 sm:mt-6 md:mt-8 lg:mt-10 xl:mt-12 mb-4 sm:mb-6 md:mb-8 lg:mb-10 xl:mb-12 gap-2 sm:gap-3 p-2 sm:p-3">
               <div className="col-span-1 text-center px-2 sm:px-4">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold textheading uppercase">closets of driplet</h1>
               </div>
-              <div className="row-start-2 col-start-1 flex items-center justify-center w-full">
+              <div className="row-start-2 col-start-1 flex items-center justify-center w-full mt-6  lg:mt-0">
                 <ProductSlider products={products} />
               </div>
             </div>

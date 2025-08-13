@@ -135,7 +135,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
       {showAuth && <AuthPopup onClose={handleAuthSuccess} />}
       <div className="w-screen inset-0 bg-[#F5F5DC] shadow-md z-50 transition-all duration-300">
         <div
-          className={`flex flex-col transition-all duration-300 ease-in-out ${isHoveringNav ? "min-h-[15vh]" : "min-h-[10vh]"}`}
+          className={`flex flex-col transition-all duration-300 ease-in-out ${isHoveringNav ? "min-h-fit" : "min-h-fit"}`}
           onMouseLeave={() => {
             setIsHoveringNav(false);
             setActiveParent(null);
@@ -207,7 +207,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
           </div>
 
           {/* Mobile Navigation Header */}
-          <div className="lg:hidden flex items-center justify-between px-3 sm:px-4 py-3">
+          <div className="lg:hidden flex items-center justify-between h-fit p-1 sm:px-4 ">
             <Link to="/" className="flex items-center">
               {logoUrl ? (
                 <img src={logoUrl} alt="Logo" className="w-12 sm:w-16 object-contain" />

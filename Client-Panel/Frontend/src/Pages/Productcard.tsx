@@ -231,7 +231,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
       <div className="flex w-full mt-6 sm:mt-10 justify-start items-center p-2">
         <button
           onClick={() => navigate("/")}
-          className="relative flex w-fit  group bg-transparent outline-none cursor-pointer uppercase"
+          className="relative flex w-fit mt-6 md:mt-1  group bg-transparent outline-none cursor-pointer uppercase"
         >
           <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
           <div className="relative flex items-center justify-between py-1.5 px-3 sm:py-2 sm:px-4 md:py-3 md:px-6 text-[10px] sm:text-xs md:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
@@ -373,7 +373,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
         </div>
       ) : product ? (
         <div className="flex flex-col w-full p-1">
-          <div className="flex flex-col md:flex-row justify-evenly items-center mt-6 px-2 w-full gap-6">
+          <div className="flex flex-col md:flex-row justify-evenly items-center  px-2 w-full gap-6">
             <div className="flex flex-col md:flex-row justify-between w-full gap-6">
             <div className="w-full md:w-[40vw] rounded-3xl">
               {images.length > 0 ? (

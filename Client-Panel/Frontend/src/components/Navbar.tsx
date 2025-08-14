@@ -61,17 +61,27 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
     };
     fetchData();
 
-    const checkAuth = async () => {
+    const checkAuth = async (retryCount = 0) => {
       try {
         const res = await axiosInstance.get(`/auth/user`, { withCredentials: true });
-        console.log("Auth check response:", res.data);
+        console.log("Auth check response:", {
+          data: res.data,
+          status: res.status,
+          headers: res.headers,
+        });
         setUser(res.data.user || null);
+        window.dispatchEvent(new Event("authChange"));
       } catch (err: any) {
+        const errorMsg = err.response?.data?.message || err.message || "Auth check failed";
         console.error("Initial auth check error:", {
-          message: err.response?.data?.message || err.message,
+          message: errorMsg,
           status: err.response?.status,
           headers: err.response?.headers,
         });
+        if ((errorMsg.includes("Unauthorized") || errorMsg.includes("Invalid token")) && retryCount < 3) {
+          setTimeout(() => checkAuth(retryCount + 1), Math.pow(2, retryCount) * 1000);
+          return;
+        }
         setUser(null);
         const timeout = setTimeout(() => setShowAuth(true), 2000);
         return () => clearTimeout(timeout);
@@ -82,10 +92,11 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
 
   const handleLogout = async () => {
     try {
-      await axiosInstance.post(`/auth/logout`, {});
+      await axiosInstance.post(`/auth/logout`, {}, { withCredentials: true });
       setUser(null);
       setShowUserCard(false);
       setTimeout(() => setShowAuth(true), 10000);
+      window.dispatchEvent(new Event("authChange"));
     } catch (err) {
       console.error("Logout error:", err);
     }
@@ -94,6 +105,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
   const handleAuthSuccess = (user: User | null) => {
     setUser(user);
     setShowAuth(false);
+    window.dispatchEvent(new Event("authChange"));
   };
 
   const handleCartClick = () => {
@@ -321,6 +333,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
 
         
           {activeParent && (
+           
             <div className="hidden lg:block px-6 xl:px-28 2xl:px-32 pb-4 mt-8 mb-4">
               <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 w-full gap-6 xl:gap-10 navfonts">
                 {navLinks
@@ -333,6 +346,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
                     >
                       {child.name}
                     </Link>
+                    
                   )) || null}
               </div>
             </div>

@@ -1,38 +1,59 @@
+// lib/axios.js or wherever you configure axios
 import axios from 'axios';
 
-// Create axios instance with default configuration
-const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  withCredentials: true, // Always include credentials for authentication
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+// Create axios instance with proper configuration
+const axiosInstance = axios.create({
+  baseURL: API_BASE,
+  withCredentials: true, // This is crucial for cookie-based auth
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
-  },
+    'Accept': 'application/json',
+  }
 });
 
-// Request interceptor to add any additional headers if needed
-instance.interceptors.request.use(
+// Add this to handle CORS preflight requests
+axiosInstance.defaults.headers.common['Access-Control-Allow-Credentials'] = 'true';
+
+// Add request interceptor for debugging
+axiosInstance.interceptors.request.use(
   (config) => {
-    // You can add auth tokens here if needed
+    console.log(`Making ${config.method?.toUpperCase()} request to:`, config.url);
     return config;
   },
   (error) => {
+    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
 
-// Response interceptor for error handling
-instance.interceptors.response.use(
+// Add response interceptor for better error handling
+axiosInstance.interceptors.response.use(
   (response) => {
+    console.log(`Response from ${response.config.url}:`, response.status);
     return response;
   },
   (error) => {
-    // Handle common errors like 401, 403, etc.
+    console.error('Response interceptor error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url
+    });
+    
+    // Handle auth errors globally
     if (error.response?.status === 401) {
-      // Handle unauthorized access
-      console.log('Unauthorized access, redirecting to login');
+      // Token expired or invalid
+      console.log('Authentication error detected');
+      // You might want to redirect to login or show auth popup
+      window.dispatchEvent(new CustomEvent('auth-error', { 
+        detail: error.response.data 
+      }));
     }
+    
     return Promise.reject(error);
   }
 );
 
-export default instance;
+export default axiosInstance;

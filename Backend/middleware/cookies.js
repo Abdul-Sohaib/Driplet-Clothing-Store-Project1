@@ -2,7 +2,7 @@
  * Centralized Cookie Configuration
  * 
  * DEVELOPMENT MODE: httpOnly: true, secure: false, sameSite: 'lax'
- * PRODUCTION MODE: httpOnly: true, secure: true, sameSite: 'strict'
+ * PRODUCTION MODE: httpOnly: true, secure: true, sameSite: 'none'
  * 
  * TO UPDATE FOR PRODUCTION:
  * 1. Set NODE_ENV=production
@@ -18,30 +18,29 @@ const prodConfig = require('../config/production');
  * @returns {Object} Cookie configuration object
  */
 const getCookieOptions = (options = {}) => {
-  const isDevelopment = process.env.NODE_ENV !== 'production';
+  const isProduction = process.env.NODE_ENV === 'production';
   
   const baseOptions = {
     httpOnly: true,
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     path: '/',
     ...options
   };
   
-  console.log(`🍪 Cookie Options - Environment: ${isDevelopment ? 'development' : 'production'}, Domain: ${prodConfig.COOKIE_DOMAIN || prodConfig.CLIENT_APP_URL}`);
-  
-  if (isDevelopment) {
+  if (isProduction) {
     return {
       ...baseOptions,
-      secure: false,
-      sameSite: 'lax'
+      secure: true,
+      sameSite: 'none',
+      domain: prodConfig.COOKIE_DOMAIN || undefined // Only set if COOKIE_DOMAIN is specified
     };
   }
   
+  // Development settings
   return {
     ...baseOptions,
-    secure: true,
-    sameSite: 'strict', // Changed to 'strict' for better security and compatibility
-    domain: prodConfig.COOKIE_DOMAIN || new URL(prodConfig.CLIENT_APP_URL).hostname
+    secure: false,
+    sameSite: 'lax'
   };
 };
 
@@ -53,13 +52,21 @@ const getCookieOptions = (options = {}) => {
  */
 const setAuthCookie = (res, token, options = {}) => {
   const cookieOptions = getCookieOptions({
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     ...options
   });
   
   console.log(`🍪 Setting auth cookie: token=${token.substring(0, 10)}..., options=`, cookieOptions);
   
   res.cookie('token', token, cookieOptions);
+  
+  // Additional fallback cookie without httpOnly for debugging (remove in production if not needed)
+  if (process.env.NODE_ENV !== 'production') {
+    res.cookie('token_debug', token.substring(0, 20) + '...', {
+      ...cookieOptions,
+      httpOnly: false
+    });
+  }
 };
 
 /**
@@ -68,12 +75,21 @@ const setAuthCookie = (res, token, options = {}) => {
  */
 const clearAuthCookie = (res) => {
   const cookieOptions = getCookieOptions({
-    expires: new Date(0)
+    expires: new Date(0),
+    maxAge: 0
   });
   
   console.log(`🍪 Clearing auth cookie`);
   
   res.cookie('token', '', cookieOptions);
+  
+  // Also clear debug cookie
+  if (process.env.NODE_ENV !== 'production') {
+    res.cookie('token_debug', '', {
+      ...cookieOptions,
+      httpOnly: false
+    });
+  }
 };
 
 /**
@@ -85,7 +101,7 @@ const clearAuthCookie = (res) => {
  */
 const setCustomCookie = (res, name, value, options = {}) => {
   const cookieOptions = getCookieOptions({
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 24 * 60 * 60 * 1000, // 1 day default
     ...options
   });
   console.log(`🍪 Setting custom cookie: ${name}=${value}, options=`, cookieOptions);
@@ -99,7 +115,8 @@ const setCustomCookie = (res, name, value, options = {}) => {
  */
 const clearCustomCookie = (res, name) => {
   const cookieOptions = getCookieOptions({
-    expires: new Date(0)
+    expires: new Date(0),
+    maxAge: 0
   });
   
   console.log(`🍪 Clearing custom cookie: ${name}`);

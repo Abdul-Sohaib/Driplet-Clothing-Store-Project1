@@ -46,18 +46,69 @@ const sendOrderReceipt = async (user, order) => {
   }
 };
 
-// Get authenticated user details
+// Get authenticated user details - FIXED
 router.get("/user", authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("-password -resetCode");
+    console.log("GET /user - req.user:", req.user);
+    
+    // Use req.user data directly since it's already populated by middleware
+    const user = {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      gender: req.user.gender
+    };
+
+    console.log("User fetched successfully:", user);
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("Fetch user error:", {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?._id
+    });
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Update user details - FIXED
+router.put("/user", authMiddleware, async (req, res) => {
+  try {
+    const { gender } = req.body;
+    console.log("PUT /user - updating user:", req.user._id, "with data:", { gender });
+    
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { gender },
+      { new: true, runValidators: true }
+    ).select('-password -resetCode');
+    
     if (!user) {
-      console.log("User not found for ID:", req.user._id);
+      console.log("User not found for update:", req.user._id);
       return res.status(404).json({ message: "User not found" });
     }
-    console.log("User fetched successfully:", { email: user.email, id: user._id });
-    res.status(200).json({ user: { name: user.name, email: user.email, gender: user.gender } });
+    
+    console.log("User updated successfully:", {
+      id: user._id,
+      email: user.email,
+      gender: user.gender
+    });
+    
+    res.status(200).json({ 
+      message: "User updated successfully",
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        gender: user.gender 
+      } 
+    });
   } catch (error) {
-    console.error("Fetch user error:", error);
+    console.error("Update user error:", {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?._id
+    });
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -137,8 +188,9 @@ router.post("/register", async (req, res) => {
 
     const token = jwt.sign(
       { 
-        id: user._id,
+        id: user._id.toString(), // Ensure string conversion
         email: user.email,
+        name: user.name,
         iat: Math.floor(Date.now() / 1000)
       }, 
       process.env.JWT_SECRET, 
@@ -150,7 +202,12 @@ router.post("/register", async (req, res) => {
     // Send token in response body as fallback
     res.status(201).json({ 
       message: "User registered successfully", 
-      user: { name: user.name, email: user.email }, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        gender: user.gender 
+      }, 
       token,
       success: true
     });
@@ -194,8 +251,9 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       { 
-        id: user._id,
+        id: user._id.toString(), // Ensure string conversion
         email: user.email,
+        name: user.name,
         iat: Math.floor(Date.now() / 1000)
       }, 
       process.env.JWT_SECRET, 
@@ -209,7 +267,12 @@ router.post("/login", async (req, res) => {
     // Send token in response body as fallback
     res.status(200).json({ 
       message: "Login successful", 
-      user: { name: user.name, email: user.email }, 
+      user: { 
+        id: user._id, 
+        name: user.name, 
+        email: user.email, 
+        gender: user.gender 
+      }, 
       token,
       success: true
     });

@@ -1,12 +1,11 @@
-// lib/axios.js or wherever you configure axios
+// frontend/src/lib/axios.ts
 import axios from 'axios';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-// Create axios instance with proper configuration
 const axiosInstance = axios.create({
-  baseURL: API_BASE,
-  withCredentials: true, // This is crucial for cookie-based auth
+  baseURL: API_BASE, // Should be http://localhost:5000/api
+  withCredentials: true, // Crucial for sending cookies
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -14,13 +13,9 @@ const axiosInstance = axios.create({
   }
 });
 
-// Add this to handle CORS preflight requests
-axiosInstance.defaults.headers.common['Access-Control-Allow-Credentials'] = 'true';
-
-// Add request interceptor for debugging
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log(`Making ${config.method?.toUpperCase()} request to:`, config.url);
+    console.log(`Making ${config.method?.toUpperCase()} request to:`, config.url, { cookies: document.cookie });
     return config;
   },
   (error) => {
@@ -29,7 +24,6 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Add response interceptor for better error handling
 axiosInstance.interceptors.response.use(
   (response) => {
     console.log(`Response from ${response.config.url}:`, response.status);
@@ -41,17 +35,10 @@ axiosInstance.interceptors.response.use(
       data: error.response?.data,
       url: error.config?.url
     });
-    
-    // Handle auth errors globally
     if (error.response?.status === 401) {
-      // Token expired or invalid
       console.log('Authentication error detected');
-      // You might want to redirect to login or show auth popup
-      window.dispatchEvent(new CustomEvent('auth-error', { 
-        detail: error.response.data 
-      }));
+      window.dispatchEvent(new CustomEvent('auth-error', { detail: error.response.data }));
     }
-    
     return Promise.reject(error);
   }
 );

@@ -13,8 +13,6 @@ import { IoPersonCircleOutline } from "react-icons/io5";
 import { RiLogoutCircleRFill } from "react-icons/ri";
 import userprofileimg from '@/assets/back.png';
 
-// API_BASE is now handled by axiosInstance
-
 interface Category {
   id: number;
   name: string;
@@ -46,56 +44,114 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
   const [showAuth, setShowAuth] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [logoRes, catRes] = await Promise.all([
-          axiosInstance.get(`/site-settings`),
-          axiosInstance.get(`/categories`),
-        ]);
-        setLogoUrl(logoRes.data.logoUrl || "");
-        setCategories(catRes.data || []);
-      } catch (err) {
-        console.error("Fetch error:", err);
-      }
-    };
-    fetchData();
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [logoRes, catRes] = await Promise.all([
+        axiosInstance.get(`/site-settings`),
+        axiosInstance.get(`/categories`),
+      ]);
+      setLogoUrl(logoRes.data.logoUrl || "");
+      setCategories(catRes.data || []);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  };
 
 const checkAuth = async (retryCount = 0) => {
   try {
-    const res = await axiosInstance.get(`/auth/user`, { withCredentials: true });
+    const res = await axiosInstance.get(`/auth/user`, { 
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
     console.log("Auth check response:", {
       data: res.data,
       status: res.status,
-      headers: res.headers,
+      cookies: document.cookie
     });
-    setUser(res.data.user || null);
-    localStorage.setItem('user', JSON.stringify(res.data.user || null));
-    window.dispatchEvent(new Event("authChange"));
+    
+    if (!res.data.user || !res.data.user.id) {
+      throw new Error("Invalid user data received");
+    }
+    
+    setUser(res.data.user);
+    localStorage.setItem('user', JSON.stringify(res.data.user));
+    setShowAuth(false);
+    
   } catch (err: any) {
     const errorMsg = err.response?.data?.message || err.message || "Auth check failed";
-    console.error("Initial auth check error:", {
+    console.error("Auth check error:", {
       message: errorMsg,
       status: err.response?.status,
-      headers: err.response?.headers,
+      retryCount
     });
-    if ((errorMsg.includes("Unauthorized") || errorMsg.includes("Invalid token")) && retryCount < 3) {
-      setTimeout(() => checkAuth(retryCount + 1), Math.pow(2, retryCount) * 1000);
+    
+    // Only retry on specific auth errors and limit retries
+    const shouldRetry = (
+      errorMsg.includes("Unauthorized") || 
+      errorMsg.includes("invalid token") || 
+      errorMsg.includes("User not found") ||
+      err.response?.status === 401
+    ) && retryCount < 2; // Reduced retry count
+    
+    if (shouldRetry) {
+      console.log(`Retrying auth check, attempt ${retryCount + 1}`);
+      setTimeout(() => checkAuth(retryCount + 1), 1000 * (retryCount + 1));
       return;
     }
-    const storedUser = localStorage.getItem('user');
-    setUser(storedUser ? JSON.parse(storedUser) : null); // Fallback to local storage
+    
+    // Clear user state on persistent auth failures
+    setUser(null);
+    localStorage.removeItem('user');
+    
+    // Only show auth popup if user was previously authenticated
+    const wasAuthenticated = localStorage.getItem('user') !== null;
+    if (wasAuthenticated || retryCount >= 2) {
+      setShowAuth(false); // Don't auto-show auth popup
+    }
   }
 };
-    checkAuth();
-  }, [showAuth]);
 
-  useEffect(() => {
+  const handleAuthError = () => {
+    console.log("Auth error event, showing AuthPopup");
+    setUser(null);
+    localStorage.removeItem('user');
+    setShowAuth(true);
+  };
+
+  const handleAuthChange = () => {
+    console.log("Auth change event received");
+    checkAuth();
+  };
+
+  // Event listeners
+  window.addEventListener('auth-error', handleAuthError);
+  window.addEventListener('authChange', handleAuthChange);
+
+  // Check for stored user first
   const storedUser = localStorage.getItem('user');
   if (storedUser) {
-    setUser(JSON.parse(storedUser));
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setShowAuth(false);
+    } catch (err) {
+      console.error("Error parsing stored user:", err);
+      localStorage.removeItem('user');
+      setShowAuth(true);
+    }
   }
+
+  fetchData();
   checkAuth();
+
+  return () => {
+    window.removeEventListener('auth-error', handleAuthError);
+    window.removeEventListener('authChange', handleAuthChange);
+  };
 }, []);
 
 const handleLogout = async () => {
@@ -103,12 +159,20 @@ const handleLogout = async () => {
     await axiosInstance.post(`/auth/logout`, {}, { withCredentials: true });
     setUser(null);
     localStorage.removeItem('user');
+    setShowUserCard(false); // Hide user card
+    setShowAuth(true); // Show auth popup after logout
     window.dispatchEvent(new Event("authChange"));
-    console.log("Logged out, cookies:", document.cookie);
+    console.log("Logged out, showing auth popup");
   } catch (err) {
     console.error("Logout error:", err);
+    // Still clear user data even if logout request fails
+    setUser(null);
+    localStorage.removeItem('user');
+    setShowUserCard(false);
+    setShowAuth(true);
   }
 };
+
   const handleAuthSuccess = (user: User | null) => {
     setUser(user);
     setShowAuth(false);
@@ -121,6 +185,14 @@ const handleLogout = async () => {
       return;
     }
     setIsCartOpen(true);
+  };
+
+  const handleWishlistClick = () => {
+    if (!user) {
+      setShowAuth(true);
+      return;
+    }
+    onWishlistClick();
   };
 
   const navLinks = useMemo(() => {
@@ -156,7 +228,7 @@ const handleLogout = async () => {
 
   return (
     <>
-      {showAuth && <AuthPopup onClose={handleAuthSuccess} />}
+      {showAuth && <AuthPopup onClose={handleAuthSuccess} isAuthenticated={!!user} />}
       <div className="w-screen inset-0 bg-[#F5F5DC] shadow-md z-50 transition-all duration-300">
         <div
           className={`flex flex-col transition-all duration-300 ease-in-out ${isHoveringNav ? "min-h-fit" : "min-h-fit"}`}
@@ -198,25 +270,34 @@ const handleLogout = async () => {
             </div>
             <div className="flex items-center gap-4 xl:gap-6 2xl:gap-8 justify-center">
               <SearchBar />
-              <div
-                className="relative hover:border-b-3 border-purple-500 active:border-b-3"
-                onMouseEnter={() => setShowUserCard(true)}
-              >
+              {user ? (
+                <div
+                  className="relative hover:border-b-3 border-purple-500 active:border-b-3"
+                  onMouseEnter={() => setShowUserCard(true)}
+                >
+                  <button
+                    className="text-xl xl:text-2xl 2xl:text-3xl text-black hover:text-purple-600 transition-colors duration-200"
+                  >
+                    <img src={userprofileimg} alt="Profile" className="rounded-full w-12 xl:w-16 2xl:w-20 bg-transparent" />
+                  </button>
+                  {showUserCard && (
+                    <UserCard
+                      user={user}
+                      onLogout={handleLogout}
+                      onClose={() => setShowUserCard(false)}
+                    />
+                  )}
+                </div>
+              ) : (
                 <button
+                  onClick={() => setShowAuth(true)}
                   className="text-xl xl:text-2xl 2xl:text-3xl text-black hover:text-purple-600 transition-colors duration-200"
                 >
-                  <img src={userprofileimg} alt="Profile" className="rounded-full w-12 xl:w-16 2xl:w-20 bg-transparent" />
+                  <IoPersonCircleOutline />
                 </button>
-                {showUserCard && user && (
-                  <UserCard
-                    user={user}
-                    onLogout={handleLogout}
-                    onClose={() => setShowUserCard(false)}
-                  />
-                )}
-              </div>
+              )}
               <button
-                onClick={onWishlistClick}
+                onClick={handleWishlistClick}
                 className="text-lg xl:text-xl 2xl:text-2xl text-red-400 hover:text-red-500 transition-colors duration-200 cursor-pointer"
               >
                 <BsBox2HeartFill />
@@ -245,7 +326,7 @@ const handleLogout = async () => {
                 <SearchBar />
               </div>
               <button
-                onClick={onWishlistClick}
+                onClick={handleWishlistClick}
                 className="text-lg sm:text-xl text-red-400 hover:text-red-500 transition-colors duration-200 cursor-pointer p-1"
               >
                 <BsBox2HeartFill />
@@ -298,7 +379,10 @@ const handleLogout = async () => {
                   </div>
                 ) : (
                   <button
-                    onClick={() => setShowAuth(true)}
+                    onClick={() => {
+                      setShowAuth(true);
+                      setIsMobileMenuOpen(false);
+                    }}
                     className="w-full text-left py-3 px-4 bg-purple-100 hover:bg-purple-200 rounded-lg transition-colors duration-200 flex items-center gap-2"
                   >
                     <IoPersonCircleOutline className="text-lg" />
@@ -365,7 +449,3 @@ const handleLogout = async () => {
 };
 
 export default Navbar;
-
-function checkAuth() {
-  throw new Error("Function not implemented.");
-}

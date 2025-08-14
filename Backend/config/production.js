@@ -1,8 +1,8 @@
 // config/production.js
 module.exports = {
   // Your frontend URLs
-  CLIENT_APP_URL: process.env.CLIENT_APP_URL || 'http://localhost:5173',
-  ADMIN_APP_URL: process.env.ADMIN_APP_URL || 'http://localhost:5174',
+  CLIENT_APP_URL: process.env.CLIENT_APP_URL || 'https://driplet.netlify.app',
+  ADMIN_APP_URL: process.env.ADMIN_APP_URL || 'https://driplet-admin-pannel.netlify.app',
   CUSTOM_DOMAIN: process.env.CUSTOM_DOMAIN || '', // Optional custom domain
   
   // Cookie domain - leave empty for automatic detection or set specific domain

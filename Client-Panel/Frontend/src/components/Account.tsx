@@ -141,7 +141,7 @@ useEffect(() => {
   return () => {
     window.removeEventListener("authChange", handleAuthChange);
   };
-}, []); // Remove error from dependencies to prevent loop
+}, [error]); // Remove error from dependencies to prevent loop
   const handleGenderChange = async (value: string) => {
     const newGender = gender === value ? "" : value;
     setGender(newGender);

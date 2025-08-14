@@ -184,6 +184,20 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// In server.js or auth routes
+app.get('/api/cookie-test', (req, res) => {
+  console.log('Cookies received:', req.cookies);
+  res.json({
+    cookiesReceived: req.cookies,
+    headers: req.headers,
+    environment: process.env.NODE_ENV
+  });
+});
+
+app.get('/api/set-test-cookie', (req, res) => {
+  setAuthCookie(res, 'test-cookie-value');
+  res.json({ message: 'Test cookie set' });
+});
 //  Custom middleware for images with caching
 app.use('/images', (req, res, next) => {
   res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache images for 1 year

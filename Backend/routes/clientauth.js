@@ -55,7 +55,7 @@ router.get("/user", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     console.log("User fetched successfully:", { email: user.email, id: user._id });
-    res.status(200).json({ user: { name: user.name, email: user.email } });
+    res.status(200).json({ user: { name: user.name, email: user.email, gender: user.gender } });
   } catch (error) {
     console.error("Fetch user error:", error);
     res.status(500).json({ message: "Server error" });
@@ -81,7 +81,7 @@ router.get("/addresses", authMiddleware, async (req, res) => {
 // Logout endpoint
 router.post("/logout", (req, res) => {
   try {
-    console.log("Logout request received");
+    console.log("Logout request received from:", req.headers.origin || 'unknown origin');
     clearAuthCookie(res);
     res.status(200).json({ message: "Logout successful" });
   } catch (error) {
@@ -94,11 +94,28 @@ router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    console.log("Register request:", { name, email, password: "[REDACTED]" });
+    console.log("Register request:", { 
+      name, 
+      email, 
+      password: "[REDACTED]",
+      origin: req.headers.origin,
+      userAgent: req.headers['user-agent']?.substring(0, 50)
+    });
     console.log("JWT_SECRET:", process.env.JWT_SECRET ? "Present" : "Missing");
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // Validate password strength
+    if (password.trim().length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters long" });
     }
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -108,9 +125,9 @@ router.post("/register", async (req, res) => {
     }
 
     const user = new User({
-      name,
+      name: name.trim(),
       email: email.toLowerCase(),
-      password,
+      password: password.trim(),
       cart: [],
       addresses: [],
     });
@@ -118,16 +135,32 @@ router.post("/register", async (req, res) => {
     await user.save();
     console.log("User saved successfully:", { email: user.email, id: user._id });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { 
+        id: user._id,
+        email: user.email,
+        iat: Math.floor(Date.now() / 1000)
+      }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: "7d" }
+    );
 
     setAuthCookie(res, token);
 
-    res.status(201).json({ message: "User registered successfully", user: { name: user.name, email: user.email }, token });
+    // Send token in response body as fallback
+    res.status(201).json({ 
+      message: "User registered successfully", 
+      user: { name: user.name, email: user.email }, 
+      token,
+      success: true
+    });
   } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Registration error:", {
+      message: error.message,
+      stack: error.stack,
+      email: req.body?.email
+    });
+    res.status(500).json({ message: "Server error during registration" });
   }
 });
 
@@ -135,7 +168,12 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log("Login request:", { email, password: "[REDACTED]" });
+    console.log("Login request:", { 
+      email, 
+      password: "[REDACTED]",
+      origin: req.headers.origin,
+      userAgent: req.headers['user-agent']?.substring(0, 50)
+    });
     console.log("JWT_SECRET:", process.env.JWT_SECRET ? "Present" : "Missing");
 
     if (!email || !password) {
@@ -148,22 +186,40 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials: Email not found" });
     }
 
-    const isMatch = await user.matchPassword(password);
+    const isMatch = await user.matchPassword(password.trim());
     if (!isMatch) {
       console.log("Password mismatch for email:", email);
       return res.status(400).json({ message: "Invalid credentials: Incorrect password" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { 
+        id: user._id,
+        email: user.email,
+        iat: Math.floor(Date.now() / 1000)
+      }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: "7d" }
+    );
 
     setAuthCookie(res, token);
 
-    res.status(200).json({ message: "Login successful", user: { name: user.name, email: user.email }, token });
+    console.log("Login successful for user:", { email: user.email, id: user._id });
+
+    // Send token in response body as fallback
+    res.status(200).json({ 
+      message: "Login successful", 
+      user: { name: user.name, email: user.email }, 
+      token,
+      success: true
+    });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Login error:", {
+      message: error.message,
+      stack: error.stack,
+      email: req.body?.email
+    });
+    res.status(500).json({ message: "Server error during login" });
   }
 });
 
@@ -271,7 +327,7 @@ router.post("/verify-code", async (req, res) => {
       return res.status(400).json({ message: "Invalid code" });
     }
 
-    user.password = newPassword;
+    user.password = newPassword.trim();
     user.resetCode = undefined;
     await user.save();
     console.log("Password reset successful for user:", { email: user.email });

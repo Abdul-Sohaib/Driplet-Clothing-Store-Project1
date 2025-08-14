@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { IoIosCloseCircle } from "react-icons/io";
@@ -41,6 +41,34 @@ const AuthPopup = ({ onClose, isAuthenticated = false }: AuthPopupProps) => {
     code: ""
   });
 
+  useEffect(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const fetchUser = async (_retryCount = 0) => {
+    setIsLogin(true);
+    setError(null);
+    try {
+      console.log("Attempting to fetch user with credentials:", {
+        withCredentials: true,
+        origin: window.location.origin
+      });
+      
+      const res = await axios.get(`${API_BASE}/auth/user`, {
+        withCredentials: true,
+      });
+      
+      console.log("Cookies in response:", res.headers['set-cookie']);
+      // ... rest of your code
+    } catch (err: any) {
+      console.error("Cookie debug:", {
+        cookies: document.cookie,
+        origin: window.location.origin,
+        error: err.response?.data
+      });
+      // ... rest of your error handling
+    }
+  };
+  fetchUser();
+}, []);
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -53,11 +81,20 @@ const AuthPopup = ({ onClose, isAuthenticated = false }: AuthPopupProps) => {
     setShowPassword(prev => !prev);
   }, []);
 
-  const handleApiError = useCallback((err: any) => {
-    const message = err.response?.data?.message || err.message;
-    console.error(`${forgotMode ? 'Reset' : isLogin ? 'Login' : 'Register'} error:`, message);
+ const handleApiError = useCallback((err: any) => {
+  const message = err.response?.data?.message || err.message;
+  if (message.includes('CORS') || message.includes('Origin not allowed')) {
+    toast.error("Authentication failed due to security restrictions. Please try again or contact support.");
+    console.error("CORS Error:", {
+      url: err.config?.url,
+      origin: window.location.origin,
+      error: message
+    });
+  } else {
     toast.error(message || "Operation failed");
-  }, [forgotMode, isLogin]);
+  }
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [forgotMode, isLogin]);
 
   const fetchUser = useCallback(async () => {
     try {
@@ -69,6 +106,8 @@ const AuthPopup = ({ onClose, isAuthenticated = false }: AuthPopupProps) => {
       throw err;
     }
   }, []);
+
+  
 
   const handleRegister = useCallback(async () => {
     if (formData.password.trim().length < 6) {
@@ -341,3 +380,8 @@ const AuthPopup = ({ onClose, isAuthenticated = false }: AuthPopupProps) => {
 };
 
 export default AuthPopup;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function setError(_arg0: null) {
+  throw new Error("Function not implemented.");
+}

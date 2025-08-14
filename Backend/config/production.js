@@ -2,8 +2,13 @@
 module.exports = {
   // Your frontend URLs
   CLIENT_APP_URL: process.env.CLIENT_APP_URL || 'https://driplet.netlify.app',
-  ADMIN_APP_URL: process.env.ADMIN_APP_URL || 'https://driplet-admin-pannel.netlify.app',
+  ADMIN_APP_URL: process.env.ADMIN_APP_URL || 'https://driplet-admin-panel.netlify.app',
   CUSTOM_DOMAIN: process.env.CUSTOM_DOMAIN || '', // Optional custom domain
+  COOKIE_DOMAIN: '.netlify.app',
+  
+  // CLIENT_APP_URL: process.env.CLIENT_APP_URL || 'http://localhost:5173/',
+  // ADMIN_APP_URL: process.env.ADMIN_APP_URL || 'http://localhost:5174/',
+  // CUSTOM_DOMAIN: process.env.CUSTOM_DOMAIN || '', // Optional custom domain
   
   // Cookie domain - leave empty for automatic detection or set specific domain
   // For cross-subdomain cookies, use '.yourdomain.com' (with leading dot)

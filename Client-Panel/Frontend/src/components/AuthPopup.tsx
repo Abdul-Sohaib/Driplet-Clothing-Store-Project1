@@ -129,21 +129,30 @@ const AuthPopup = ({ onClose, isAuthenticated = false }: AuthPopupProps) => {
     }
   }, [formData, onClose, handleApiError, fetchUser]);
 
-  const handleLogin = useCallback(async () => {
-    try {
-      console.log("Login attempt:", { email: formData.email.toLowerCase(), password: "[REDACTED]" });
-      await axios.post(`${API_BASE}/auth/login`, {
-        email: formData.email.toLowerCase(),
-        password: formData.password.trim()
-      }, { withCredentials: true });
-      const user = await fetchUser();
-      onClose(user);
-      toast.success("Login successful!");
-    } catch (err: any) {
-      handleApiError(err);
-    }
-  }, [formData, onClose, handleApiError, fetchUser]);
-
+// Update the login handler to properly check for cookies
+const handleLogin = async () => {
+  try {
+    const response = await axios.post(`${API_BASE}/auth/login`, {
+      email: formData.email,
+      password: formData.password,
+    }, { withCredentials: true });
+    console.log("Login response:", {
+      data: response.data,
+      headers: response.headers,
+      cookies: document.cookie, // Debug cookies
+    });
+    onClose(response.data.user);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    window.dispatchEvent(new Event("authChange"));
+  } catch (err: any) {
+    console.error("Login error:", {
+      message: err.response?.data?.message,
+      cookies: document.cookie,
+      origin: window.location.origin,
+    });
+    toast.error(err.response?.data?.message || err.message);
+  }
+};
   const handleLogout = useCallback(async () => {
     try {
       console.log("Logout attempt");

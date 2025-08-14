@@ -111,6 +111,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// Update CORS middleware to handle credentials properly
+app.use(cors({
+  ...corsOptions,
+  credentials: true,
+  exposedHeaders: ['set-cookie', 'Set-Cookie']
+}));
+
 // 🗄️ Cache Middleware for GET routes only (excluding cart/wishlist)
 const cacheMiddleware = (duration) => (req, res, next) => {
   if (req.method !== "GET" || req.url.includes('/api/cart') || req.url.includes('/api/wishlist')) {

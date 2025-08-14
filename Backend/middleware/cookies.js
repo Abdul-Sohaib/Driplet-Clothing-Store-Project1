@@ -17,6 +17,7 @@ const prodConfig = require('../config/production');
  * @param {Object} options - Additional cookie options
  * @returns {Object} Cookie configuration object
  */
+// Update the production cookie settings to be more permissive during development
 const getCookieOptions = (options = {}) => {
   const isProduction = process.env.NODE_ENV === 'production';
   
@@ -32,15 +33,16 @@ const getCookieOptions = (options = {}) => {
       ...baseOptions,
       secure: true,
       sameSite: 'none',
-      domain: prodConfig.COOKIE_DOMAIN || undefined // Only set if COOKIE_DOMAIN is specified
+      domain: prodConfig.COOKIE_DOMAIN || undefined
     };
   }
   
-  // Development settings
+  // Development settings - make these more permissive
   return {
     ...baseOptions,
     secure: false,
-    sameSite: 'lax'
+    sameSite: 'lax',
+    domain: 'localhost' // Explicitly set domain for development
   };
 };
 

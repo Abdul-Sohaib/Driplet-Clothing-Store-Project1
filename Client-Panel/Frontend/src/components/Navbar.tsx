@@ -61,47 +61,54 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
     };
     fetchData();
 
-    const checkAuth = async (retryCount = 0) => {
-      try {
-        const res = await axiosInstance.get(`/auth/user`, { withCredentials: true });
-        console.log("Auth check response:", {
-          data: res.data,
-          status: res.status,
-          headers: res.headers,
-        });
-        setUser(res.data.user || null);
-        window.dispatchEvent(new Event("authChange"));
-      } catch (err: any) {
-        const errorMsg = err.response?.data?.message || err.message || "Auth check failed";
-        console.error("Initial auth check error:", {
-          message: errorMsg,
-          status: err.response?.status,
-          headers: err.response?.headers,
-        });
-        if ((errorMsg.includes("Unauthorized") || errorMsg.includes("Invalid token")) && retryCount < 3) {
-          setTimeout(() => checkAuth(retryCount + 1), Math.pow(2, retryCount) * 1000);
-          return;
-        }
-        setUser(null);
-        const timeout = setTimeout(() => setShowAuth(true), 2000);
-        return () => clearTimeout(timeout);
-      }
-    };
+const checkAuth = async (retryCount = 0) => {
+  try {
+    const res = await axiosInstance.get(`/auth/user`, { withCredentials: true });
+    console.log("Auth check response:", {
+      data: res.data,
+      status: res.status,
+      headers: res.headers,
+    });
+    setUser(res.data.user || null);
+    localStorage.setItem('user', JSON.stringify(res.data.user || null));
+    window.dispatchEvent(new Event("authChange"));
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || err.message || "Auth check failed";
+    console.error("Initial auth check error:", {
+      message: errorMsg,
+      status: err.response?.status,
+      headers: err.response?.headers,
+    });
+    if ((errorMsg.includes("Unauthorized") || errorMsg.includes("Invalid token")) && retryCount < 3) {
+      setTimeout(() => checkAuth(retryCount + 1), Math.pow(2, retryCount) * 1000);
+      return;
+    }
+    const storedUser = localStorage.getItem('user');
+    setUser(storedUser ? JSON.parse(storedUser) : null); // Fallback to local storage
+  }
+};
     checkAuth();
   }, [showAuth]);
 
-  const handleLogout = async () => {
-    try {
-      await axiosInstance.post(`/auth/logout`, {}, { withCredentials: true });
-      setUser(null);
-      setShowUserCard(false);
-      setTimeout(() => setShowAuth(true), 10000);
-      window.dispatchEvent(new Event("authChange"));
-    } catch (err) {
-      console.error("Logout error:", err);
-    }
-  };
+  useEffect(() => {
+  const storedUser = localStorage.getItem('user');
+  if (storedUser) {
+    setUser(JSON.parse(storedUser));
+  }
+  checkAuth();
+}, []);
 
+const handleLogout = async () => {
+  try {
+    await axiosInstance.post(`/auth/logout`, {}, { withCredentials: true });
+    setUser(null);
+    localStorage.removeItem('user');
+    window.dispatchEvent(new Event("authChange"));
+    console.log("Logged out, cookies:", document.cookie);
+  } catch (err) {
+    console.error("Logout error:", err);
+  }
+};
   const handleAuthSuccess = (user: User | null) => {
     setUser(user);
     setShowAuth(false);
@@ -358,3 +365,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
 };
 
 export default Navbar;
+
+function checkAuth() {
+  throw new Error("Function not implemented.");
+}

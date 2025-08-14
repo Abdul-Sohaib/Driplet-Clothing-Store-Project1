@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import img from "@/assets/accountimg1.png";
 import img2 from "@/assets/accountimg2.jpg";
 import img3 from "@/assets/accountimg3.jpg";
@@ -11,6 +12,7 @@ import { easeOut } from "framer-motion";
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface User {
+  id?: string;
   name: string;
   email: string;
   gender?: string;
@@ -44,8 +46,7 @@ const textParts = [
   { text: " in every thread — identity owned unapologetically.", type: "normal" },
 ];
 
-
-// Variants
+// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
@@ -88,123 +89,253 @@ const Account: React.FC = () => {
   const [gender, setGender] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isGenderUpdating, setIsGenderUpdating] = useState(false);
+  const navigate = useNavigate();
 
-useEffect(() => {
-  const fetchUser = async (retryCount = 0) => {
+  // Memoized fetch function to prevent recreation on every render
+  const fetchUser = useCallback(async (retryCount = 0) => {
+    // Prevent multiple simultaneous requests
+    if (isLoading && retryCount === 0) return;
+    
     setIsLoading(true);
     setError(null);
+    
     try {
+      console.log("Fetching user data...", { retryCount });
+      
       const res = await axios.get(`${API_BASE}/auth/user`, {
         withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
-      console.log("User fetch response:", {
-        data: res.data,
+      
+      console.log("User fetch successful:", {
         status: res.status,
-        headers: res.headers,
+        hasUser: !!res.data.user,
+        userId: res.data.user?.id
       });
-      setUser(res.data.user || null);
+      
+      if (!res.data.user || !res.data.user.id) {
+        throw new Error("Invalid user data received");
+      }
+      
+      setUser(res.data.user);
       setGender(res.data.user?.gender || "");
+      
+      // Store user data for consistency
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      
     } catch (err: any) {
-      const errorMsg =
-        err.response?.data?.message || err.message || "Failed to fetch user data";
+      const errorMsg = err.response?.data?.message || err.message || "Failed to fetch user data";
       console.error("Error fetching user:", {
         message: errorMsg,
         status: err.response?.status,
-        headers: err.response?.headers,
+        retryCount
       });
-      if ((errorMsg.includes("Unauthorized") || errorMsg.includes("Invalid token"))) {
-        if (retryCount < 3) {
-          setTimeout(() => fetchUser(retryCount + 1), Math.pow(2, retryCount) * 1000);
-          return;
-        }
-        // Clear user data when unauthorized
-        setUser(null);
+      
+      // Check if should retry
+      const shouldRetry = (
+        (errorMsg.includes("Unauthorized") || 
+         errorMsg.includes("Invalid token") || 
+         errorMsg.includes("User not found") ||
+         err.response?.status === 401) && 
+        retryCount < 2
+      );
+      
+      if (shouldRetry) {
+        console.log(`Retrying user fetch, attempt ${retryCount + 1}`);
+        setTimeout(() => fetchUser(retryCount + 1), 1000 * (retryCount + 1));
         return;
       }
-      setError(errorMsg);
-      toast.error(`Failed to fetch user data: ${errorMsg}. Please try again.`);
+      
+      // Handle persistent auth failure
+      setUser(null);
+      setError("Authentication failed. Please log in again.");
+      localStorage.removeItem('user');
+      
+      // Dispatch auth error event
+      window.dispatchEvent(new CustomEvent("auth-error", { detail: errorMsg }));
+      
+      // Redirect to home page after a delay
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+      
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [navigate, isLoading]);
 
-  fetchUser();
-
-  const handleAuthChange = () => {
-    // Only fetch if we don't already have an error
-    if (!error) {
+  // Handle auth changes from other components
+  const handleAuthChange = useCallback(() => {
+    console.log("Auth change event received in Account");
+    // Only fetch if not already loading and no current user
+    if (!isLoading && !user) {
       fetchUser();
     }
-  };
+  }, [fetchUser, isLoading, user]);
 
-  window.addEventListener("authChange", handleAuthChange);
-  return () => {
-    window.removeEventListener("authChange", handleAuthChange);
-  };
-}, [error]); // Remove error from dependencies to prevent loop
+  useEffect(() => {
+    let isMounted = true;
+    
+    // Check if user exists in localStorage first
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser && parsedUser.id && isMounted) {
+          console.log("Using stored user data");
+          setUser(parsedUser);
+          setGender(parsedUser.gender || "");
+          setIsLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.error("Error parsing stored user:", err);
+        localStorage.removeItem('user');
+      }
+    }
+    
+    // Only fetch if we don't have stored user data
+    if (isMounted && !user) {
+      fetchUser();
+    }
+
+    // Add event listeners
+    window.addEventListener("authChange", handleAuthChange);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("authChange", handleAuthChange);
+    };
+  }, [fetchUser, handleAuthChange, user]); // Empty dependency array to run only once
+
   const handleGenderChange = async (value: string) => {
+    if (isGenderUpdating) return; // Prevent multiple simultaneous updates
+    
     const newGender = gender === value ? "" : value;
+    const previousGender = gender;
+    
+    // Optimistic update
     setGender(newGender);
-    setIsLoading(true);
+    setIsGenderUpdating(true);
+    
     try {
+      console.log("Updating gender to:", newGender);
+      
       const response = await axios.put(
         `${API_BASE}/auth/user`,
         { gender: newGender },
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
       );
-      console.log("Gender update response:", {
-        data: response.data,
+      
+      console.log("Gender update successful:", {
         status: response.status,
-        headers: response.headers,
+        newGender: response.data.user?.gender
       });
-      setUser(response.data.user || null);
-      setGender(response.data.user?.gender || "");
+      
+      if (response.data.user) {
+        setUser(response.data.user);
+        setGender(response.data.user.gender || "");
+        
+        // Update localStorage
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // Dispatch auth change event
+        window.dispatchEvent(new Event("authChange"));
+      }
+      
       toast.success("Gender updated successfully!");
-      window.dispatchEvent(new Event("authChange"));
+      
     } catch (err: any) {
-      const errorMsg =
-        err.response?.data?.message || err.message || "Failed to update gender";
+      const errorMsg = err.response?.data?.message || err.message || "Failed to update gender";
       console.error("Error updating gender:", {
         message: errorMsg,
-        status: err.response?.status,
-        headers: err.response?.headers,
+        status: err.response?.status
       });
-      toast.error(`Failed to update gender: ${errorMsg}. Please try again.`);
+      
+      // Revert optimistic update
+      setGender(previousGender);
+      toast.error(`Failed to update gender: ${errorMsg}`);
+      
     } finally {
-      setIsLoading(false);
+      setIsGenderUpdating(false);
     }
   };
 
-  if (error) {
+  // Loading state
+  if (isLoading && !user) {
     return (
       <div className="w-screen h-screen flex justify-center items-center bg-[#F5F5DC]">
         <div className="text-center p-6 bg-white rounded-lg shadow-lg">
-          <p className="text-red-600 text-xl font-bold">{error}</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-black text-xl font-semibold">Loading your account...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="w-screen h-screen flex justify-center items-center bg-[#F5F5DC]">
+        <div className="text-center p-6 bg-white rounded-lg shadow-lg max-w-md">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <p className="text-red-600 text-xl font-bold mb-4">{error}</p>
+          <div className="space-y-3">
+            <button
+              onClick={() => {
+                setError(null);
+                fetchUser();
+              }}
+              className="w-full px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => navigate('/')}
+              className="w-full px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+            >
+              Go Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No user state
+  if (!user) {
+    return (
+      <div className="w-screen h-screen flex justify-center items-center bg-[#F5F5DC]">
+        <div className="text-center p-6 bg-white rounded-lg shadow-lg">
+          <p className="text-black text-xl mb-4">No user data available.</p>
           <button
-            onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={() => navigate('/')}
+            className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
           >
-            Retry
+            Go Home
           </button>
         </div>
       </div>
     );
   }
 
-  if (!user) {
-    return (
-      <div className="w-screen h-screen flex justify-center items-center bg-[#F5F5DC]">
-        <p className="text-black text-xl">No user data available.</p>
-      </div>
-    );
-  }
-
+  // Main component render
   return (
     <div className="w-screen h-[90vh] flex flex-col overflow-hidden justify-center items-center bg-[#F5F5DC] p-10">
-      <div className="w-full h-full grid grid-cols-2 gap-6 place-items-center items-center">
-        <div className="col-span-1 flex flex-col justify-between gap-10">
+      <div className="w-full h-full grid grid-cols-1 lg:grid-cols-2 gap-6 place-items-center items-center">
+        <div className="col-span-1 flex flex-col justify-between gap-10 w-full">
           <div className="flex flex-col gap-8">
-            <h2 className="text-4xl font-bold text-black mb-4 textheading">{user.name}</h2>
+            <h2 className="text-4xl font-bold text-black mb-4 textheading">
+              {user.name}
+            </h2>
 
             {/* Animated Paragraph */}
             <motion.div
@@ -234,71 +365,88 @@ useEffect(() => {
             </motion.div>
 
             {/* Gender + Email */}
-            <div className="flex w-full justify-between items-center h-full">
-              <p className="text-lg text-black mb-4 navfonts font-bold button-add rounded-3xl">
-                {user.email}
-              </p>
-              <div className="flex justify-center items-center gap-5 navfonts button-add rounded-3xl">
+            <div className="flex w-full justify-between items-center h-full flex-wrap gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-lg text-black navfonts font-bold button-add rounded-3xl px-4 py-2 truncate">
+                  {user.email}
+                </p>
+              </div>
+              <div className="flex justify-center items-center gap-5 navfonts button-add rounded-3xl px-4 py-2">
                 <label className="text-xl font-semibold text-black">
-                  Gender--
+                  Gender:
                 </label>
-                <div className="mt-2 flex gap-4 text-black">
+                <div className="flex gap-4 text-black">
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       checked={gender === "Male"}
                       onChange={() => handleGenderChange("Male")}
-                      disabled={isLoading}
-                      className="accent-purple-600 cursor-pointer"
+                      disabled={isGenderUpdating}
+                      className="accent-purple-600 cursor-pointer disabled:opacity-50"
                     />
-                    Male
+                    <span className={isGenderUpdating ? "opacity-50" : ""}>Male</span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       checked={gender === "Female"}
                       onChange={() => handleGenderChange("Female")}
-                      disabled={isLoading}
-                      className="accent-purple-600 cursor-pointer"
+                      disabled={isGenderUpdating}
+                      className="accent-purple-600 cursor-pointer disabled:opacity-50"
                     />
-                    Female
+                    <span className={isGenderUpdating ? "opacity-50" : ""}>Female</span>
                   </label>
                 </div>
+                {isGenderUpdating && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-      
-        <div className="col-span-1 flex justify-center items-center">
+        {/* Images Section */}
+        <div className="col-span-1 flex justify-center items-center w-full">
           <motion.div
             className="relative w-full h-[60vh]"
             variants={cardsContainerVariants}
             initial="hidden"
             animate="show"
           >
-           
             <motion.div
               variants={cardVariants}
-              className="absolute top-0 right-[2vw] w-[20vw] h-fit bg-pink-200 rounded-lg shadow-lg rotate-[-4deg] z-10 overflow-hidden"
+              className="absolute top-0 right-[2vw] w-[20vw] min-w-[200px] h-fit bg-pink-200 rounded-lg shadow-lg rotate-[-4deg] z-10 overflow-hidden"
             >
-              <img src={img} alt="Image 1" className="object-cover w-full h-full" />
+              <img 
+                src={img} 
+                alt="Fashion Image 1" 
+                className="object-cover w-full h-full" 
+                loading="lazy"
+              />
             </motion.div>
 
-           
             <motion.div
               variants={cardVariants}
-              className="absolute left-[0vw] w-[22vw] h-fit bg-orange-300 rounded-lg shadow-lg rotate-[4deg] z-20 overflow-hidden"
+              className="absolute left-[0vw] w-[22vw] min-w-[220px] h-fit bg-orange-300 rounded-lg shadow-lg rotate-[4deg] z-20 overflow-hidden"
             >
-              <img src={img2} alt="Image 2" className="object-cover w-full h-full" />
+              <img 
+                src={img2} 
+                alt="Fashion Image 2" 
+                className="object-cover w-full h-full" 
+                loading="lazy"
+              />
             </motion.div>
 
-          
             <motion.div
               variants={cardVariants}
-              className="absolute top-[17vh] -left-[9vw] w-[14vw] h-fit bg-white rounded-lg shadow-lg rotate-[-1deg] z-30 overflow-hidden"
+              className="absolute top-[19vh] left-[17vw] w-[14vw] min-w-[140px] h-fit bg-white rounded-lg shadow-lg rotate-[-1deg] z-30 overflow-hidden"
             >
-              <img src={img3} alt="Image 3" className="object-cover w-full h-full" />
+              <img 
+                src={img3} 
+                alt="Fashion Image 3" 
+                className="object-cover w-full h-full" 
+                loading="lazy"
+              />
             </motion.div>
           </motion.div>
         </div>

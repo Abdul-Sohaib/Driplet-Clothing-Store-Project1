@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import { AiFillStar } from "react-icons/ai";
 import { IoCartOutline } from "react-icons/io5";
 import gsap from "gsap";
@@ -13,7 +12,6 @@ import wishlistlike from '@/assets/wishlist.png';
 import { motion, type Variants } from "framer-motion";
 import axiosInstance from "../lib/axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface Product {
   id: string | number;

@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import axios from "axios";
 import FilterSection from "@/components/Filtersection";
 import Bestseller_cards from "@/components/Product_cards";
 import { VscListFlat } from "react-icons/vsc";
 import Loading from "@/components/Loading";
 import axiosInstance from "../lib/axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface Product {
   id: string | number;

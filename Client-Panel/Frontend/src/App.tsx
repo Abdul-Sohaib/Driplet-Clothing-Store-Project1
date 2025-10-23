@@ -1,20 +1,20 @@
-import { useState, useEffect } from "react";
+import { Suspense, lazy, useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "./lib/axios";
 import { ToastContainer, toast } from "react-toastify";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import "react-toastify/dist/ReactToastify.css";
-import SplashScreen from "./Pages/SplashScreen";
-import Landingpage from "./Pages/Landingpage";
-import Bestseller from "./Pages/Bestseller";
-import ProductCard from "./Pages/Productcard";
-import Account from "./components/Account";
-import Orders from "./components/Orders";
-import ReturnExchange from "./components/ReturnExchange";
-import Layout from "./components/Layout";
 
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const SplashScreen = lazy(() => import("./Pages/SplashScreen"));
+const Landingpage = lazy(() => import("./Pages/Landingpage"));
+const Bestseller = lazy(() => import("./Pages/Bestseller"));
+const ProductCard = lazy(() => import("./Pages/Productcard"));
+const Account = lazy(() => import("./components/Account"));
+const Orders = lazy(() => import("./components/Orders"));
+const ReturnExchange = lazy(() => import("./components/ReturnExchange"));
+const Layout = lazy(() => import("./components/Layout"));
+
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -25,9 +25,7 @@ const App = () => {
 
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/products`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
-        });
+        const res = await axiosInstance.get(`/products`);
         setProducts(res.data);
       } catch (err) {
         console.error("Failed to fetch products", err);
@@ -45,23 +43,11 @@ const App = () => {
     <>
       <AnimatePresence mode="wait">
         {showSplash ? (
-          <motion.div
-            key="splash"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1 }}
-          >
+          <Suspense fallback={<div />}> {/* fallback can be improved */}
             <SplashScreen />
-          </motion.div>
+          </Suspense>
         ) : (
-          <motion.div
-            key="main"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1 }}
-          >
+          <Suspense fallback={<div />}> {/* fallback can be improved */}
             <Routes>
               <Route path="/" element={<Layout />} >
                 <Route index element={<Landingpage />} />
@@ -73,7 +59,7 @@ const App = () => {
                 <Route path="/return-exchange" element={<ReturnExchange />} />
               </Route>
             </Routes>
-          </motion.div>
+          </Suspense>
         )}
       </AnimatePresence>
       <ToastContainer position="top-center" autoClose={5000} />

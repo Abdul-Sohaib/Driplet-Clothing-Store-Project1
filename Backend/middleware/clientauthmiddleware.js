@@ -1,73 +1,89 @@
-// middleware/clientauthmiddleware.js
 const jwt = require('jsonwebtoken');
 const User = require('../models/Client/clientuser');
 
-const authMiddleware = async (req, res, next) => {
+const clientAuthMiddleware = async (req, res, next) => {
   try {
-    console.log("AuthMiddleware: Method=" + req.method + ", URL=" + req.url);
-    console.log("Parsed cookies:", req.cookies);
+    console.log('[AUTH] Method=' + req.method + ', URL=' + req.path);
 
-    // Get token from cookies (primary) or Authorization header (fallback)
-    let token = req.cookies.token || req.cookies.authToken;
+    // Extract token from cookies (primary) or headers (fallback)
+    let token = req.cookies?.token || req.cookies?.authToken;
     
     if (!token) {
+      // Try Authorization header
       const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7);
+      if (authHeader) {
+        if (authHeader.startsWith('Bearer ')) {
+          token = authHeader.substring(7);
+        } else {
+          token = authHeader;
+        }
       }
     }
 
     if (!token) {
-      console.log("No token found in cookies or headers");
-      return res.status(401).json({ message: 'Access denied. No token provided.' });
+      console.warn('[AUTH] No token found in cookies or headers for path:', req.path);
+      console.warn('[AUTH] Available cookies:', Object.keys(req.cookies || {}));
+      console.warn('[AUTH] Authorization header:', req.headers.authorization ? 'present' : 'missing');
+      
+      return res.status(401).json({ 
+        success: false,
+        message: 'No token found. Please authenticate.' 
+      });
     }
 
-    console.log("Token received:", token.substring(0, 10) + "...");
+    console.log('[AUTH] Token found, attempting verification...');
 
-    // Verify token
+    // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Token decoded:", decoded);
-
-    // Find user by ID from token
+    
+    // Fetch user from database
     const user = await User.findById(decoded.id).select('-password -resetCode');
     
     if (!user) {
-      console.log("User not found for ID:", decoded.id);
-      return res.status(401).json({ message: 'User not found. Invalid token.' });
+      console.warn('[AUTH] User not found for token ID:', decoded.id);
+      return res.status(401).json({ 
+        success: false,
+        message: 'User not found. Invalid token.' 
+      });
     }
 
-    console.log("Authentication successful:", {
-      id: user._id,
-      email: user.email,
-      name: user.name
-    });
-
-    // Set user data on request object with both _id and id for compatibility
+    // Attach user to request with both _id and id for compatibility
     req.user = {
       _id: user._id,
-      id: user._id, // Add this for compatibility
+      id: user._id.toString(),
       email: user.email,
       name: user.name,
-      gender: user.gender
+      gender: user.gender || ''
     };
 
+    console.log('[AUTH] Authentication successful for user:', req.user.email);
     next();
+    
   } catch (error) {
-    console.error("AuthMiddleware error:", {
+    console.error('[AUTH] Middleware error:', {
       message: error.message,
-      name: error.name,
-      stack: error.stack
+      name: error.name
     });
 
     if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ message: 'Invalid token.' });
-    }
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ message: 'Token expired.' });
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid token.' 
+      });
     }
     
-    res.status(500).json({ message: 'Server error during authentication.' });
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Token expired. Please log in again.' 
+      });
+    }
+    
+    res.status(500).json({ 
+      success: false,
+      message: 'Authentication error.' 
+    });
   }
 };
 
-module.exports = authMiddleware;
+module.exports = clientAuthMiddleware;

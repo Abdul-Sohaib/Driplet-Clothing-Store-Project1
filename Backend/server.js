@@ -77,6 +77,7 @@ app.use(helmet({
   }
 }));
 
+// Remove duplicate CORS middleware and ensure only one is used before routes
 app.use(cors(corsOptions));
 app.options('*', cors(preflightCorsOptions));
 app.use(cookieParser());
@@ -90,13 +91,23 @@ app.use(
   })
 );
 
+// Add global middleware to always set CORS headers for credentials
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  next();
+});
+
 // 🧾 Log all requests
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}, Origin: ${req.headers.origin}, Cookies:`, req.cookies || "None");
   
   if (req.method === 'OPTIONS') {
-    console.log(`🔄 CORS Preflight Request - Origin: ${req.headers.origin}`);
-    console.log(`🔄 CORS Headers:`, {
+    console.log(` CORS Preflight Request - Origin: ${req.headers.origin}`);
+    console.log(` CORS Headers:`, {
       'access-control-request-method': req.headers['access-control-request-method'],
       'access-control-request-headers': req.headers['access-control-request-headers'],
       'origin': req.headers.origin
@@ -111,27 +122,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// Update CORS middleware to handle credentials properly
-app.use(cors({
-  ...corsOptions,
-  credentials: true,
-  exposedHeaders: ['set-cookie', 'Set-Cookie']
-}));
-
 // 🗄️ Cache Middleware for GET routes only (excluding cart/wishlist)
 const cacheMiddleware = (duration) => (req, res, next) => {
   if (req.method !== "GET" || req.url.includes('/api/cart') || req.url.includes('/api/wishlist')) {
-    console.log(`🗄️ Bypassing cache for ${req.method} ${req.url}`);
+    console.log(` Bypassing cache for ${req.method} ${req.url}`);
     return next();
   }
   const key = `__express__${req.originalUrl || req.url}`;
   const cachedBody = cache.get(key);
   if (cachedBody) {
-    console.log(`🗄️ Cache hit for ${key}`);
+    console.log(` Cache hit for ${key}`);
     res.setHeader("X-Cache", "HIT");
     return res.json(cachedBody);
   }
-  console.log(`🗄️ Cache miss for ${key}`);
+  console.log(` Cache miss for ${key}`);
   res.setHeader("X-Cache", "MISS");
   const originalJson = res.json;
   res.json = function (body) {
@@ -160,8 +164,8 @@ app.use("/api/auth", authRoutes);
 
 // 🧪 CORS Test Endpoint
 app.get('/api/cors-test', (req, res) => {
-  console.log(`🧪 CORS Test Request - Origin: ${req.headers.origin}`);
-  console.log(`🧪 CORS Test - All Headers:`, req.headers);
+  console.log(` CORS Test Request - Origin: ${req.headers.origin}`);
+  console.log(` CORS Test - All Headers:`, req.headers);
   
   res.json({
     message: 'CORS is working!',
@@ -221,7 +225,7 @@ app.use('/images', (req, res, next) => {
 // ❌ Global Error Handler
 app.use((err, req, res, next) => {
   if (err.message === 'Not allowed by CORS') {
-    console.error("🚫 CORS Error:", {
+    console.error(" CORS Error:", {
       message: err.message,
       origin: req.headers.origin,
       method: req.method,

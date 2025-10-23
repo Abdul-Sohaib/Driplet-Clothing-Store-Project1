@@ -93,105 +93,140 @@ const AuthPopup = ({ onClose, isAuthenticated = false }: AuthPopupProps) => {
     }
   }, []);
 
-  const handleLogin = useCallback(async () => {
-    if (!formData.email || !formData.password) {
-      toast.error("Please fill in all fields");
-      return;
-    }
+// INSTRUCTIONS: Replace the existing handleLogin and handleRegister functions in AuthPopup.tsx
+// Find these functions in your file and replace them completely
 
-    setIsLoading(true);
-    try {
-      console.log("Login attempt for:", formData.email);
-      
-      const response = await axios.post(`${API_BASE}/auth/login`, {
-        email: formData.email.toLowerCase().trim(),
-        password: formData.password.trim()
-      }, { 
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+// ============================================
+// REPLACE handleLogin function with this:
+// ============================================
+const handleLogin = useCallback(async () => {
+  if (!formData.email || !formData.password) {
+    toast.error("Please fill in all fields");
+    return;
+  }
 
-      console.log("Login response:", {
-        status: response.status,
-        data: response.data,
-        cookies: document.cookie
-      });
-
-      if (!response.data.user || !response.data.user.id) {
-        throw new Error("Invalid user data received from login");
+  setIsLoading(true);
+  try {
+    console.log("Login attempt for:", formData.email);
+    console.log("Client cookies before login:", document.cookie);
+    
+    const response = await axios.post(`${API_BASE}/auth/login`, {
+      email: formData.email.toLowerCase().trim(),
+      password: formData.password.trim()
+    }, { 
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json'
       }
+    });
 
-      // Store user data
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      // Close popup and notify parent
-      onClose(response.data.user);
-      
-      // Dispatch auth change event
-      window.dispatchEvent(new Event("authChange"));
-      
-      toast.success("Login successful!");
-      
-    } catch (err: any) {
-      console.error("Login error:", {
-        message: err.response?.data?.message || err.message,
-        status: err.response?.status,
-        cookies: document.cookie
-      });
-      handleApiError(err);
-    } finally {
-      setIsLoading(false);
+    console.log("Login response:", {
+      status: response.status,
+      hasUser: !!response.data.user,
+      hasToken: !!response.data.token,
+      cookies: document.cookie
+    });
+
+    if (!response.data.user || !response.data.user.id) {
+      throw new Error("Invalid user data received from login");
     }
-  }, [formData, onClose, handleApiError]);
 
-  const handleRegister = useCallback(async () => {
-    if (!formData.name || !formData.email || !formData.password) {
-      toast.error("Please fill in all fields");
-      return;
+    // Store user data
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    
+    // Store token as fallback for Authorization header
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+      console.log("Token stored in localStorage as fallback");
     }
     
-    if (formData.password.trim().length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
+    onClose(response.data.user);
+    window.dispatchEvent(new Event("authChange"));
+    toast.success("Login successful!");
+    
+  } catch (err: any) {
+    console.error("Login error:", {
+      message: err.response?.data?.message || err.message,
+      status: err.response?.status,
+      cookies: document.cookie
+    });
+    handleApiError(err);
+  } finally {
+    setIsLoading(false);
+  }
+}, [formData, onClose, handleApiError]);
+
+
+  const handleRegister = useCallback(async () => {
+  if (!formData.name || !formData.email || !formData.password) {
+    toast.error("Please fill in all fields");
+    return;
+  }
+  
+  if (formData.password.trim().length < 6) {
+    toast.error("Password must be at least 6 characters");
+    return;
+  }
+
+  setIsLoading(true);
+  try {
+    console.log("Register attempt for:", formData.email);
+    console.log("Client cookies before register:", document.cookie);
+    
+    const response = await axios.post(`${API_BASE}/auth/register`, {
+      name: formData.name.trim(),
+      email: formData.email.toLowerCase().trim(),
+      password: formData.password.trim()
+    }, { 
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log("Registration response:", {
+      status: response.status,
+      hasUser: !!response.data.user,
+      hasToken: !!response.data.token,
+      cookies: document.cookie
+    });
+
+    if (!response.data.user || !response.data.user.id) {
+      throw new Error("Invalid user data received from registration");
     }
 
-    setIsLoading(true);
+    // Store user data
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    
+    // Store token as fallback for Authorization header
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+      console.log("Token stored in localStorage as fallback");
+    }
+    
+    // Fetch user to ensure consistency
     try {
-      console.log("Register attempt for:", formData.email);
-      
-      await axios.post(`${API_BASE}/auth/register`, {
-        name: formData.name.trim(),
-        email: formData.email.toLowerCase().trim(),
-        password: formData.password.trim()
-      }, { 
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      // Fetch user after registration
       const user = await fetchUser();
-      
-      // Store user data
-      localStorage.setItem('user', JSON.stringify(user));
-      
-      // Close popup and notify parent
       onClose(user);
-      
-      // Dispatch auth change event
-      window.dispatchEvent(new Event("authChange"));
-      
-      toast.success("Registration successful!");
-      
-    } catch (err: any) {
-      handleApiError(err);
-    } finally {
-      setIsLoading(false);
+    } catch {
+      // If fetch fails, use response data
+      onClose(response.data.user);
     }
-  }, [formData, onClose, handleApiError, fetchUser]);
+    
+    window.dispatchEvent(new Event("authChange"));
+    toast.success("Registration successful!");
+    
+  } catch (err: any) {
+    console.error("Registration error:", {
+      message: err.response?.data?.message || err.message,
+      status: err.response?.status,
+      cookies: document.cookie
+    });
+    handleApiError(err);
+  } finally {
+    setIsLoading(false);
+  }
+}, [formData, onClose, handleApiError, fetchUser]);
 
   const handleLogout = useCallback(async () => {
     setIsLoading(true);

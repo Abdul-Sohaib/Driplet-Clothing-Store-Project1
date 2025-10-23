@@ -1,54 +1,69 @@
-// middleware/cookies.js
 const config = require('../config/production');
 
-const setAuthCookie = (res, token) => {
+const setAuthCookie = (res, token, options = {}) => {
   try {
     const isProduction = process.env.NODE_ENV === 'production';
-    const cookieOptions = {
+    
+    // More permissive settings for development/localhost
+    const defaultOptions = {
       httpOnly: true,
-      secure: isProduction, // Only secure in production
-      sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-site in production, 'lax' for development
+      secure: false, // CHANGED: Set to false for localhost testing
+      sameSite: 'lax', // CHANGED: Use 'lax' for better compatibility
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/'
     };
 
-    // Set domain only in production if specified in config
-    if (isProduction && config.COOKIE_DOMAIN) {
+    const cookieOptions = { ...defaultOptions, ...options };
+
+    // Only set domain in production AND only if explicitly configured
+    if (isProduction && config?.COOKIE_DOMAIN) {
       cookieOptions.domain = config.COOKIE_DOMAIN;
+      cookieOptions.secure = true; // Enable secure only in production with domain
+      cookieOptions.sameSite = 'none'; // Required for cross-domain in production
     }
 
-    console.log('Setting auth cookie with options:', {
+    console.log('[COOKIE] Setting auth cookies with options:', {
       ...cookieOptions,
-      token: token.substring(0, 10) + '...',
-      environment: process.env.NODE_ENV
+      token: token?.substring(0, 15) + '...',
+      environment: process.env.NODE_ENV,
+      isProduction,
+      hasDomain: !!cookieOptions.domain
     });
 
+    // Set both token names for redundancy
     res.cookie('token', token, cookieOptions);
-    res.cookie('authToken', token, cookieOptions); // Backup cookie name
+    res.cookie('authToken', token, cookieOptions);
+    
+    // Log cookie headers being set
+    console.log('[COOKIE] Response Set-Cookie headers:', res.getHeaders()['set-cookie']);
     
     return res;
   } catch (error) {
-    console.error('Error setting auth cookie:', error);
+    console.error('[COOKIE] Error setting auth cookie:', error.message);
     throw error;
   }
 };
 
-const clearAuthCookie = (res) => {
+const clearAuthCookie = (res, options = {}) => {
   try {
     const isProduction = process.env.NODE_ENV === 'production';
-    const cookieOptions = {
+    
+    const defaultOptions = {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'none' : 'lax',
+      secure: false,
+      sameSite: 'lax',
       path: '/'
     };
 
-    // Set domain only in production if specified in config
-    if (isProduction && config.COOKIE_DOMAIN) {
+    const cookieOptions = { ...defaultOptions, ...options };
+
+    if (isProduction && config?.COOKIE_DOMAIN) {
       cookieOptions.domain = config.COOKIE_DOMAIN;
+      cookieOptions.secure = true;
+      cookieOptions.sameSite = 'none';
     }
 
-    console.log('Clearing auth cookies with options:', {
+    console.log('[COOKIE] Clearing auth cookies with options:', {
       ...cookieOptions,
       environment: process.env.NODE_ENV
     });
@@ -58,7 +73,7 @@ const clearAuthCookie = (res) => {
     
     return res;
   } catch (error) {
-    console.error('Error clearing auth cookie:', error);
+    console.error('[COOKIE] Error clearing auth cookie:', error.message);
     throw error;
   }
 };

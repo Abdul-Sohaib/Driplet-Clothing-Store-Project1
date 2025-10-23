@@ -5,6 +5,7 @@ import FilterSection from "@/components/Filtersection";
 import Bestseller_cards from "@/components/Product_cards";
 import { VscListFlat } from "react-icons/vsc";
 import Loading from "@/components/Loading";
+import axiosInstance from "../lib/axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -33,9 +34,7 @@ const Bestseller = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`${API_BASE}/products`, {
-          withCredentials: true,
-        });
+        const res = await axiosInstance.get(`/products`);
         const mockProducts = res.data.map((p: Product) => ({
           ...p,
           color: p.color || ["Red", "Blue", "Green"][Math.floor(Math.random() * 3)],

@@ -5,7 +5,7 @@ import tshirt1 from '@/assets/bento2.png';
 import tshirt2 from '@/assets/bento1.png';
 import tshirt3 from '@/assets/driplet.png';
 import tshirt4 from '@/assets/image2.png';
-import axios from "axios";
+import axiosInstance from "../lib/axios";
 import { toast } from "react-toastify";
 import AdContainer1 from "@/components/AdContainer1";
 import Bestsellerintro from "@/components/Bestsellerintro";
@@ -56,7 +56,6 @@ const LoadingFallback = () => (
   </mesh>
 );
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 const Mainpage = () => {
   const navigate = useNavigate();
@@ -66,9 +65,7 @@ const Mainpage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/products`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
-        });
+        const res = await axiosInstance.get(`/products`);
         const mockProducts = res.data.slice(0, 8).map((p: Product) => ({
           ...p,
           id: String(p.id),
@@ -150,12 +147,7 @@ const Mainpage = () => {
         setLoading(false);
       }
     };
-
-    const timer = setTimeout(() => {
-      fetchProducts();
-    }, 2000);
-
-    return () => clearTimeout(timer);
+    fetchProducts();
   }, []);
 
   return (

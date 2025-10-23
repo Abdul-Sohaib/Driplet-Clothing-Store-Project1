@@ -93,79 +93,100 @@ const Account: React.FC = () => {
   const navigate = useNavigate();
 
   // Memoized fetch function to prevent recreation on every render
-  const fetchUser = useCallback(async (retryCount = 0) => {
-    // Prevent multiple simultaneous requests
-    if (isLoading && retryCount === 0) return;
+// INSTRUCTIONS: Replace the existing fetchUser function in Account.tsx
+// Find the fetchUser function in your Account.tsx and replace it completely with this:
+
+const fetchUser = useCallback(async (retryCount = 0) => {
+  // Prevent multiple simultaneous requests
+  if (isLoading && retryCount === 0) return;
+  
+  setIsLoading(true);
+  setError(null);
+  
+  try {
+    console.log("Fetching user data...", { 
+      retryCount,
+      clientCookies: document.cookie,
+      hasStoredToken: !!localStorage.getItem('authToken')
+    });
     
-    setIsLoading(true);
-    setError(null);
+    // Prepare headers with fallback token from localStorage
+    const headers: any = {
+      'Content-Type': 'application/json'
+    };
     
-    try {
-      console.log("Fetching user data...", { retryCount });
-      
-      const res = await axios.get(`${API_BASE}/auth/user`, {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log("User fetch successful:", {
-        status: res.status,
-        hasUser: !!res.data.user,
-        userId: res.data.user?.id
-      });
-      
-      if (!res.data.user || !res.data.user.id) {
-        throw new Error("Invalid user data received");
-      }
-      
-      setUser(res.data.user);
-      setGender(res.data.user?.gender || "");
-      
-      // Store user data for consistency
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || "Failed to fetch user data";
-      console.error("Error fetching user:", {
-        message: errorMsg,
-        status: err.response?.status,
-        retryCount
-      });
-      
-      // Check if should retry
-      const shouldRetry = (
-        (errorMsg.includes("Unauthorized") || 
-         errorMsg.includes("Invalid token") || 
-         errorMsg.includes("User not found") ||
-         err.response?.status === 401) && 
-        retryCount < 2
-      );
-      
-      if (shouldRetry) {
-        console.log(`Retrying user fetch, attempt ${retryCount + 1}`);
-        setTimeout(() => fetchUser(retryCount + 1), 1000 * (retryCount + 1));
-        return;
-      }
-      
-      // Handle persistent auth failure
-      setUser(null);
-      setError("Authentication failed. Please log in again.");
-      localStorage.removeItem('user');
-      
-      // Dispatch auth error event
-      window.dispatchEvent(new CustomEvent("auth-error", { detail: errorMsg }));
-      
-      // Redirect to home page after a delay
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
-      
-    } finally {
-      setIsLoading(false);
+    // Add Authorization header as fallback if token exists in localStorage
+    const storedToken = localStorage.getItem('authToken');
+    if (storedToken) {
+      headers['Authorization'] = `Bearer ${storedToken}`;
+      console.log("Using stored token from localStorage as Authorization header");
     }
-  }, [navigate, isLoading]);
+    
+    const res = await axios.get(`${API_BASE}/auth/user`, {
+      withCredentials: true,
+      headers
+    });
+    
+    console.log("User fetch successful:", {
+      status: res.status,
+      hasUser: !!res.data.user,
+      userId: res.data.user?.id,
+      clientCookies: document.cookie
+    });
+    
+    if (!res.data.user || !res.data.user.id) {
+      throw new Error("Invalid user data received");
+    }
+    
+    setUser(res.data.user);
+    setGender(res.data.user?.gender || "");
+    
+    // Store user data for consistency
+    localStorage.setItem('user', JSON.stringify(res.data.user));
+    
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || err.message || "Failed to fetch user data";
+    console.error("Error fetching user:", {
+      message: errorMsg,
+      status: err.response?.status,
+      retryCount,
+      clientCookies: document.cookie,
+      hasStoredToken: !!localStorage.getItem('authToken')
+    });
+    
+    // Check if should retry
+    const shouldRetry = (
+      (errorMsg.includes("Unauthorized") || 
+       errorMsg.includes("Invalid token") || 
+       errorMsg.includes("User not found") ||
+       err.response?.status === 401) && 
+      retryCount < 2
+    );
+    
+    if (shouldRetry) {
+      console.log(`Retrying user fetch, attempt ${retryCount + 1}`);
+      setTimeout(() => fetchUser(retryCount + 1), 1000 * (retryCount + 1));
+      return;
+    }
+    
+    // Handle persistent auth failure
+    setUser(null);
+    setError("Authentication failed. Please log in again.");
+    localStorage.removeItem('user');
+    localStorage.removeItem('authToken');
+    
+    // Dispatch auth error event
+    window.dispatchEvent(new CustomEvent("auth-error", { detail: errorMsg }));
+    
+    // Redirect to home page after a delay
+    setTimeout(() => {
+      navigate('/');
+    }, 2000);
+    
+  } finally {
+    setIsLoading(false);
+  }
+}, [navigate, isLoading]);
 
   // Handle auth changes from other components
   const handleAuthChange = useCallback(() => {

@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import cartgif from '@/assets/load.gif';
 import wishlistlike from '@/assets/wishlist.png';
 import { motion, type Variants } from "framer-motion";
+import axiosInstance from "../lib/axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -45,9 +46,7 @@ const Bestseller_cards = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/products`, {
-          withCredentials: true,
-        });
+        const res = await axiosInstance.get(`/products`);
         const mockProducts = res.data.slice(0, 4).map((p: Product) => ({
           ...p,
           color: p.color || ["Red", "Blue", "Green"][Math.floor(Math.random() * 3)],
@@ -133,15 +132,15 @@ const Bestseller_cards = () => {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const res = await axios.post(
-        `${API_BASE}/cart`,
+      const res = await axiosInstance.post(
+        `/cart`,
         { productId, quantity: 1, size },
         { withCredentials: true }
       );
       console.log(`Added product ${productId} (size: ${size}) to cart`, res.data);
       toast.success("Added to cart!");
       // Fetch updated cart
-      await axios.get(`${API_BASE}/cart`, { withCredentials: true });
+      await axiosInstance.get(`/cart`, { withCredentials: true });
       // Note: Cart state is managed elsewhere (e.g., App.tsx), so no setCartItems here
     } catch (err) {
       console.error("Add to cart error:", (err as any).response?.data?.message || (err as any).message);
@@ -164,8 +163,8 @@ const Bestseller_cards = () => {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const res = await axios.post(
-        `${API_BASE}/wishlist`,
+      const res = await axiosInstance.post(
+        `/wishlist`,
         { productId, size },
         { withCredentials: true }
       );

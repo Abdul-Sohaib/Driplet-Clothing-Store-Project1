@@ -5,13 +5,11 @@ import { useNavigate } from "react-router-dom";
 import { AiFillStar } from "react-icons/ai";
 import { IoCartOutline } from "react-icons/io5";
 import gsap from "gsap";
-import axios from "axios";
 import { toast } from "react-toastify";
 import cartgif from '@/assets/load.gif';
 import wishlistlike from '@/assets/wishlist.png';
 import { motion, type Variants } from "framer-motion";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
+import axiosInstance from "@/lib/axios";
 
 export interface Product {
   id: string | number;
@@ -104,8 +102,8 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
     }
 
     try {
-      const res = await axios.post(
-        `${API_BASE}/cart`,
+      const res = await axiosInstance.post(
+        `/cart`,
         {
           productId,
           quantity: 1,
@@ -161,8 +159,8 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
     }
 
     try {
-      const res = await axios.post(
-        `${API_BASE}/wishlist`,
+      const res = await axiosInstance.post(
+        `/wishlist`,
         {
           productId,
           size,
@@ -292,7 +290,7 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
         key={i}
         src={img}
         alt={`img-${i}`}
-        className=" w-full h-full object-cover flex-shrink-0  rounded-lg border-b-1 border-black overflow-hidden"
+        className=" w-full h-full object-cover shrink-0  rounded-lg border-b border-black overflow-hidden"
         loading="lazy"
         onLoad={() => handleImageLoad(product.id)}
         onError={() => handleImageError(product.id, img)}

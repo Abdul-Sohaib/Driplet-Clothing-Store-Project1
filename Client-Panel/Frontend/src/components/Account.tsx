@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { auth } from "@/firebase";  // ← ADD
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import img from "@/assets/accountimg1.png";
@@ -8,6 +9,7 @@ import img2 from "@/assets/accountimg2.jpg";
 import img3 from "@/assets/accountimg3.jpg";
 import { motion } from "framer-motion";
 import { easeOut } from "framer-motion";
+import axiosInstance from "@/lib/axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -96,97 +98,58 @@ const Account: React.FC = () => {
 // INSTRUCTIONS: Replace the existing fetchUser function in Account.tsx
 // Find the fetchUser function in your Account.tsx and replace it completely with this:
 
-const fetchUser = useCallback(async (retryCount = 0) => {
-  // Prevent multiple simultaneous requests
-  if (isLoading && retryCount === 0) return;
-  
-  setIsLoading(true);
-  setError(null);
-  
+// FIXED fetchUser function for Account.tsx
+// Replace the existing fetchUser function with this:
+
+const fetchUser = useCallback(async () => {
+  const firebaseUser = auth.currentUser;
+  if (!firebaseUser) {
+    console.log("[ACCOUNT] No Firebase user");
+    setIsLoading(false);
+    return;
+  }
+
   try {
-    console.log("Fetching user data...", { 
-      retryCount,
-      clientCookies: document.cookie,
-      hasStoredToken: !!localStorage.getItem('authToken')
-    });
+    // ✅ Get fresh Firebase token
+    const token = await firebaseUser.getIdToken(true);
+    console.log("[ACCOUNT] Firebase token obtained:", token.substring(0, 20) + "...");
+
+    // ✅ Sync with backend
+    const res = await axiosInstance.get("/auth/user");
     
-    // Prepare headers with fallback token from localStorage
-    const headers: any = {
-      'Content-Type': 'application/json'
-    };
-    
-    // Add Authorization header as fallback if token exists in localStorage
-    const storedToken = localStorage.getItem('authToken');
-    if (storedToken) {
-      headers['Authorization'] = `Bearer ${storedToken}`;
-      console.log("Using stored token from localStorage as Authorization header");
+    if (res.data.success && res.data.user) {
+      const backendUser = {
+        id: res.data.user.id,
+        email: res.data.user.email,
+        name: res.data.user.name,
+        gender: res.data.user.gender || "",
+      };
+      
+      setUser(backendUser);
+      setGender(backendUser.gender || "");
+      localStorage.setItem("user", JSON.stringify(backendUser));
+      console.log("[ACCOUNT] ✅ User synced with backend:", backendUser.email);
     }
-    
-    const res = await axios.get(`${API_BASE}/auth/user`, {
-      withCredentials: true,
-      headers
-    });
-    
-    console.log("User fetch successful:", {
-      status: res.status,
-      hasUser: !!res.data.user,
-      userId: res.data.user?.id,
-      clientCookies: document.cookie
-    });
-    
-    if (!res.data.user || !res.data.user.id) {
-      throw new Error("Invalid user data received");
-    }
-    
-    setUser(res.data.user);
-    setGender(res.data.user?.gender || "");
-    
-    // Store user data for consistency
-    localStorage.setItem('user', JSON.stringify(res.data.user));
-    
   } catch (err: any) {
-    const errorMsg = err.response?.data?.message || err.message || "Failed to fetch user data";
-    console.error("Error fetching user:", {
-      message: errorMsg,
+    console.error("[ACCOUNT] ❌ Backend sync failed:", {
+      message: err.message,
       status: err.response?.status,
-      retryCount,
-      clientCookies: document.cookie,
-      hasStoredToken: !!localStorage.getItem('authToken')
     });
     
-    // Check if should retry
-    const shouldRetry = (
-      (errorMsg.includes("Unauthorized") || 
-       errorMsg.includes("Invalid token") || 
-       errorMsg.includes("User not found") ||
-       err.response?.status === 401) && 
-      retryCount < 2
-    );
-    
-    if (shouldRetry) {
-      console.log(`Retrying user fetch, attempt ${retryCount + 1}`);
-      setTimeout(() => fetchUser(retryCount + 1), 1000 * (retryCount + 1));
-      return;
+    // Don't use fallback - force re-login if backend fails
+    if (err.response?.status === 401) {
+      setError("Session expired. Please log in again.");
+      toast.error("Session expired. Please log in again.");
+      localStorage.removeItem("user");
     }
-    
-    // Handle persistent auth failure
-    setUser(null);
-    setError("Authentication failed. Please log in again.");
-    localStorage.removeItem('user');
-    localStorage.removeItem('authToken');
-    
-    // Dispatch auth error event
-    window.dispatchEvent(new CustomEvent("auth-error", { detail: errorMsg }));
-    
-    // Redirect to home page after a delay
-    setTimeout(() => {
-      navigate('/');
-    }, 2000);
-    
   } finally {
     setIsLoading(false);
   }
-}, [navigate, isLoading]);
+}, []);
+
+useEffect(() => {
+  fetchUser();
+}, [fetchUser]);
 
   // Handle auth changes from other components
   const handleAuthChange = useCallback(() => {
@@ -448,7 +411,7 @@ const fetchUser = useCallback(async (retryCount = 0) => {
 
             <motion.div
               variants={cardVariants}
-              className="absolute left-[0vw] w-[22vw] min-w-[220px] h-fit bg-orange-300 rounded-lg shadow-lg rotate-[4deg] z-20 overflow-hidden"
+              className="absolute left-0 w-[22vw] min-w-[220px] h-fit bg-orange-300 rounded-lg shadow-lg rotate-[4deg] z-20 overflow-hidden"
             >
               <img 
                 src={img2} 
@@ -460,7 +423,7 @@ const fetchUser = useCallback(async (retryCount = 0) => {
 
             <motion.div
               variants={cardVariants}
-              className="absolute top-[19vh] left-[17vw] w-[14vw] min-w-[140px] h-fit bg-white rounded-lg shadow-lg rotate-[-1deg] z-30 overflow-hidden"
+              className="absolute top-[19vh] left-[17vw] w-[14vw] min-w-[140px] h-fit bg-white rounded-lg shadow-lg -rotate-1 z-30 overflow-hidden"
             >
               <img 
                 src={img3} 

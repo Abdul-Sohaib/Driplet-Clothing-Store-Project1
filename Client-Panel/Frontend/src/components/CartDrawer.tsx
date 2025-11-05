@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import { IoClose } from "react-icons/io5";
 import Loading from "./Loading";
 import cartempty from '@/assets/shopping-cart.gif'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface CartItem {
   productId: string;
@@ -36,9 +35,8 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, user, onClose, onChecko
         setCartLoading(true);
         setCartError(null);
         try {
-          const res = await axios.get(`${API_BASE}/cart`, {
-            withCredentials: true,
-          });
+          const res = await axiosInstance.get("/cart");
+          setCartItems(Array.isArray(res.data) ? res.data : []);
           console.log("Cart API response:", res.data);
           if (Array.isArray(res.data)) {
             setCartItems(res.data);
@@ -65,10 +63,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, user, onClose, onChecko
 
   const handleRemoveFromCart = async (productId: string, size: string) => {
     try {
-      await axios.delete(`${API_BASE}/cart/${productId}`, {
-        data: { size },
-        withCredentials: true,
-      });
+      await axiosInstance.delete(`/cart/${productId}`, { data: { size } });
       setCartItems(cartItems.filter((item) => !(item.productId === productId && item.size === size)));
       console.log(`Removed product ${productId} (size: ${size}) from cart`);
     } catch (err) {
@@ -80,7 +75,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, user, onClose, onChecko
 
   return (
     <div
-      className={`fixed top-0 right-0 h-full w-[100vw] xs:w-[90vw] sm:w-[70vw] md:w-[50vw] lg:w-[40vw] xl:w-[30vw] bg-[#F5F5DC] shadow-lg z-50 border-l border-black rounded-md flex flex-col transition-transform duration-300 ease-in-out transform backdrop-blur-md ${
+      className={`fixed top-0 right-0 h-full w-screen xs:w-[90vw] sm:w-[70vw] md:w-[50vw] lg:w-[40vw] xl:w-[30vw] bg-[#F5F5DC] shadow-lg z-50 border-l border-black rounded-md flex flex-col transition-transform duration-300 ease-in-out transform backdrop-blur-md ${
         isOpen ? "translate-x-0 " : "translate-x-full  "
       }`}
     >
@@ -112,7 +107,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, user, onClose, onChecko
                   <img
                     src={item.product.imageUrls[0] || "/placeholder.jpg"}
                     alt={item.product.name}
-                    className="w-16 xs:w-14 sm:w-16 h-16 xs:h-14 sm:h-16 object-cover rounded-lg flex-shrink-0"
+                    className="w-16 xs:w-14 sm:w-16 h-16 xs:h-14 sm:h-16 object-cover rounded-lg shrink-0"
                     loading="lazy"
                     onError={(e) => { e.currentTarget.src = "/placeholder.jpg"; }}
                   />

@@ -1,171 +1,214 @@
+// models/Client/clientuser.js
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Name is required"],
-    trim: true,
-  },
-  email: {
-    type: String,
-    required: [true, "Email is required"],
-    unique: true,
-    lowercase: true,
-    trim: true,
-    match: [/^\S+@\S+\.\S+$/, "Please use a valid email address"],
-  },
-  password: {
-    type: String,
-    required: [true, "Password is required"],
-  },
-  cart: [
-    {
-      productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-      quantity: { type: Number, default: 1 },
-      size: { type: String, required: true },
+/**
+ * Client User Model – Firebase Auth Only
+ * - firebaseUid is the single source of truth
+ * - No password, no resetCode
+ * - Smart indexing, virtuals, validation
+ */
+const userSchema = new mongoose.Schema(
+  {
+    // === CORE IDENTITY ===
+    name: {
+      type: String,
+      required: [true, "Name is required"],
+      trim: true,
+      maxlength: [50, "Name cannot exceed 50 characters"],
     },
-  ],
-   
-  wishlist: [
-    {
-      productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-      size: { type: String, required: true },
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: [/^\S+@\S+\.\S+$/, "Please use a valid email address"],
     },
-  ],
-  reviews: [
-    {
-      productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-        required: [true, "Product ID is required"],
-        validate: {
-          validator: async function (value) {
-            const product = await mongoose.model("Product").findById(value);
-            return !!product;
-          },
-          message: "Invalid product ID",
+
+    // === FIREBASE AUTH ===
+    firebaseUid: {
+      type: String,
+      required: [true, "Firebase UID is required"],
+      unique: true,
+      index: true,
+    },
+
+    // === USER DATA ===
+    gender: {
+      type: String,
+      enum: ["Male", "Female", "Other", ""],
+      default: "",
+    },
+
+    // === CART ===
+    cart: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
         },
+        quantity: {
+          type: Number,
+          default: 1,
+          min: [1, "Quantity must be at least 1"],
+        },
+        size: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        _id: false,
       },
-      rating: {
-        type: Number,
-        required: [true, "Rating is required"],
-        min: [1, "Rating must be at least 1"],
-        max: [5, "Rating must be at most 5"],
+    ],
+
+    // === WISHLIST ===
+    wishlist: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        size: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        _id: false,
       },
-      comment: {
-        type: String,
-        trim: true,
-        maxlength: [500, "Comment cannot exceed 500 characters"],
-        default: "",
+    ],
+
+    // === REVIEWS ===
+    reviews: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: [true, "Product ID is required"],
+          validate: {
+            validator: async function (value) {
+              const product = await mongoose.model("Product").findById(value);
+              return !!product;
+            },
+            message: "Invalid product ID",
+          },
+        },
+        rating: {
+          type: Number,
+          required: [true, "Rating is required"],
+          min: [1, "Rating must be at least 1"],
+          max: [5, "Rating must be at most 5"],
+        },
+        comment: {
+          type: String,
+          trim: true,
+          maxlength: [500, "Comment cannot exceed 500 characters"],
+          default: "",
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+        _id: false,
       },
-      createdAt: {
-        type: Date,
-        default: Date.now,
+    ],
+
+    // === ADDRESSES ===
+    addresses: [
+      {
+        fullName: { type: String, required: true, trim: true },
+        phone: {
+          type: String,
+          required: true,
+          match: [/^\d{10}$/, "Phone must be 10 digits"],
+        },
+        addressLine1: { type: String, required: true, trim: true },
+        addressLine2: { type: String, trim: true },
+        city: { type: String, required: true, trim: true },
+        state: { type: String, required: true, trim: true },
+        pincode: {
+          type: String,
+          required: true,
+          match: [/^\d{6}$/, "Pincode must be 6 digits"],
+        },
+        country: { type: String, default: "India" },
+        isDefault: { type: Boolean, default: false },
+        _id: false,
       },
-    },
-  ],
-  resetCode: {
-    type: String,
+    ],
   },
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
 
-  addresses: [{
-  fullName: { type: String, required: true },
-  phone: { type: String, required: true },
-  addressLine1: { type: String, required: true },
-  addressLine2: { type: String },
-  city: { type: String, required: true },
-  state: { type: String, required: true },
-  pincode: { type: String, required: true },
-  country: { type: String, default: "India" }
-}],
-});
+// =============================================================================
+// INDEXES
+// =============================================================================
 
-// Ensure unique reviews per user and product
-userSchema.index({ "reviews.productId": 1 }, { unique: true });
+// One review per user per product
+userSchema.index(
+  { "reviews.productId": 1 },
+  {
+    unique: true,
+    partialFilterExpression: { "reviews.productId": { $exists: true } },
+  }
+);
 
-// Pre-save hook for debugging reviews
+// Fast lookup
+userSchema.index({ firebaseUid: 1 });
+userSchema.index({ email: 1 });
+
+// =============================================================================
+// MIDDLEWARE
+// =============================================================================
+
 userSchema.pre("save", function (next) {
-  if (this.isModified("reviews")) {
-    console.log("Saving user with reviews:", {
-      userId: this._id,
+  if (this.isModified("reviews") && this.reviews.length > 0) {
+    console.log("Saving reviews for user:", {
+      firebaseUid: this.firebaseUid,
       email: this.email,
-      reviews: this.reviews.map((r) => ({
-        productId: r.productId.toString(),
-        rating: r.rating,
-        comment: r.comment,
-        createdAt: r.createdAt,
-      })),
+      count: this.reviews.length,
     });
   }
   next();
 });
 
-// Post-save error hook for reviews
 userSchema.post("save", function (error, doc, next) {
-  if (error && error.name === "MongoServerError" && error.code === 11000) {
-    console.error("Duplicate review error:", {
-      message: error.message,
-      userId: doc._id,
-      email: doc.email,
-      productId: error.keyValue?.["reviews.productId"],
-    });
-    next(new Error("You have already reviewed this product"));
-  } else if (error) {
-    console.error("Error saving user with reviews:", {
-      message: error.message,
-      userId: doc._id,
-      email: doc.email,
-      stack: error.stack,
-    });
-    next(error);
-  } else {
-    if (doc.isModified("reviews")) {
-      console.log("User reviews saved successfully:", {
-        userId: doc._id,
-        email: doc.email,
-        reviews: doc.reviews.map((r) => ({
-          productId: r.productId.toString(),
-          rating: r.rating,
-          comment: r.comment,
-          createdAt: r.createdAt,
-        })),
-      });
+  if (error.name === "MongoServerError" && error.code === 11000) {
+    if (error.message.includes("reviews")) {
+      return next(new Error("You have already reviewed this product"));
     }
-    next();
+    if (error.message.includes("firebaseUid")) {
+      return next(new Error("Firebase user already linked"));
+    }
   }
+  next(error);
 });
 
-// Debug hook for find queries involving reviews
-userSchema.post("find", function (docs) {
-  if (docs && docs.length) {
-    console.log("Fetched users with reviews:", {
-      userIds: docs.map((doc) => ({ id: doc._id, email: doc.email })),
-      reviews: docs.flatMap((doc) =>
-        doc.reviews.map((r) => ({
-          productId: r.productId.toString(),
-          rating: r.rating,
-          comment: r.comment,
-          createdAt: r.createdAt,
-        }))
-      ),
-    });
-  } else {
-    console.log("No users found with reviews for query");
-  }
+// =============================================================================
+// VIRTUALS
+// =============================================================================
+
+userSchema.virtual("cartCount").get(function () {
+  return this.cart.reduce((sum, item) => sum + item.quantity, 0);
 });
 
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  try {
-    console.log("Comparing password for user:", this.email);
-    const isMatch = enteredPassword === this.password;
-    console.log("Password match result:", isMatch);
-    return isMatch;
-  } catch (error) {
-    console.error("Password comparison error:", error);
-    throw error;
-  }
-};
+userSchema.virtual("wishlistCount").get(function () {
+  return this.wishlist.length;
+});
 
-const User = mongoose.model("User", userSchema);
+userSchema.virtual("reviewCount").get(function () {
+  return this.reviews.length;
+});
+
+// =============================================================================
+// EXPORT
+// =============================================================================
+
+const User = mongoose.model("ClientUser", userSchema);
 
 module.exports = User;

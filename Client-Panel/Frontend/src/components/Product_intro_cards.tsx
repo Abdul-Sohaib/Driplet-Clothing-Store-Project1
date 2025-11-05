@@ -130,15 +130,11 @@ const Bestseller_cards = () => {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const res = await axiosInstance.post(
-        `/cart`,
-        { productId, quantity: 1, size },
-        { withCredentials: true }
-      );
+      const res = await axiosInstance.post("/cart", { productId, quantity: 1, size });
       console.log(`Added product ${productId} (size: ${size}) to cart`, res.data);
       toast.success("Added to cart!");
       // Fetch updated cart
-      await axiosInstance.get(`/cart`, { withCredentials: true });
+      await axiosInstance.get("/cart");
       // Note: Cart state is managed elsewhere (e.g., App.tsx), so no setCartItems here
     } catch (err) {
       console.error("Add to cart error:", (err as any).response?.data?.message || (err as any).message);
@@ -161,12 +157,8 @@ const Bestseller_cards = () => {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const res = await axiosInstance.post(
-        `/wishlist`,
-        { productId, size },
-        { withCredentials: true }
-      );
-      console.log(`Added product ${productId} (size: ${size}) to wishlist`, res.data);
+      await axiosInstance.post("/wishlist", { productId, size });
+      console.log(`Added product ${productId} (size: ${size}) to wishlist`);
       toast.success("Added to wishlist!");
     } catch (err) {
       console.error("Add to wishlist error:", (err as any).response?.data?.message || (err as any).message);
@@ -219,7 +211,7 @@ const Bestseller_cards = () => {
             
             {images.length > 0 ? (
   images.map((img, i) => (
-    <div key={i} className="relative w-full h-full flex-shrink-0 rounded-lg border-1 border-black overflow-hidden">
+    <div key={i} className="relative w-full h-full shrink-0 rounded-lg border border-black overflow-hidden">
       {/* BEST SELLER Tag */}
       <div className="text-xs font-bold button-55 text-black bg-transparent w-fit text-center p-1 navfonts border-purple-400 absolute top-1 left-1 z-10 navfonts">
         BEST SELLER

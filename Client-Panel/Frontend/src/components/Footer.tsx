@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axiosInstance from "@/lib/axios";
 import { toast } from "react-toastify";
-import fashion from "@/assets/fashion.gif"; // Assuming you have a fashion imag
-
-// API_BASE is now handled by axiosInstance
+import fashion from "@/assets/fashion.gif";
 
 interface Category {
   id: number;
@@ -22,29 +20,58 @@ export default function Footer() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const catRes = await axiosInstance.get(`/categories`);
-        setCategories(catRes.data || []);
-      } catch (err) {
-        console.error("Fetch categories error:", err);
-      }
-    };
+useEffect(() => {
+  let isMounted = true;
+  let isFetched = false; // ✅ Prevent duplicate fetches
 
-    const checkAuth = async () => {
+  const fetchData = async () => {
+    if (isFetched || !isMounted) return;
+    isFetched = true;
+
+    try {
+      const catRes = await axiosInstance.get(`/categories`);
+      if (isMounted) {
+        setCategories(catRes.data || []);
+        console.log("[FOOTER] ✅ Fetched categories");
+      }
+    } catch (err) {
+      console.error("[FOOTER] ❌ Fetch categories error:", err);
+    }
+  };
+
+  const checkAuth = () => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
       try {
-        const res = await axiosInstance.get(`/auth/user`);
-        setUser(res.data.user || null);
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        console.log("[FOOTER] ✅ User loaded from localStorage:", parsedUser.email);
       } catch (err) {
-        console.error("Auth check error:", err);
+        console.error("[FOOTER] ❌ Failed to parse user:", err);
         setUser(null);
       }
-    };
+    } else {
+      setUser(null);
+    }
+  };
 
-    fetchData();
-    checkAuth();
-  }, []);
+  const handleAuthChange = () => {
+    if (isMounted) {
+      console.log("[FOOTER] Auth change detected");
+      checkAuth();
+    }
+  };
+
+  fetchData();
+  checkAuth();
+
+  window.addEventListener("authChange", handleAuthChange);
+
+  return () => {
+    isMounted = false;
+    window.removeEventListener("authChange", handleAuthChange);
+  };
+}, []);
 
   const topLevelCategories = categories.filter(cat => !cat.parent);
 
@@ -55,74 +82,72 @@ export default function Footer() {
         autoClose: 3000,
       });
     }
-    return !user; // Return true to allow navigation if not logged in
+    return !user;
   };
 
   return (
     <div className="flex flex-col bg-[#111211] text-white w-full rounded-t-xl">
       {/* Marquee Section */}
-<div className="w-full overflow-hidden bg-[#FBCA1F] py-2 border-t border-black ">
-  <div className="marquee flex text-sm sm:text-base md:text-lg text-black gap-20 sm:gap-40 md:gap-60 navfonts font-semibold uppercase">
-    <div className="marquee-content flex gap-20 sm:gap-40 md:gap-60 items-center">
-      <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
-        <img src={fashion} alt="" className="w-6 sm:w-8 " />
-         <span>Streetwear Essentials</span>
-      </span>
-      <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
-        <img src={fashion} alt="" className="w-6 sm:w-8 " />
-        <span>Luxury Fits</span>
-      </span>
-      <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
-        <img src={fashion} alt="" className="w-6 sm:w-8 " />
-        <span>Seasonal Drops</span>
-      </span>
-      <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
-        <img src={fashion} alt="" className="w-6 sm:w-8 " />
-        <span>Personal Styling</span>
-      </span>
-    </div>
+      <div className="w-full overflow-hidden bg-[#FBCA1F] py-2 border-t border-black ">
+        <div className="marquee flex text-sm sm:text-base md:text-lg text-black gap-20 sm:gap-40 md:gap-60 navfonts font-semibold uppercase">
+          <div className="marquee-content flex gap-20 sm:gap-40 md:gap-60 items-center">
+            <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
+              <img src={fashion} alt="" className="w-6 sm:w-8 " />
+              <span>Streetwear Essentials</span>
+            </span>
+            <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
+              <img src={fashion} alt="" className="w-6 sm:w-8 " />
+              <span>Luxury Fits</span>
+            </span>
+            <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
+              <img src={fashion} alt="" className="w-6 sm:w-8 " />
+              <span>Seasonal Drops</span>
+            </span>
+            <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
+              <img src={fashion} alt="" className="w-6 sm:w-8 " />
+              <span>Personal Styling</span>
+            </span>
+          </div>
 
-    {/* Duplicate for seamless looping */}
-    <div className="marquee-content text-sm sm:text-base md:text-lg text-black navfonts font-semibold uppercase flex gap-20 sm:gap-40 md:gap-60 items-center">
-      <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
-        <img src={fashion} alt="" className="w-6 sm:w-8 " />
-        <span>Curated Collections</span>
-      </span>
-      <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
-        <img src={fashion} alt="" className="w-6 sm:w-8 " />
-        <span>Limited Edition Drops</span>
-      </span>
-      <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
-        <img src={fashion} alt="" className="w-6 sm:w-8 " />
-        <span>On-Point Streetwear</span>
-      </span>
-      <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
-        <img src={fashion} alt="" className="w-6 sm:w-8 " />
-        <span>Style Consultations</span>
-      </span>
-    </div>
-  </div>
+          {/* Duplicate for seamless looping */}
+          <div className="marquee-content text-sm sm:text-base md:text-lg text-black navfonts font-semibold uppercase flex gap-20 sm:gap-40 md:gap-60 items-center">
+            <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
+              <img src={fashion} alt="" className="w-6 sm:w-8 " />
+              <span>Curated Collections</span>
+            </span>
+            <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
+              <img src={fashion} alt="" className="w-6 sm:w-8 " />
+              <span>Limited Edition Drops</span>
+            </span>
+            <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
+              <img src={fashion} alt="" className="w-6 sm:w-8 " />
+              <span>On-Point Streetwear</span>
+            </span>
+            <span className="mx-2 sm:mx-4 flex items-center gap-1 sm:gap-2">
+              <img src={fashion} alt="" className="w-6 sm:w-8 " />
+              <span>Style Consultations</span>
+            </span>
+          </div>
+        </div>
 
-  <style>
-    {`
-      .marquee {
-        width: max-content;
-        animation: scroll-marquee 20s linear infinite;
-      }
+        <style>
+          {`
+            .marquee {
+              width: max-content;
+              animation: scroll-marquee 20s linear infinite;
+            }
 
-      @keyframes scroll-marquee {
-        0% {
-          transform: translateX(0%);
-        }
-        100% {
-          transform: translateX(-50%);
-        }
-      }
-    `}
-  </style>
-</div>
-
-
+            @keyframes scroll-marquee {
+              0% {
+                transform: translateX(0%);
+              }
+              100% {
+                transform: translateX(-50%);
+              }
+            }
+          `}
+        </style>
+      </div>
 
       {/* Main Footer */}
       <footer className="relative overflow-hidden px-3 sm:px-4 md:px-6 lg:px-10 py-6 sm:py-8 md:py-10 flex flex-col">

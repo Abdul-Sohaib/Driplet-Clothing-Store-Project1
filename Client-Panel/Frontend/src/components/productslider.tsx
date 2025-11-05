@@ -162,7 +162,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
   };
 
   return (
-    <section id="product-carousel" className="product-carousel-section h-full w-full rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#fff9e6] via-[#fff5cc] to-[#ffefb3] border-2 border-black shadow-xl flex justify-center items-center">
+    <section id="product-carousel" className="product-carousel-section h-full w-full rounded-2xl sm:rounded-3xl bg-linear-to-br from-[#fff9e6] via-[#fff5cc] to-[#ffefb3] border-2 border-black shadow-xl flex justify-center items-center">
       <div className="w-fit h-full px-2 sm:px-3 md:px-6 lg:px-8 min-w-[90vw] xs:min-w-[85vw] sm:min-w-[80vw] md:min-w-[70vw] lg:min-w-[60vw] xl:min-w-[50vw] 2xl:min-w-[40vw] rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-9">
         <div
           className="relative"

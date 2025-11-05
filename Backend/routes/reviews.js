@@ -3,7 +3,7 @@ const { body, validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 const Product = require("../models/Product");
 const User = require("../models/Client/clientuser");
-const authMiddleware = require("../middleware/clientauthmiddleware");
+const authMiddleware = require("../middleware/firebaseAuthMiddleware");
 
 const router = express.Router();
 

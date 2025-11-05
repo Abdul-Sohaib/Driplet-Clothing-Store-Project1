@@ -1,12 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, Component, type ReactNode } from "react";
-import axios from "axios";
 import { AiFillStar } from "react-icons/ai";
 import { toast } from "react-toastify";
 import { motion, type Variants } from "framer-motion";
+import axiosInstance from "@/lib/axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface Review {
   id: string;
@@ -66,9 +65,7 @@ const Reviews: React.FC<ReviewsProps> = ({ productId }) => {
     setError(null);
     try {
       console.log("Fetching reviews for productId:", productId);
-      const res = await axios.get(`${API_BASE}/reviews/${productId}`, {
-        withCredentials: true,
-      });
+     const res = await axiosInstance.get(`/reviews/${productId}`);
       console.log("GET /api/reviews/:productId response:", {
         status: res.status,
         data: res.data,
@@ -121,11 +118,7 @@ const Reviews: React.FC<ReviewsProps> = ({ productId }) => {
     setIsSubmitting(true);
     try {
       console.log("POST /api/reviews/:productId request:", { productId, rating, comment });
-      const res = await axios.post(
-        `${API_BASE}/reviews/${productId}`,
-        { rating, comment },
-        { withCredentials: true }
-      );
+      const res = await axiosInstance.post(`/reviews/${productId}`, { rating, comment });
       console.log("POST /api/reviews/:productId response:", {
         status: res.status,
         data: res.data,

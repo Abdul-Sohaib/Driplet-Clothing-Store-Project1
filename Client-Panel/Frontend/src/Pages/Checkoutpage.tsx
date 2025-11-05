@@ -2,13 +2,12 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import AddressManager from "../components/AddressManager";
+import axiosInstance from "@/lib/axios";
 import CartItems from "../components/CartItems";
-import axios from "axios";
 import { VscFoldDown, VscFoldUp } from "react-icons/vsc";
 import { IoClose } from "react-icons/io5";
 import { AnimatePresence, motion } from "framer-motion";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 declare global {
   interface Window {
     Razorpay: any;
@@ -85,9 +84,9 @@ const CheckoutPage = ({
       return;
     }
     try {
-      console.log("Initiating payment at:", `${API_BASE}/client/orders/initiate`);
-      const { data } = await axios.post(
-        `${API_BASE}/client/orders/initiate`,
+      console.log("Initiating payment at:", "/client/orders/initiate");
+      const { data } = await axiosInstance.post(
+        "/client/orders/initiate",
         { amount: total * 100 },
         { withCredentials: true }
       );
@@ -105,9 +104,9 @@ const CheckoutPage = ({
           razorpay_signature: any;
         }) {
           try {
-            console.log("Completing order at:", `${API_BASE}/client/orders/complete`);
-            await axios.post(
-              `${API_BASE}/client/orders/complete`,
+            console.log("Completing order at:", "/client/orders/complete");
+            await axiosInstance.post(
+              "/client/orders/complete",
               {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_order_id: response.razorpay_order_id,
@@ -132,6 +131,7 @@ const CheckoutPage = ({
               console.warn("setCartItems is not a function, skipping cart clear");
             }
             toast.success("Payment Successful! Order placed.");
+            if (setCartItems) setCartItems([]);
             onClose();
           } catch (err: any) {
             console.error("Order completion error:", {

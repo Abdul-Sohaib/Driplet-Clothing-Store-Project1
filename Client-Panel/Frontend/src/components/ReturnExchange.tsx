@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import { toast } from "react-toastify";
 import Loading from "./Loading";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface Order {
   id: string;
@@ -22,22 +21,19 @@ const ReturnExchange: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const res = await axios.get(`${API_BASE}/orders`, {
-          withCredentials: true,
-        });
-        setOrders(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        console.error("Error fetching orders:", (err as any)?.response?.data?.message || (err as any)?.message);
-        toast.error("Failed to fetch orders. Please try again.");
-        setOrders([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOrders();
-  }, []);
+   const fetchOrders = async () => {
+    try {
+      const res = await axiosInstance.get("/client/orders");
+      setOrders(Array.isArray(res.data) ? res.data : []);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (err) {
+      toast.error("Failed to fetch orders.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchOrders();
+}, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,11 +43,7 @@ const ReturnExchange: React.FC = () => {
     }
     setIsSubmitting(true);
     try {
-      await axios.post(
-        `${API_BASE}/return-exchange`,
-        { orderId: selectedOrder, reason, action },
-        { withCredentials: true }
-      );
+      await axiosInstance.post("/client/return-exchange", { orderId: selectedOrder, reason, action });
       toast.success(`${action.charAt(0).toUpperCase() + action.slice(1)} request submitted successfully!`);
       setReason("");
       setSelectedOrder("");

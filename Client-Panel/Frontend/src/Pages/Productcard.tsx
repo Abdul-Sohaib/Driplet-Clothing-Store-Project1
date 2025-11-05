@@ -4,15 +4,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AiFillStar } from "react-icons/ai";
 import gsap from "gsap";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import image from "../assets/image.png";
 import Loading from "../components/Loading";
 import { toast } from "react-toastify";
 import cartgif from '@/assets/load.gif';
 import wishlistlike from '@/assets/wishlist.png';
 import Reviews from "../components/Reviews";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface Category {
   id: number;
@@ -66,7 +64,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(`${API_BASE}/categories`, {
+        const response = await axiosInstance.get("/categories", {
           withCredentials: true,
         });
         setCategories(response.data);
@@ -84,11 +82,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
       const fetchCategoryProducts = async () => {
         try {
           console.log(`Fetching products for categoryId: ${categoryId}`);
-          const response = await axios.get(`${API_BASE}/products?category=${categoryId}`, {
+          const response = await axiosInstance.get(`/products?category=${categoryId}`, {
             withCredentials: true,
           });
           if (response.data.length === 0) {
-            const fallbackResponse = await axios.get(`${API_BASE}/products?categoryId=${categoryId}`, {
+            const fallbackResponse = await axiosInstance.get(`/products?categoryId=${categoryId}`, {
               withCredentials: true,
             });
             setProducts(fallbackResponse.data);
@@ -182,8 +180,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const res = await axios.post(
-        `${API_BASE}/cart`,
+      const res = await axiosInstance.post(
+        "/cart",
         { productId, quantity: 1, size },
         { withCredentials: true }
       );
@@ -203,8 +201,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const res = await axios.post(
-        `${API_BASE}/wishlist`,
+      const res = await axiosInstance.post(
+        "/wishlist",
         { productId, quantity: 1, size },
         { withCredentials: true }
       );
@@ -282,7 +280,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                                   key={i}
                                   src={img}
                                   alt={`img-${i}`}
-                                  className="h-full w-auto object-cover flex-shrink-0 p-1"
+                                  className="h-full w-auto object-cover shrink-0 p-1"
                                   loading="lazy"
                                   onError={() => console.error(`Failed to load image: ${img} for product ${prod.name}`)}
                                 />
@@ -389,7 +387,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                         key={i}
                         src={img}
                         alt={`img-${i}`}
-                        className="w-full object-center object-cover flex-shrink-0 p-0.5 rounded-2xl border-3 border-yellow-500"
+                        className="w-full object-center object-cover shrink-0 p-0.5 rounded-2xl border-3 border-yellow-500"
                        
                         loading="lazy"
                         onError={() => console.error(`Failed to load image: ${img} for product ${product.name}`)}

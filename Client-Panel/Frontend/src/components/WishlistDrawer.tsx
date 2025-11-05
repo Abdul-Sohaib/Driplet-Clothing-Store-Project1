@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "@/lib/axios";
 import { IoClose } from "react-icons/io5";
 import Loading from "./Loading";
 import emplywish from '@/assets/wishlist.gif'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface WishlistItem {
   productId: string;
@@ -37,7 +36,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, user, onClose }
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get(`${API_BASE}/wishlist`, { withCredentials: true });
+        const res = await axiosInstance.get("/wishlist");
         if (Array.isArray(res.data)) {
           setWishlist(res.data);
           console.log("Wishlist API response:", res.data);
@@ -64,11 +63,7 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, user, onClose }
     setIsMoving((prev) => ({ ...prev, [productId + size]: true }));
 
     try {
-      await axios.post(
-        `${API_BASE}/wishlist/add-to-cart`,
-        { productId, size },
-        { withCredentials: true }
-      );
+     await axiosInstance.post("/wishlist/add-to-cart", { productId, size });
       console.log(`Moved product ${productId} (size: ${size}) to cart`);
       setWishlist((prev) => prev.filter((item) => !(item.productId === productId && item.size === size)));
     } catch (err: any) {
@@ -84,10 +79,9 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, user, onClose }
     setIsRemoving((prev) => ({ ...prev, [productId + size]: true }));
 
     try {
-      await axios.delete(`${API_BASE}/wishlist/${productId}`, {
-        data: { size },
-        withCredentials: true,
-      });
+    await axiosInstance.delete(`/wishlist/${productId}`, {
+  data: { size }
+});
       console.log(`Removed product ${productId} (size: ${size}) from wishlist`);
       setWishlist((prev) => prev.filter((item) => !(item.productId === productId && item.size === size)));
     } catch (err: any) {
@@ -127,12 +121,12 @@ const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, user, onClose }
             wishlist.map((item) => (
               <div
                 key={`${item.productId}-${item.size}`}
-                className="flex items-center gap-2 xs:gap-3 sm:gap-4 p-2 xs:p-3 sm:p-4 border-b-1 border-black"
+                className="flex items-center gap-2 xs:gap-3 sm:gap-4 p-2 xs:p-3 sm:p-4 border-b border-black"
               >
                 <img
                   src={item.product.imageUrls[0] || "/placeholder.jpg"}
                   alt={item.product.name}
-                  className="w-12 xs:w-14 sm:w-16 h-12 xs:h-14 sm:h-16 object-cover rounded-md border border-purple-300 flex-shrink-0"
+                  className="w-12 xs:w-14 sm:w-16 h-12 xs:h-14 sm:h-16 object-cover rounded-md border border-purple-300 shrink-0"
                   loading="lazy"
                   onError={(e) => { e.currentTarget.src = "/placeholder.jpg"; }}
                 />

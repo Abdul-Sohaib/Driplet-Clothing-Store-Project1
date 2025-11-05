@@ -6,7 +6,7 @@ interface CartItemsProps {
 
 const CartItems: React.FC<CartItemsProps> = ({ cartItems }) => {
   return (
-    <div className="max-h-[160px] xs:max-h-[180px] sm:max-h-[200px] overflow-y-auto my-2 xs:my-3 sm:my-4">
+    <div className="max-h-40 xs:max-h-[180px] sm:max-h-[200px] overflow-y-auto my-2 xs:my-3 sm:my-4">
       <h3 className="text-xs xs:text-sm sm:text-md font-semibold mb-2 navheading tracking-wider uppercase">Cart Items</h3>
       {cartItems.length === 0 ? (
         <div className="text-xs xs:text-sm sm:text-base">No items in cart.</div>
@@ -16,7 +16,7 @@ const CartItems: React.FC<CartItemsProps> = ({ cartItems }) => {
             <img
               src={item.product.imageUrls[0] || "/placeholder.jpg"}
               alt={item.product.name}
-              className="w-8 xs:w-10 sm:w-12 h-8 xs:h-10 sm:h-12 object-cover rounded-md border-2 border-black flex-shrink-0"
+              className="w-8 xs:w-10 sm:w-12 h-8 xs:h-10 sm:h-12 object-cover rounded-md border-2 border-black shrink-0"
               loading="lazy"
               onError={(e) => {
                 console.error(`Failed to load cart item image: ${item.product.imageUrls[0]}`);

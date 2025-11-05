@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 // import { VscRunAll } from "react-icons/vsc";
@@ -53,7 +54,7 @@ const AdContainer1 = () => {
     }
 
     intervalRef.current = setInterval(() => {
-      setCurrent((prev) => prev + 1);
+      setCurrent((prev: number) => prev + 1);
     }, 3000);
 
     return () => {
@@ -107,12 +108,12 @@ const AdContainer1 = () => {
 
   // Handle navigation
   const handlePrev = () => {
-    setCurrent((prev) => prev - 1);
+    setCurrent((prev: number) => prev - 1);
     handleInteraction();
   };
 
   const handleNext = () => {
-    setCurrent((prev) => prev + 1);
+    setCurrent((prev: number) => prev + 1);
     handleInteraction();
   };
 
@@ -122,7 +123,7 @@ const AdContainer1 = () => {
   const loopedBanners = [banners[banners.length - 1], ...banners, banners[0]];
 
   return (
-    <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] xl:h-[75vh] 2xl:h-[80vh] bg-gradient-to-br from-[#131313] via-[#1a1a1a] to-[#2b2b2b] rounded-2xl sm:rounded-3xl overflow-hidden">
+    <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[60vh] lg:h-[70vh] xl:h-[75vh] 2xl:h-[80vh] bg-linear-to-br from-[#131313] via-[#1a1a1a] to-[#2b2b2b] rounded-2xl sm:rounded-3xl overflow-hidden">
       {/* Carousel Container */}
       <div
         className="w-full h-full cursor-pointer"
@@ -140,7 +141,7 @@ const AdContainer1 = () => {
           {loopedBanners.map((url, idx) => (
             <div
               key={idx}
-              className="w-full h-full flex-shrink-0 relative"
+              className="w-full h-full shrink-0 relative"
             >
               <img
                 src={url}
@@ -157,14 +158,18 @@ const AdContainer1 = () => {
                     onClick={handlePrev}
                     aria-label="Previous banner"
                   >
-                    <IoChevronBack className="text-sm sm:text-lg md:text-2xl" />
+                    <span className="text-sm sm:text-lg md:text-2xl">
+                      <IoChevronBack />
+                    </span>
                   </button>
                   <button
                     className="absolute right-1 sm:right-2 md:right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-purple-300 bg-black/20 hover:bg-black/40 backdrop-blur-sm transition-all duration-300 p-1 sm:p-2 md:p-3 rounded-full cursor-pointer z-10 border border-white/20 hover:border-white/40"
                     onClick={handleNext}
                     aria-label="Next banner"
                   >
-                    <IoChevronForward className="text-sm sm:text-lg md:text-2xl" />
+                    <span className="text-sm sm:text-lg md:text-2xl">
+                      <IoChevronForward />
+                    </span>
                   </button>
                 </>
               )}
@@ -174,8 +179,8 @@ const AdContainer1 = () => {
 
         {/* Dots */}
         <div className="absolute bottom-2 sm:bottom-3 md:bottom-4 w-full flex justify-center gap-1 sm:gap-2 md:gap-3 z-20 px-2">
-          {banners.map((_, idx) => {
-            const isActive = current === idx + 1;
+          {banners.map((_: any, idx: number) => {
+              const isActive = current === idx + 1;
             return (
               <button
                 key={idx}
@@ -185,7 +190,7 @@ const AdContainer1 = () => {
                   transition-all duration-300 
                   border 
                   ${isActive 
-                    ? "bg-gradient-to-br from-[#0b0b0b] via-[#1a1a1a] to-[#2e2e2e] border-white scale-110 shadow-lg" 
+                    ? "bg-linear-to-br from-[#0b0b0b] via-[#1a1a1a] to-[#2e2e2e] border-white scale-110 shadow-lg" 
                     : "bg-gray-300 border-gray-400 hover:scale-105 hover:border-white"
                   }
                 `}

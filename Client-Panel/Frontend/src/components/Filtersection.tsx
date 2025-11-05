@@ -150,10 +150,10 @@ const FilterSection: React.FC<FilterSectionProps> = ({ products, renderProducts 
         onClick={toggleFilterVisibility}
       >
         <span
-    className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-[250ms] group-active:translate-y-px "
+    className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px "
   ></span>
   <div
-    className="relative flex items-center justify-between py-1.5 px-3 sm:py-2 sm:px-4 md:py-3 md:px-6 text-[10px] sm:text-xs md:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-[600ms] ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-[250ms] group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700"
+    className="relative flex items-center justify-between py-1.5 px-3 sm:py-2 sm:px-4 md:py-3 md:px-6 text-[10px] sm:text-xs md:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700"
   >
   <VscChecklist className="w-3 sm:w-4" />
     <span className="select-none text-[10px] sm:text-xs navfonts font-semibold">{isFilterVisible ? "Hide Filters" : "Show Filters"}</span>

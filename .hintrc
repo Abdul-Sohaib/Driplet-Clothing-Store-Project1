@@ -28,6 +28,8 @@
           "outline-color: color-mix(in oklab, var(--color-ring) 50%, transparent)"
         ]
       }
-    ]
+    ],
+    "typescript-config/consistent-casing": "off",
+    "typescript-config/is-valid": "off"
   }
 }

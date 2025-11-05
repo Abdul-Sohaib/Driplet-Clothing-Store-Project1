@@ -94,7 +94,7 @@ const SearchBar = () => {
           />
           {/* Animated Placeholder */}
           {!query && (
-            <div className="absolute top-1/2 left-0 transform -translate-y-1/2 pointer-events-none text-xs text-black/50 h-[16px] sm:h-[20px] overflow-hidden">
+            <div className="absolute top-1/2 left-0 transform -translate-y-1/2 pointer-events-none text-xs text-black/50 h-4 sm:h-5 overflow-hidden">
               <AnimatePresence mode="wait">
                 <motion.span
                   key={currentIndex}

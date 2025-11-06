@@ -5,16 +5,36 @@ const path = require('path');
 // Initialize Firebase Admin SDK once
 if (!admin.apps.length) {
   try {
-    const serviceAccount = require(path.join(__dirname, '../serviceAccountKey.json'));
+    let credential;
+    
+    // Production: Use environment variable
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      console.log('[FIREBASE ADMIN] Using service account from environment variable');
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      credential = admin.credential.cert(serviceAccount);
+    } 
+    // Development: Use local file
+    else {
+      console.log('[FIREBASE ADMIN] Using service account from local file');
+      const serviceAccount = require(path.join(__dirname, '../serviceAccountKey.json'));
+      credential = admin.credential.cert(serviceAccount);
+    }
     
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+      credential: credential,
     });
     
     console.log('[FIREBASE ADMIN] ✓ Initialized successfully');
   } catch (error) {
     console.error('[FIREBASE ADMIN] ✗ Initialization failed:', error.message);
-    console.error('Make sure serviceAccountKey.json exists in Backend folder');
+    
+    if (process.env.NODE_ENV === 'production') {
+      console.error('ERROR: FIREBASE_SERVICE_ACCOUNT environment variable not set or invalid JSON');
+      console.error('Please add your Firebase service account JSON as an environment variable in Render');
+    } else {
+      console.error('ERROR: Make sure serviceAccountKey.json exists in Backend folder');
+    }
+    
     process.exit(1);
   }
 }

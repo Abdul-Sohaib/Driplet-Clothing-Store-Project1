@@ -93,20 +93,25 @@ if (!process.env.NODE_ENV) {
 }
 console.log(`Environment: NODE_ENV = ${process.env.NODE_ENV}`);
 
-// IMPORTANT: CORS must be before helmet
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
-
-// Helmet with relaxed CORS settings
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
-    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
     crossOriginEmbedderPolicy: false,
-    contentSecurityPolicy: false, // Disable CSP to avoid CORS conflicts
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "https://*.razorpay.com"],
+        frameSrc: ["'self'", "https://*.razorpay.com"],
+        imgSrc: ["'self'", "data:", "https:", "http:"],
+        connectSrc: ["'self'", "https://*.razorpay.com", "http://localhost:*", "ws://localhost:*"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+      },
+    },
   })
 );
 
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(cookieParser());
 app.use(compression());
 app.use(express.json({ limit: "10mb" }));
@@ -122,21 +127,26 @@ const limiter = rateLimit({
 });
 app.use("/api/", limiter);
 
-// Enhanced logging middleware
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString();
-  
+  const logData = {
+    timestamp,
+    method: req.method,
+    url: req.url,
+    origin: req.headers.origin,
+    userAgent: req.headers["user-agent"]?.substring(0, 50),
+    hasAuth: !!req.headers.authorization,
+    contentType: req.headers["content-type"],
+  };
+
   if (req.method === "OPTIONS") {
-    console.log(`[PREFLIGHT] ${req.url}`, { 
-      origin: req.headers.origin,
-      method: req.headers['access-control-request-method']
-    });
+    console.log(`[PREFLIGHT] ${req.url}`, { origin: req.headers.origin });
   } else if (req.method !== "GET") {
-    console.log(`[${req.method}] ${req.url}`, {
-      timestamp,
-      origin: req.headers.origin,
-      hasAuth: !!req.headers.authorization,
-    });
+    console.log(`[${req.method}] ${req.url}`, logData);
+  }
+
+  if (req.url.includes("/transactions") && req.headers["x-razorpay-signature"]) {
+    console.log(`[RAZORPAY WEBHOOK] Signature: ${req.headers["x-razorpay-signature"]}`);
   }
 
   next();
@@ -163,7 +173,6 @@ const cacheMiddleware = (duration) => (req, res, next) => {
 
 app.use("/images", (req, res, next) => {
   res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-  res.setHeader("Access-Control-Allow-Origin", "*"); // Allow images from anywhere
   const filePath = path.join(__dirname, "images", req.path);
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
@@ -227,12 +236,7 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   if (err.message.includes("CORS") || err.message.includes("not allowed")) {
-    console.error('[CORS ERROR]', { 
-      origin: req.headers.origin, 
-      url: req.url, 
-      method: req.method,
-      error: err.message 
-    });
+    console.error('[CORS ERROR]', { origin: req.headers.origin, url: req.url, method: req.method });
     return res.status(403).json({
       success: false,
       message: "CORS Error: Origin not allowed",

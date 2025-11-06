@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
 import { auth } from "@/firebase";  // ← ADD
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +10,6 @@ import { motion } from "framer-motion";
 import { easeOut } from "framer-motion";
 import axiosInstance from "@/lib/axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface User {
   id?: string;
@@ -208,8 +206,8 @@ useEffect(() => {
     try {
       console.log("Updating gender to:", newGender);
       
-      const response = await axios.put(
-        `${API_BASE}/auth/user`,
+      const response = await axiosInstance.put(
+        "/auth/user",
         { gender: newGender },
         { 
           withCredentials: true,

@@ -29,7 +29,7 @@ axiosInstance.interceptors.request.use(
 
     if (user) {
       try {
-        const token = await user.getIdToken();
+        const token = await user.getIdToken(true);
         config.headers.Authorization = `Bearer ${token}`;
         console.log(`Firebase token attached to ${config.method?.toUpperCase()} ${config.url}`);
       } catch (err) {

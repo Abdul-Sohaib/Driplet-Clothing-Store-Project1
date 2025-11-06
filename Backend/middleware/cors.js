@@ -4,8 +4,8 @@ const cors = require("cors");
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:5174",
+  "https://driplet.netlify.app/",
+  "https://driplet-admin-panel.netlify.app/",
   process.env.CLIENT_APP_URL,
   process.env.ADMIN_APP_URL,
   // Fallback for Vercel/Netlify preview URLs

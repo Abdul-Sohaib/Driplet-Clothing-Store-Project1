@@ -29,20 +29,44 @@ axiosInstance.interceptors.request.use(
 
     if (user) {
       try {
+        // FORCE REFRESH EVERY TIME
         const token = await user.getIdToken(true);
         config.headers.Authorization = `Bearer ${token}`;
-        console.log(`Firebase token attached to ${config.method?.toUpperCase()} ${config.url}`);
+        console.log("Token attached (FORCED REFRESH)");
       } catch (err) {
-        console.error("Failed to get Firebase ID token:", err);
+        console.error("Token refresh failed:", err);
+        window.dispatchEvent(new CustomEvent("auth-error"));
       }
-    } else {
-      console.log(`No Firebase user → no token for ${config.method?.toUpperCase()} ${config.url}`);
     }
 
     return config;
   },
-  (error) => {
-    console.error("Request interceptor error:", error);
+  (error) => Promise.reject(error)
+);
+
+// ADD THIS: RETRY ON 401
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      if (auth.currentUser) {
+        try {
+          await auth.currentUser.getIdToken(true);  // Force refresh
+          console.log("Token refreshed on 401 → retrying");
+          return axiosInstance(originalRequest);  // Retry
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (err) {
+          console.error("Final token refresh failed");
+        }
+      }
+
+      window.dispatchEvent(new CustomEvent("auth-error"));
+    }
+
     return Promise.reject(error);
   }
 );

@@ -88,27 +88,16 @@ const App = () => {
   }, []);
 
   // ✅ CRITICAL FIX: Listen for global auth errors (401 responses)
-  useEffect(() => {
-    const handleAuthError = async (event: CustomEvent) => {
-      console.error("[APP] Auth error received:", event.detail);
-      
-      // Clear user data
-      localStorage.removeItem("user");
-      window.dispatchEvent(new Event("authChange"));
-      
-      // Show error message
-      toast.error(event.detail.message || "Session expired. Please log in again.");
-      
-      // Optionally redirect to home
-      navigate("/");
-    };
-
-    window.addEventListener("auth-error", handleAuthError as unknown as EventListener);
-
-    return () => {
-      window.removeEventListener("auth-error", handleAuthError as unknown as EventListener);
-    };
-  }, [navigate]);
+useEffect(() => {
+  const handleAuthError = () => {
+    toast.error("Session expired. Logging out...");
+    localStorage.removeItem("user");
+    auth.signOut();
+    navigate("/");
+  };
+  window.addEventListener("auth-error", handleAuthError);
+  return () => window.removeEventListener("auth-error", handleAuthError);
+}, [navigate]);
 
   // ✅ Existing splash screen and products fetch logic
   useEffect(() => {

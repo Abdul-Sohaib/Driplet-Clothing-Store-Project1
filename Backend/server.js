@@ -90,8 +90,8 @@ app.use(
 
       // Allow specific production domains (add your actual domain here)
       const allowedDomains = [
-        'https://driplet.netlify.app/',
-        'https://driplet-admin-pannel.netlify.app/'
+        'https://driplet.netlify.app',
+        'https://driplet-admin-pannel.netlify.app'
       ];
 
       if (allowedDomains.includes(origin)) {

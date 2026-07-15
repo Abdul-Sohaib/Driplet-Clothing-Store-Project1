@@ -3,7 +3,7 @@ const { body, validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 const Product = require("../models/Product");
 const User = require("../models/Client/clientuser");
-const authMiddleware = require("../middleware/firebaseAuthMiddleware");
+const authMiddleware = require("../middleware/clientauthmiddleware");
 
 const router = express.Router();
 
@@ -85,7 +85,7 @@ router.post(
 
       // Check for existing review
       const existingReview = user.reviews.find(
-        (review) => review.productId.toString() === productId
+        (review) => review.productId?.toString() === productId
       );
       if (existingReview) {
         console.log("Duplicate review attempt:", {
@@ -117,7 +117,7 @@ router.post(
 
       // Retrieve the saved review
       const savedReview = updatedUser.reviews.find(
-        (review) => review.productId.toString() === productId
+        (review) => review.productId?.toString() === productId
       );
 
       if (!savedReview) {
@@ -195,10 +195,10 @@ router.get("/:productId", async (req, res) => {
     const reviews = users
       .flatMap((user) =>
         user.reviews
-          .filter((review) => review.productId.toString() === productId)
+          .filter((review) => review.productId?.toString() === productId)
           .map((review) => ({
             id: review._id?.toString() || new Date().toISOString(),
-            productId: review.productId.toString(),
+            productId: review.productId?.toString() || "",
             userName: user.name || "User",
             rating: review.rating,
             comment: review.comment,

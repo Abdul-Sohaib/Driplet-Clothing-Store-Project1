@@ -26,7 +26,7 @@ export interface ProductCarouselProps {
   products: Product[];
   autoRotate?: boolean;
   rotateInterval?: number;
-  cardHeight?: number; // Optional override; if omitted, responsive heights are used
+  cardHeight?: number;
   containerClassName?: string;
   carouselClassName?: string;
   cardClassName?: string;
@@ -38,7 +38,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
   products: initialProducts,
   autoRotate = true,
   rotateInterval = 3000,
-  cardHeight,
+  cardHeight = 500,
   carouselClassName,
   cardClassName,
   backgroundColor = "transparent",
@@ -52,10 +52,6 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const minSwipeDistance = 50;
-  const [computedCardHeight, setComputedCardHeight] = useState<number>(
-    // initial SSR-safe fallback
-    typeof window === "undefined" ? 420 : window.innerWidth < 640 ? 360 : window.innerWidth < 768 ? 420 : window.innerWidth < 1024 ? 480 : 520
-  );
 
   // Simple mobile detection based on window width
 
@@ -69,7 +65,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
 
   // Auto-rotation effect
   useEffect(() => {
-    if (autoRotate && isInView && !isHovering) {
+    if (autoRotate && isInView && !isHovering && products.length > 0) {
       const interval = setInterval(() => {
         setActive((prev) => (prev + 1) % products.length);
       }, rotateInterval);
@@ -89,25 +85,6 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
     return () => observer.disconnect();
   }, []);
 
-  // Compute responsive card height (px) based on viewport; optionally scale from prop
-  useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth;
-      // Base breakpoints
-      const base = width < 640 ? 360 : width < 768 ? 400 : width < 1024 ? 460 : width < 1280 ? 500 : 540;
-      if (cardHeight) {
-        // Scale proportionally around the provided base height
-        const factor = base / 500; // 500 is our reference for lg
-        setComputedCardHeight(Math.round(cardHeight * factor));
-      } else {
-        setComputedCardHeight(base);
-      }
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [cardHeight]);
-
   // Touch swipe handlers
   const onTouchStart = (e: React.TouchEvent) => {
     if (!isMobileSwipe) return;
@@ -121,7 +98,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
   };
 
   const onTouchEnd = () => {
-    if (!isMobileSwipe || !touchStart || !touchEnd) return;
+    if (!isMobileSwipe || !touchStart || !touchEnd || products.length === 0) return;
     const distance = touchStart - touchEnd;
     if (distance > minSwipeDistance) {
       setActive((prev) => (prev + 1) % products.length);
@@ -133,23 +110,24 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
   };
 
   const getCardAnimationClass = (index: number) => {
+    if (products.length === 0) return "scale-90 opacity-0";
     if (index === active) return "scale-100 opacity-100 z-20";
     if (index === (active + 1) % products.length)
-      return "translate-x-[28%] xs:translate-x-[30%] sm:translate-x-[34%] md:translate-x-[38%] lg:translate-x-[40%] scale-95 opacity-70 z-10";
+      return "translate-x-[40%] scale-95 opacity-60 z-10";
     if (index === (active - 1 + products.length) % products.length)
-      return "-translate-x-[28%] xs:-translate-x-[30%] sm:-translate-x-[34%] md:-translate-x-[38%] lg:-translate-x-[40%] scale-95 opacity-70 z-10";
-    return "scale-90 opacity-0 pointer-events-none";
+      return "translate-x-[-40%] scale-95 opacity-60 z-10";
+    return "scale-90 opacity-0";
   };
 
   // Star rating component
   const StarRating = ({ rating }: { rating?: number }) => {
     const stars = rating ? Math.round(rating) : 0;
     return (
-      <div className="flex justify-center items-center">
+      <div className="flex justify-center items-center ">
         {[...Array(5)].map((_, i) => (
           <svg
             key={i}
-            className={`w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 ${i < stars ? "text-yellow-400" : "text-white"}`}
+            className={`w-5 h-5 ${i < stars ? "text-yellow-400" : "text-white"}`}
             fill="currentColor"
             viewBox="0 0 20 20"
             xmlns="http://www.w3.org/2000/svg"
@@ -161,12 +139,25 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
     );
   };
 
+  if (products.length === 0) {
+    return (
+      <section id="product-carousel" className="h-full w-full rounded-3xl bg-gradient-to-br from-[#fff9e6] via-[#fff5cc] to-[#ffefb3] border-2 border-black shadow-xl flex flex-col justify-center items-center p-6 text-center gap-3">
+        <h3 className="text-xl sm:text-2xl font-bold text-purple-700 uppercase tracking-widest animate-pulse">
+          Products are arriving!
+        </h3>
+        <p className="text-sm sm:text-base text-gray-600 max-w-sm">
+          We are currently updating our closets. Stay tuned for new arrivals!
+        </p>
+      </section>
+    );
+  }
+
   return (
-    <section id="product-carousel" className="product-carousel-section h-full w-full rounded-2xl sm:rounded-3xl bg-linear-to-br from-[#fff9e6] via-[#fff5cc] to-[#ffefb3] border-2 border-black shadow-xl flex justify-center items-center">
-      <div className="w-fit h-full px-2 sm:px-3 md:px-6 lg:px-8 min-w-[90vw] xs:min-w-[85vw] sm:min-w-[80vw] md:min-w-[70vw] lg:min-w-[60vw] xl:min-w-[50vw] 2xl:min-w-[40vw] rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-6 lg:p-9">
+    <section id="product-carousel" className="h-full w-full   rounded-3xl bg-gradient-to-br from-[#fff9e6] via-[#fff5cc] to-[#ffefb3] border-2 border-black  shadow-xl flex justify-center items-center ">
+      <div className="w-fit h-full  sm:px-6 lg:px-8 min-w-[20vw] md:min-w-[50vw]   rounded-3xl p-9">
         <div
           className="relative"
-          style={{ height: `${computedCardHeight}px` }}
+          style={{ height: `${cardHeight}px` }}
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
           onTouchStart={onTouchStart}
@@ -176,7 +167,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
         >
           <div
             className={cn(
-              "absolute top-0 left-0 w-full h-full flex items-center justify-center",
+              "absolute top-0 left-0 w-full   h-full flex items-center justify-center",
               carouselClassName
             )}
             style={{ backgroundColor }}
@@ -186,8 +177,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
                 <motion.div
                   key={product.id}
                   className={cn(
-                    // Responsive width with sensible max sizes per breakpoint
-                    "absolute top-0 w-[80vw] xs:w-[75vw] sm:w-[60vw] md:w-[55vw] lg:w-[45vw] xl:w-[40vw] 2xl:w-[36vw] max-w-[320px] xs:max-w-[340px] sm:max-w-[380px] md:max-w-[440px] lg:max-w-[500px] xl:max-w-[560px] cursor-pointer transform transition-all duration-500 shadow-md rounded-2xl sm:rounded-3xl",
+                    "absolute top-0 w-full max-w-md  cursor-pointer transform transition-all duration-500 shadow-md rounded-3xl",
                     getCardAnimationClass(index),
                     cardClassName
                   )}
@@ -196,11 +186,11 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
                   exit={{ scale: 0.9, opacity: 0 }}
                 >
                   <div
-                    className="border-2 border-black rounded-2xl sm:rounded-3xl bg-[#DADAD0] shadow-md hover:shadow-xl transition duration-300 overflow-hidden"
-                    style={{ height: `${computedCardHeight}px` }}
+                    className="border-2 border-black rounded-3xl bg-[#DADAD0] shadow-md hover:shadow-xl transition duration-300 overflow-hidden"
+                    style={{ height: `${cardHeight}px` }}
                   >
                     <div
-                      className="relative w-full h-full flex flex-col"
+                      className="relative w-full h-full flex flex-col "
                       style={{
                         backgroundImage: `url(${product.variants[0]?.imageUrls[0] || ''})`,
                         backgroundSize: "cover",
@@ -220,8 +210,6 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
           </div>
 
        
-        
-        
          
         </div>
         

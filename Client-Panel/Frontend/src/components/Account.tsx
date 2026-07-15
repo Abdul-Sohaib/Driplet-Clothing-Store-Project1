@@ -1,18 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect, useCallback } from "react";
-import { auth } from "@/firebase";  // ← ADD
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
 import img from "@/assets/accountimg1.png";
 import img2 from "@/assets/accountimg2.jpg";
 import img3 from "@/assets/accountimg3.jpg";
 import { motion } from "framer-motion";
 import { easeOut } from "framer-motion";
-import axiosInstance from "@/lib/axios";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface User {
-  id?: string;
   name: string;
   email: string;
   gender?: string;
@@ -46,7 +44,8 @@ const textParts = [
   { text: " in every thread — identity owned unapologetically.", type: "normal" },
 ];
 
-// Animation variants
+
+// Variants
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
@@ -89,235 +88,87 @@ const Account: React.FC = () => {
   const [gender, setGender] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isGenderUpdating, setIsGenderUpdating] = useState(false);
-  const navigate = useNavigate();
-
-  // Memoized fetch function to prevent recreation on every render
-// INSTRUCTIONS: Replace the existing fetchUser function in Account.tsx
-// Find the fetchUser function in your Account.tsx and replace it completely with this:
-
-// FIXED fetchUser function for Account.tsx
-// Replace the existing fetchUser function with this:
-
-const fetchUser = useCallback(async () => {
-  const firebaseUser = auth.currentUser;
-  if (!firebaseUser) {
-    console.log("[ACCOUNT] No Firebase user");
-    setIsLoading(false);
-    return;
-  }
-
-  try {
-    // ✅ Get fresh Firebase token
-    const token = await firebaseUser.getIdToken(true);
-    console.log("[ACCOUNT] Firebase token obtained:", token.substring(0, 20) + "...");
-
-    // ✅ Sync with backend
-    const res = await axiosInstance.get("/auth/user");
-    
-    if (res.data.success && res.data.user) {
-      const backendUser = {
-        id: res.data.user.id,
-        email: res.data.user.email,
-        name: res.data.user.name,
-        gender: res.data.user.gender || "",
-      };
-      
-      setUser(backendUser);
-      setGender(backendUser.gender || "");
-      localStorage.setItem("user", JSON.stringify(backendUser));
-      console.log("[ACCOUNT] ✅ User synced with backend:", backendUser.email);
-    }
-  } catch (err: any) {
-    console.error("[ACCOUNT] ❌ Backend sync failed:", {
-      message: err.message,
-      status: err.response?.status,
-    });
-    
-    // Don't use fallback - force re-login if backend fails
-    if (err.response?.status === 401) {
-      setError("Session expired. Please log in again.");
-      toast.error("Session expired. Please log in again.");
-      localStorage.removeItem("user");
-    }
-  } finally {
-    setIsLoading(false);
-  }
-}, []);
-
-useEffect(() => {
-  fetchUser();
-}, [fetchUser]);
-
-  // Handle auth changes from other components
-  const handleAuthChange = useCallback(() => {
-    console.log("Auth change event received in Account");
-    // Only fetch if not already loading and no current user
-    if (!isLoading && !user) {
-      fetchUser();
-    }
-  }, [fetchUser, isLoading, user]);
 
   useEffect(() => {
-    let isMounted = true;
-    
-    // Check if user exists in localStorage first
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const fetchUser = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser && parsedUser.id && isMounted) {
-          console.log("Using stored user data");
-          setUser(parsedUser);
-          setGender(parsedUser.gender || "");
-          setIsLoading(false);
-          return;
-        }
+        const res = await axios.get(`${API_BASE}/auth/user`, {
+          withCredentials: true,
+        });
+        setUser(res.data.user);
+        setGender(res.data.user.gender || "");
       } catch (err) {
-        console.error("Error parsing stored user:", err);
-        localStorage.removeItem('user');
+        const errorMsg =
+          (err as any).response?.data?.message ||
+          (err as any).message ||
+          "Failed to fetch user data";
+        console.error("Error fetching user:", errorMsg);
+        setError(errorMsg);
+        toast.error(
+          `Failed to fetch user data: ${errorMsg}. Please try again.`
+        );
+      } finally {
+        setIsLoading(false);
       }
-    }
-    
-    // Only fetch if we don't have stored user data
-    if (isMounted && !user) {
-      fetchUser();
-    }
-
-    // Add event listeners
-    window.addEventListener("authChange", handleAuthChange);
-
-    return () => {
-      isMounted = false;
-      window.removeEventListener("authChange", handleAuthChange);
     };
-  }, [fetchUser, handleAuthChange, user]); // Empty dependency array to run only once
+    fetchUser();
+  }, []);
 
   const handleGenderChange = async (value: string) => {
-    if (isGenderUpdating) return; // Prevent multiple simultaneous updates
-    
     const newGender = gender === value ? "" : value;
-    const previousGender = gender;
-    
-    // Optimistic update
     setGender(newGender);
-    setIsGenderUpdating(true);
-    
+    setIsLoading(true);
     try {
-      console.log("Updating gender to:", newGender);
-      
-      const response = await axiosInstance.put(
-        "/auth/user",
+      await axios.put(
+        `${API_BASE}/auth/user`,
         { gender: newGender },
-        { 
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+        { withCredentials: true }
       );
-      
-      console.log("Gender update successful:", {
-        status: response.status,
-        newGender: response.data.user?.gender
-      });
-      
-      if (response.data.user) {
-        setUser(response.data.user);
-        setGender(response.data.user.gender || "");
-        
-        // Update localStorage
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        
-        // Dispatch auth change event
-        window.dispatchEvent(new Event("authChange"));
-      }
-      
       toast.success("Gender updated successfully!");
-      
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || "Failed to update gender";
-      console.error("Error updating gender:", {
-        message: errorMsg,
-        status: err.response?.status
-      });
-      
-      // Revert optimistic update
-      setGender(previousGender);
-      toast.error(`Failed to update gender: ${errorMsg}`);
-      
+    } catch (err) {
+      const errorMsg =
+        (err as any).response?.data?.message ||
+        (err as any).message ||
+        "Failed to update gender";
+      console.error("Error updating gender:", errorMsg);
+      toast.error(`Failed to update gender: ${errorMsg}. Please try again.`);
     } finally {
-      setIsGenderUpdating(false);
+      setIsLoading(false);
     }
   };
 
-  // Loading state
-  if (isLoading && !user) {
-    return (
-      <div className="w-screen h-screen flex justify-center items-center bg-[#F5F5DC]">
-        <div className="text-center p-6 bg-white rounded-lg shadow-lg">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-black text-xl font-semibold">Loading your account...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state
   if (error) {
     return (
       <div className="w-screen h-screen flex justify-center items-center bg-[#F5F5DC]">
-        <div className="text-center p-6 bg-white rounded-lg shadow-lg max-w-md">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <p className="text-red-600 text-xl font-bold mb-4">{error}</p>
-          <div className="space-y-3">
-            <button
-              onClick={() => {
-                setError(null);
-                fetchUser();
-              }}
-              className="w-full px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
-            >
-              Try Again
-            </button>
-            <button
-              onClick={() => navigate('/')}
-              className="w-full px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
-            >
-              Go Home
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // No user state
-  if (!user) {
-    return (
-      <div className="w-screen h-screen flex justify-center items-center bg-[#F5F5DC]">
         <div className="text-center p-6 bg-white rounded-lg shadow-lg">
-          <p className="text-black text-xl mb-4">No user data available.</p>
+          <p className="text-red-600 text-xl font-bold">{error}</p>
           <button
-            onClick={() => navigate('/')}
-            className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Go Home
+            Retry
           </button>
         </div>
       </div>
     );
   }
 
-  // Main component render
+  if (!user) {
+    return (
+      <div className="w-screen h-screen flex justify-center items-center bg-[#F5F5DC]">
+        <p className="text-black text-xl">No user data available.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-screen h-[90vh] flex flex-col overflow-hidden justify-center items-center bg-[#F5F5DC] p-10">
-      <div className="w-full h-full grid grid-cols-1 lg:grid-cols-2 gap-6 place-items-center items-center">
-        <div className="col-span-1 flex flex-col justify-between gap-10 w-full">
+      <div className="w-full h-full grid grid-cols-2 gap-6 place-items-center items-center">
+        <div className="col-span-1 flex flex-col justify-between gap-10">
           <div className="flex flex-col gap-8">
-            <h2 className="text-4xl font-bold text-black mb-4 textheading">
-              {user.name}
-            </h2>
+            <h2 className="text-4xl font-bold text-black mb-4 text-left textheading">{user.name}</h2>
 
             {/* Animated Paragraph */}
             <motion.div
@@ -347,88 +198,71 @@ useEffect(() => {
             </motion.div>
 
             {/* Gender + Email */}
-            <div className="flex w-full justify-between items-center h-full flex-wrap gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="text-lg text-black navfonts font-bold button-add rounded-3xl px-4 py-2 truncate">
-                  {user.email}
-                </p>
-              </div>
-              <div className="flex justify-center items-center gap-5 navfonts button-add rounded-3xl px-4 py-2">
+            <div className="flex w-full justify-between items-center h-full">
+              <p className="text-lg text-black mb-4 navfonts font-bold button-add rounded-3xl">
+                {user.email}
+              </p>
+              <div className="flex justify-center items-center gap-5 navfonts button-add rounded-3xl">
                 <label className="text-xl font-semibold text-black">
-                  Gender:
+                  Gender--
                 </label>
-                <div className="flex gap-4 text-black">
+                <div className="mt-2 flex gap-4 text-black">
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       checked={gender === "Male"}
                       onChange={() => handleGenderChange("Male")}
-                      disabled={isGenderUpdating}
-                      className="accent-purple-600 cursor-pointer disabled:opacity-50"
+                      disabled={isLoading}
+                      className="accent-purple-600 cursor-pointer"
                     />
-                    <span className={isGenderUpdating ? "opacity-50" : ""}>Male</span>
+                    Male
                   </label>
                   <label className="flex items-center gap-2">
                     <input
                       type="checkbox"
                       checked={gender === "Female"}
                       onChange={() => handleGenderChange("Female")}
-                      disabled={isGenderUpdating}
-                      className="accent-purple-600 cursor-pointer disabled:opacity-50"
+                      disabled={isLoading}
+                      className="accent-purple-600 cursor-pointer"
                     />
-                    <span className={isGenderUpdating ? "opacity-50" : ""}>Female</span>
+                    Female
                   </label>
                 </div>
-                {isGenderUpdating && (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
-                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Images Section */}
-        <div className="col-span-1 flex justify-center items-center w-full">
+        {/* Animated Image Cards */}
+        <div className="col-span-1 flex justify-center items-center">
           <motion.div
             className="relative w-full h-[60vh]"
             variants={cardsContainerVariants}
             initial="hidden"
             animate="show"
           >
+            {/* Card 1 */}
             <motion.div
               variants={cardVariants}
-              className="absolute top-0 right-[2vw] w-[20vw] min-w-[200px] h-fit bg-pink-200 rounded-lg shadow-lg rotate-[-4deg] z-10 overflow-hidden"
+              className="absolute top-0 right-[2vw] w-[20vw] h-fit bg-pink-200 rounded-lg shadow-lg rotate-[-4deg] z-10 overflow-hidden"
             >
-              <img 
-                src={img} 
-                alt="Fashion Image 1" 
-                className="object-cover w-full h-full" 
-                loading="lazy"
-              />
+              <img src={img} alt="Image 1" className="object-cover w-full h-full" />
             </motion.div>
 
+            {/* Card 2 */}
             <motion.div
               variants={cardVariants}
-              className="absolute left-0 w-[22vw] min-w-[220px] h-fit bg-orange-300 rounded-lg shadow-lg rotate-[4deg] z-20 overflow-hidden"
+              className="absolute left-[0vw] w-[22vw] h-fit bg-orange-300 rounded-lg shadow-lg rotate-[4deg] z-20 overflow-hidden"
             >
-              <img 
-                src={img2} 
-                alt="Fashion Image 2" 
-                className="object-cover w-full h-full" 
-                loading="lazy"
-              />
+              <img src={img2} alt="Image 2" className="object-cover w-full h-full" />
             </motion.div>
 
+            {/* Card 3 */}
             <motion.div
               variants={cardVariants}
-              className="absolute top-[19vh] left-[17vw] w-[14vw] min-w-[140px] h-fit bg-white rounded-lg shadow-lg -rotate-1 z-30 overflow-hidden"
+              className="absolute top-[17vh] -left-[9vw] w-[14vw] h-fit bg-white rounded-lg shadow-lg rotate-[-1deg] z-30 overflow-hidden"
             >
-              <img 
-                src={img3} 
-                alt="Fashion Image 3" 
-                className="object-cover w-full h-full" 
-                loading="lazy"
-              />
+              <img src={img3} alt="Image 3" className="object-cover w-full h-full" />
             </motion.div>
           </motion.div>
         </div>

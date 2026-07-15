@@ -1,70 +1,18 @@
-// server.js
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const compression = require("compression");
 const cookieParser = require("cookie-parser");
+const cache = require("memory-cache");
 const dotenv = require("dotenv");
 const path = require("path");
 const fs = require("fs");
-const mongoose = require("mongoose");
-
-// Import CORS config
-const { corsOptions } = require("./middleware/cors");
-
 dotenv.config();
 
 const connectDB = require("./config/db");
 
-// === SINGLE DB CONNECTION + INDEX SETUP ===
-let dbConnected = false;
-
-const initializeDB = async () => {
-  if (dbConnected) return;
-
-  try {
-    await connectDB();
-    console.log("MongoDB connected");
-
-    const User = require("./models/Client/clientuser");
-
-    // === SAFE INDEX CREATION ===
-    const collection = User.collection;
-
-    // 1. Email index (unique)
-    try {
-      await collection.createIndex({ email: 1 }, { unique: true, background: true });
-      console.log("Index: email_1 (unique) ensured");
-    } catch (err) {
-      if (!err.message.includes("duplicate")) throw err;
-      console.log("Index: email_1 already exists");
-    }
-
-    // 2. reviews.productId index (sparse/partial)
-    try {
-      await collection.createIndex(
-        { "reviews.productId": 1 },
-        {
-          background: true,
-          partialFilterExpression: { "reviews.productId": { $exists: true } },
-          name: "reviews_productId_partial"
-        }
-      );
-      console.log("Index: reviews_productId_partial ensured");
-    } catch (err) {
-      if (!err.message.includes("duplicate")) throw err;
-      console.log("Index: reviews_productId_partial already exists");
-    }
-
-    dbConnected = true;
-  } catch (err) {
-    console.error("MongoDB initialization failed:", err.message);
-    process.exit(1);
-  }
-};
-
-// === ROUTES ===
+// Admin Routes
 const productRoutes = require("./routes/Admin/products");
 const categoryRoutes = require("./routes/Admin/categories");
 const orderRoutes = require("./routes/Admin/order");
@@ -76,207 +24,236 @@ const mailRoutes = require("./routes/Admin/mails");
 const siteSettingsRoutes = require("./routes/Admin/siteSettings");
 const salesRoutes = require("./routes/Admin/sales");
 
+// Client Routes
+const authRoutes = require("./routes/clientauth");
 const cartRoutes = require("./routes/cart");
 const wishlistRoutes = require("./routes/wishlist");
 const reviewRoutes = require("./routes/reviews");
 const clientorderRoutes = require("./routes/clientorders");
-const clientAuthRoutes = require("./routes/clientauth");
 
 const app = express();
 
-// === INITIALIZE DB ONCE ===
-initializeDB();
+// 🔗 Connect MongoDB
+connectDB()
+  .then(() => console.log("✅ MongoDB connected successfully"))
+  .catch((err) => {
+    console.error("❌ MongoDB connection failed:", err.message);
+    console.warn("⚠️  Troubleshooting Tips:");
+    console.warn("   1. Verify your internet connection.");
+    console.warn("   2. Check if the MongoDB Atlas cluster is paused or deleted.");
+    console.warn("   3. Ensure your current IP is whitelisted in MongoDB Atlas Network Access.");
+    console.warn("   4. The server will continue running, but database operations will fail.");
+  });
 
-// === MIDDLEWARE ===
-if (!process.env.NODE_ENV) {
-  process.env.NODE_ENV = "development";
+// 🔍 Check images folder at startup
+const imagesPath = path.join(__dirname, "images");
+if (!fs.existsSync(imagesPath)) {
+  console.warn("⚠️ Images folder not found at:", imagesPath);
+} else {
+  const logoPath = path.join(imagesPath, "DRIPLET.svg");
+  if (!fs.existsSync(logoPath)) {
+    console.warn("⚠️ DRIPLET.svg not found in images folder:", logoPath);
+  } else {
+    console.log("✅ Images folder and DRIPLET.svg verified");
+  }
 }
-console.log(`Environment: NODE_ENV = ${process.env.NODE_ENV}`);
 
+// 🔐 Middleware
+app.use(helmet());
 app.use(
-  helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" },
-    crossOriginEmbedderPolicy: false,
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "https://*.razorpay.com"],
-        frameSrc: ["'self'", "https://*.razorpay.com"],
-        imgSrc: ["'self'", "data:", "https:", "http:"],
-        connectSrc: ["'self'", "https://*.razorpay.com", "http://localhost:*", "ws://localhost:*"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-      },
+  cors({
+    origin: function (origin, callback) {
+      console.log(`🌐 CORS Check - Origin: ${origin}`);
+      
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) {
+        console.log(`✅ Allowing request with no origin`);
+        return callback(null, true);
+      }
+      
+      // Allow localhost origins
+      if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
+        console.log(`✅ Allowing localhost origin: ${origin}`);
+        return callback(null, true);
+      }
+      
+      // Allow dev tunnel origins (including various tunnel services)
+      if (origin.includes('devtunnels.ms') || 
+          origin.includes('ngrok.io') || 
+          origin.includes('tunnel.local') ||
+          origin.includes('loca.lt') ||
+          origin.includes('serveo.net') ||
+          origin.includes('ngrok-free.app')) {
+        console.log(`✅ Allowing dev tunnel origin: ${origin}`);
+        return callback(null, true);
+      }
+      
+      // Allow specific production domains (add your actual domain here)
+      const allowedDomains = [
+        'https://yourdomain.com',
+        'https://www.yourdomain.com'
+      ];
+      
+      if (allowedDomains.includes(origin)) {
+        console.log(`✅ Allowing production domain: ${origin}`);
+        return callback(null, true);
+      }
+      
+      // For development, allow all origins temporarily
+      // IMPORTANT: Remove this in production and only allow specific domains
+      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
+        console.log(`🔓 Development mode: Allowing origin: ${origin}`);
+        return callback(null, true);
+      }
+      
+      console.log(`🚫 CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
     },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    exposedHeaders: ['X-Cache'],
+    optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+    preflightContinue: false
   })
 );
 
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+// Add CORS preflight handling
+app.options('*', cors());
 app.use(cookieParser());
 app.use(compression());
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per window
+  })
+);
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 1000,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: "Too many requests, please try again later." },
-  skip: (req) => req.url === '/api/health'
-});
-app.use("/api/", limiter);
-
+// 🧾 Log all requests
 app.use((req, res, next) => {
-  const timestamp = new Date().toISOString();
-  const logData = {
-    timestamp,
-    method: req.method,
-    url: req.url,
-    origin: req.headers.origin,
-    userAgent: req.headers["user-agent"]?.substring(0, 50),
-    hasAuth: !!req.headers.authorization,
-    contentType: req.headers["content-type"],
-  };
-
-  if (req.method === "OPTIONS") {
-    console.log(`[PREFLIGHT] ${req.url}`, { origin: req.headers.origin });
-  } else if (req.method !== "GET") {
-    console.log(`[${req.method}] ${req.url}`, logData);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}, Origin: ${req.headers.origin}, Cookies:`, req.cookies || "None");
+  
+  // Log CORS-related headers for debugging
+  if (req.method === 'OPTIONS') {
+    console.log(`🔄 CORS Preflight Request - Origin: ${req.headers.origin}`);
+    console.log(`🔄 CORS Headers:`, {
+      'access-control-request-method': req.headers['access-control-request-method'],
+      'access-control-request-headers': req.headers['access-control-request-headers'],
+      'origin': req.headers.origin
+    });
   }
-
-  if (req.url.includes("/transactions") && req.headers["x-razorpay-signature"]) {
-    console.log(`[RAZORPAY WEBHOOK] Signature: ${req.headers["x-razorpay-signature"]}`);
-  }
-
+  
   next();
 });
 
+// 🗄️ Cache Middleware for GET routes only
 const cacheMiddleware = (duration) => (req, res, next) => {
-  if (req.method !== "GET" || /\/(cart|wishlist|orders|auth)\//.test(req.url)) {
+  if (req.method !== "GET") {
+    console.log(`🗄️ Bypassing cache for ${req.method} ${req.url}`);
     return next();
   }
-  const key = `__cache__${req.originalUrl}`;
-  const cached = require("memory-cache").get(key);
-  if (cached) {
+  const key = `__express__${req.originalUrl || req.url}`;
+  const cachedBody = cache.get(key);
+  if (cachedBody) {
+    console.log(`🗄️ Cache hit for ${key}`);
     res.setHeader("X-Cache", "HIT");
-    return res.json(cached);
+    return res.json(cachedBody);
   }
+  console.log(`🗄️ Cache miss for ${key}`);
   res.setHeader("X-Cache", "MISS");
   const originalJson = res.json;
   res.json = function (body) {
-    require("memory-cache").put(key, body, duration * 1000);
+    cache.put(key, body, duration * 1000);
     return originalJson.call(this, body);
   };
   next();
 };
 
-app.use("/images", (req, res, next) => {
-  res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-  const filePath = path.join(__dirname, "images", req.path);
+// 📦 Routes
+app.use("/api/client/orders", clientorderRoutes);
+app.use("/api/products", cacheMiddleware(300), productRoutes);
+app.use("/api/categories", cacheMiddleware(300), categoryRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/reviews", cacheMiddleware(300), reviewRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/support-tickets", supportTicketRoutes);
+app.use("/api/search", cacheMiddleware(300), searchRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/mails", mailRoutes);
+app.use("/api/site-settings", siteSettingsRoutes);
+app.use("/api/sales", cacheMiddleware(300), salesRoutes);
+app.use("/api/auth", authRoutes);
+
+// 🧪 CORS Test Endpoint
+app.get('/api/cors-test', (req, res) => {
+  res.json({
+    message: 'CORS is working!',
+    timestamp: new Date().toISOString(),
+    origin: req.headers.origin,
+    method: req.method,
+    headers: req.headers
+  });
+});
+
+// 🏥 Health Check Endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    cors: {
+      origin: req.headers.origin,
+      method: req.method
+    }
+  });
+});
+
+//  Custom middleware for images to handle 404 and serve default
+app.use('/images', (req, res, next) => {
+  const filePath = path.join(__dirname, 'images', req.path);
   fs.access(filePath, fs.constants.F_OK, (err) => {
     if (err) {
-      console.warn(`[IMAGES] Not found: ${req.path}`);
-      return res.sendFile(path.join(__dirname, "images", "driplet-logo.png"));
+      console.warn(` Image not found: ${req.path}, serving default`);
+      return res.sendFile(path.join(__dirname, 'images', 'driplet-logo.png'));
     }
     next();
   });
-}, express.static(path.join(__dirname, "images")));
+}, express.static(path.join(__dirname, 'images')));
 
-// === ROUTES ===
-app.use("/api/products", cacheMiddleware(300), productRoutes);
-app.use("/api/categories", cacheMiddleware(300), categoryRoutes);
-app.use("/api/search", cacheMiddleware(300), searchRoutes);
-app.use("/api/reviews", cacheMiddleware(300), reviewRoutes);
-app.use("/api/site-settings", siteSettingsRoutes);
-app.use("/api/sales", cacheMiddleware(300), salesRoutes);
-
-app.use("/api/auth", clientAuthRoutes);
-app.use("/api/cart", cartRoutes);
-app.use("/api/wishlist", wishlistRoutes);
-app.use("/api/client/orders", clientorderRoutes);
-
-// ADMIN ROUTES
-app.use("/api/admin/orders", orderRoutes);
-app.use("/api/admin/support-tickets", supportTicketRoutes);
-app.use("/api/admin/analytics", analyticsRoutes);
-app.use("/api/admin/transactions", transactionRoutes);
-app.use("/api/admin/mails", mailRoutes);
-
-// === HEALTH & TEST ===
-app.get("/api/health", (req, res) => {
-  res.json({
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV,
-    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-  });
-});
-
-app.get("/api/cors-test", (req, res) => {
-  res.json({
-    message: "CORS working",
-    origin: req.headers.origin,
-    method: req.method,
-    hasAuth: !!req.headers.authorization,
-  });
-});
-
-// === 404 & ERROR HANDLER ===
-app.use((req, res) => {
-  console.log(`[404] Route not found: ${req.method} ${req.url}`);
-  res.status(404).json({ 
-    success: false, 
-    message: "Route not found",
-    requestedUrl: req.url,
-    method: req.method
-  });
-});
-
+// ❌ Global Error Handler
 app.use((err, req, res, next) => {
-  if (err.message.includes("CORS") || err.message.includes("not allowed")) {
-    console.error('[CORS ERROR]', { origin: req.headers.origin, url: req.url, method: req.method });
-    return res.status(403).json({
-      success: false,
-      message: "CORS Error: Origin not allowed",
+  // Handle CORS errors specifically
+  if (err.message === 'Not allowed by CORS') {
+    console.error("🚫 CORS Error:", {
+      message: err.message,
       origin: req.headers.origin,
+      method: req.method,
+      url: req.url,
+    });
+    return res.status(403).json({ 
+      message: "CORS Error: Origin not allowed", 
+      error: err.message,
+      origin: req.headers.origin,
+      allowedOrigins: "Check server logs for allowed origins"
     });
   }
 
-  console.error("[SERVER ERROR]", {
+  console.error(" Global Error:", {
     message: err.message,
-    url: req.url,
+    stack: err.stack,
     method: req.method,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    url: req.url,
   });
-
-  res.status(err.status || 500).json({ 
-    success: false,
-    message: process.env.NODE_ENV === 'production' ? "Internal Server Error" : err.message,
-    error: process.env.NODE_ENV === 'development' ? { message: err.message, stack: err.stack } : undefined
-  });
+  res.status(500).json({ message: "Internal Server Error", error: err.message });
 });
 
-// === GRACEFUL SHUTDOWN ===
-let server;
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, closing server...');
-  if (server) server.close(() => process.exit(0));
-});
-
-process.on('SIGINT', () => {
-  console.log('SIGINT received, closing server...');
-  if (server) server.close(() => process.exit(0));
-});
-
-// === START SERVER ===
+//  Start Server
 const PORT = process.env.PORT || 5000;
-server = app.listen(PORT, () => {
-  console.log(`\n${'='.repeat(50)}`);
-  console.log(` Server running at http://localhost:${PORT}`);
-  console.log(` Mode: ${process.env.NODE_ENV}`);
-  console.log(`${'='.repeat(50)}\n`);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
-
-module.exports = app;

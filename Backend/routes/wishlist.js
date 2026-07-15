@@ -1,6 +1,6 @@
 const express = require("express");
 const User = require("../models/Client/clientuser");
-const authMiddleware = require("../middleware/firebaseAuthMiddleware");
+const authMiddleware = require("../middleware/clientauthmiddleware");
 
 const router = express.Router();
 
@@ -52,18 +52,20 @@ router.get("/", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const wishlistItems = user.wishlist.map((item) => {
-      const variant = item.productId?.variants?.[0] || {};
-      return {
-        productId: item.productId?._id,
-        size: item.size,
-        product: {
-          name: item.productId?.name || "Unknown Product",
-          price: variant.price || 0,
-          imageUrls: variant.imageUrls || [],
-        },
-      };
-    });
+    const wishlistItems = user.wishlist
+      .filter((item) => item.productId) // Filter out deleted products
+      .map((item) => {
+        const variant = item.productId?.variants?.[0] || {};
+        return {
+          productId: item.productId?._id,
+          size: item.size,
+          product: {
+            name: item.productId?.name || "Unknown Product",
+            price: variant.price || 0,
+            imageUrls: variant.imageUrls || [],
+          },
+        };
+      });
 
     console.log("Wishlist items fetched:", wishlistItems);
     res.status(200).json(wishlistItems);

@@ -4,13 +4,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AiFillStar } from "react-icons/ai";
 import gsap from "gsap";
-import axiosInstance from "@/lib/axios";
+import axios from "axios";
 import image from "../assets/image.png";
 import Loading from "../components/Loading";
 import { toast } from "react-toastify";
 import cartgif from '@/assets/load.gif';
 import wishlistlike from '@/assets/wishlist.png';
 import Reviews from "../components/Reviews";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface Category {
   id: number;
@@ -64,7 +66,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axiosInstance.get("/categories", {
+        const response = await axios.get(`${API_BASE}/categories`, {
           withCredentials: true,
         });
         setCategories(response.data);
@@ -82,11 +84,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
       const fetchCategoryProducts = async () => {
         try {
           console.log(`Fetching products for categoryId: ${categoryId}`);
-          const response = await axiosInstance.get(`/products?category=${categoryId}`, {
+          const response = await axios.get(`${API_BASE}/products?category=${categoryId}`, {
             withCredentials: true,
           });
           if (response.data.length === 0) {
-            const fallbackResponse = await axiosInstance.get(`/products?categoryId=${categoryId}`, {
+            const fallbackResponse = await axios.get(`${API_BASE}/products?categoryId=${categoryId}`, {
               withCredentials: true,
             });
             setProducts(fallbackResponse.data);
@@ -180,8 +182,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const res = await axiosInstance.post(
-        "/cart",
+      const res = await axios.post(
+        `${API_BASE}/cart`,
         { productId, quantity: 1, size },
         { withCredentials: true }
       );
@@ -201,8 +203,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const res = await axiosInstance.post(
-        "/wishlist",
+      const res = await axios.post(
+        `${API_BASE}/wishlist`,
         { productId, quantity: 1, size },
         { withCredentials: true }
       );
@@ -225,22 +227,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
   const discount = Math.floor(((mrp - price) / mrp) * 100);
 
   return (
-    <div className="flex flex-col gap-3 justify-center inset-0 bg-[#F5F5DC] items-center w-full px-3 sm:px-5 md:px-8 lg:px-10">
-      <div className="flex w-full mt-6 sm:mt-10 justify-start items-center p-2">
+    <div className="flex flex-col gap-3 justify-center inset-0 bg-[#F5F5DC] items-center w-screen px-10">
+      <div className="flex w-screen mt-12 justify-center items-center">
         <button
           onClick={() => navigate("/")}
-          className="relative flex w-fit mt-6 md:mt-1  group bg-transparent outline-none cursor-pointer uppercase"
+          className="relative flex w-fit right-[41vw] group bg-transparent outline-none cursor-pointer uppercase"
         >
           <span className="absolute top-0 left-0 w-full h-full bg-[#101A13] bg-opacity-30 rounded-lg transform translate-y-0.5 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:translate-y-1 group-hover:duration-250 group-active:translate-y-px"></span>
-          <div className="relative flex items-center justify-between py-1.5 px-3 sm:py-2 sm:px-4 md:py-3 md:px-6 text-[10px] sm:text-xs md:text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-2 sm:gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-3 sm:w-4 -ml-1 transition duration-250 group-hover:-translate-x-1">
+          <div className="relative flex items-center justify-between py-3 px-6 text-lg text-black rounded-lg transform -translate-y-1 bg-white gap-3 transition duration-600 ease-[cubic-bezier(0.3,0.7,0.4,1)] group-hover:-translate-y-1.5 group-hover:duration-250 group-active:-translate-y-0.5 brightness-100 group-hover:brightness-110 shadow-md border-2 border-[#101A13] hover:border-purple-500 active:border-purple-700">
+            <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 -ml-1 transition duration-250 group-hover:-translate-x-1">
               <path
                 clipRule="evenodd"
                 fillRule="evenodd"
                 d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
               />
             </svg>
-            <span className="select-none text-[10px] sm:text-xs navfonts font-semibold">Back to Home</span>
+            <span className="select-none text-xs navfonts font-semibold">Back to Home</span>
           </div>
         </button>
       </div>
@@ -253,9 +255,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
             <div className="text-center text-red-600">{error}</div>
           ) : (
             <>
-              <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-black navfonts mb-6 text-center">Products in {categoryName}</h2>
+              <h2 className="text-3xl font-bold text-black navfonts mb-6 text-center">Products in {categoryName}</h2>
               {products.length > 0 ? (
-                <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 px-2 sm:px-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
                   {products.map((prod) => {
                     const prodImages = prod.variants[0]?.imageUrls || [];
                     const prodPrice = prod.variants[0]?.price || 0;
@@ -273,14 +275,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                         onClick={() => navigate(`/product/${prod.id}`)}
                       >
                         {prodImages.length > 0 ? (
-                          <div className="w-full overflow-hidden">
-                            <div className="flex h-56 xs:h-64 sm:h-72 md:h-80 lg:h-96">
+                          <div className="w-full h-[60vh] overflow-hidden">
+                            <div className="flex h-[60vh]">
                               {prodImages.map((img, i) => (
                                 <img
                                   key={i}
                                   src={img}
                                   alt={`img-${i}`}
-                                  className="h-full w-auto object-cover shrink-0 p-1"
+                                  className="h-full object-cover flex-shrink-0 p-1"
                                   loading="lazy"
                                   onError={() => console.error(`Failed to load image: ${img} for product ${prod.name}`)}
                                 />
@@ -288,7 +290,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                             </div>
                           </div>
                         ) : (
-                          <div className="w-full h-56 xs:h-64 sm:h-72 md:h-80 lg:h-96 overflow-hidden flex items-center justify-center bg-gray-200">
+                          <div className="w-full h-[60vh] overflow-hidden flex items-center justify-center bg-gray-200">
                             <span className="text-gray-600 font-semibold">No Image Available</span>
                           </div>
                         )}
@@ -364,16 +366,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                   })}
                 </div>
               ) : (
-                <div className="text-center text-gray-600">No products available in this category.</div>
+                <div className="text-center text-purple-700 font-bold tracking-widest animate-pulse py-10 text-xl">
+                  PRODUCTS ARE ARRIVING!
+                </div>
               )}
             </>
           )}
         </div>
       ) : product ? (
-        <div className="flex flex-col w-full p-1">
-          <div className="flex flex-col md:flex-row justify-evenly items-center  px-2 w-full gap-6">
-            <div className="flex flex-col md:flex-row justify-between w-full gap-6">
-            <div className="w-full md:w-[40vw] rounded-3xl">
+        <div className="flex flex-col w-fit px-2">
+          <div className="flex flex-col md:flex-row justify-between items-start mt-6">
+            <div className="flex justify-between w-full">
+            <div className="md:w-[35vw] rounded-3xl">
               {images.length > 0 ? (
                 <div className="w-full overflow-hidden">
                   <div
@@ -387,7 +391,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                         key={i}
                         src={img}
                         alt={`img-${i}`}
-                        className="w-full object-center object-cover shrink-0 p-0.5 rounded-2xl border-3 border-yellow-500"
+                        className="w-full  object-center object-cover flex-shrink-0 p-0.5 rounded-2xl border-3 border-yellow-500"
                        
                         loading="lazy"
                         onError={() => console.error(`Failed to load image: ${img} for product ${product.name}`)}
@@ -402,10 +406,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
               )}
             </div>
 
-            <div className="w-full md:w-1/2 flex flex-col gap-6 sm:gap-8 md:gap-9">
-              <h1 className="text-lg xs:text-2xl sm:text-3xl md:text-4xl font-semibold text-black tracking-wider navheading uppercase">{product.name}</h1>
-              <div className="flex flex-col gap-8 p-2">
-              <div className="flex items-center justify-between">
+            <div className="md:w-1/2 flex flex-col gap-9">
+              <h1 className="text-3xl font-semibold text-black tracking-wider navheading uppercase">{product.name}</h1>
+              <div className="flex items-center gap-40">
                 <div className="flex gap-3 items-center tracking-wider navheading">
                   <p className="text-2xl font-bold text-black">₹{price}</p>
                   <p className="text-base line-through text-gray-500">₹{mrp}</p>
@@ -417,13 +420,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                   <span className="text-sm text-gray-600 ml-1 tracking-wider navheading">(166 reviews)</span>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 tracking-wider navheading">
+              <div className="flex items-center gap-52 tracking-wider navheading">
                 <p className="text-lg text-green-600 font-semibold">Stock: {totalStock} left</p>
                 <p className="text-lg text-red-500 font-semibold">Buy 2 Get 1 Free</p>
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-between gap-4 navfonts">
-                <div className="flex gap-2 flex-wrap flex-col w-full sm:w-auto">
+              <div className="flex gap-52 navfonts">
+                <div className="flex gap-2 flex-wrap flex-col">
                   <h3 className="text-lg font-semibold text-black textheading">Variants</h3>
                   {product.variants.map((variant, index) => (
                     <button
@@ -439,7 +442,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                     </button>
                   ))}
                 </div>
-                <div className="flex flex-col gap-2 w-full sm:w-auto">
+                <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-center">
                     <h3 className="text-base font-semibold text-black textheading">Select Size</h3>
                   </div>
@@ -464,7 +467,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 w-full justify-between items-stretch">
+              <div className="flex gap-3 w-full justify-around items-center">
                 <button
                   className="relative group bg-transparent outline-none cursor-pointer uppercase w-full font-bold navfonts"
                   onClick={() => {
@@ -503,10 +506,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                   </div>
                 </button>
               </div>
-              </div>
-              <div className="flex flex-col gap-6 sm:gap-8 md:gap-9 navfonts mt-10 justify-between items-center ">
-                <h3 className="text-base sm:text-lg md:text-xl font-bold flex justify-center items-center textheading">PRODUCT DETAILS</h3>
-                <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-10 w-full">
+
+              <div className="flex flex-col gap-9 navfonts mt-10 justify-between items-center">
+                <h3 className="text-lg font-bold flex justify-center items-center textheading">PRODUCT DETAILS</h3>
+                <ul className="grid grid-cols-3 gap-10">
                   {[
                     { label: "Fit Type", value: product.fitType },
                     { label: "Material", value: product.fabric },
@@ -516,7 +519,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                     { label: "Gender", value: product.gender },
                     { label: "Category", value: categoryName },
                   ].map(({ label, value }) => (
-                    <li key={label} className="flex flex-col gap-2 sm:gap-3">
+                    <li key={label} className="flex flex-col gap-3">
                       <span className="font-semibold">{label}</span> <span className="flex w-full">{value}</span>
                       <hr className="border-t border-gray-300 mt-1" />
                     </li>
@@ -527,13 +530,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-6 sm:gap-8 md:gap-10 mt-6 justify-between w-full p-3">
-            <div className="w-full md:w-1/2">
+          <div className="flex flex-col md:flex-row gap-10 mt-6  w-full justify-between">
+            <div className="md:w-1/2">
               <Reviews productId={product.id} />
             </div>
-            <div className="w-full md:w-1/2 flex flex-col gap-6 sm:gap-8 md:gap-9 navfonts">
-              <h2 className="font-bold text-base sm:text-lg md:text-xl text-center textheading">PRODUCT INFORMATION</h2>
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-5">
+            <div className="md:w-1/2 flex flex-col gap-9 navfonts">
+              <h2 className="font-bold text-lg text-center textheading">PRODUCT INFORMATION</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {[
                   { title: "Product description", content: product.description },
                   { title: "7 Days Returns & Exchange", content: "Know about return & exchange policy" },
@@ -547,7 +550,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                   </div>
                 ))}
                 <div className="flex justify-center items-center mt-6 ">
-                  <img src={image} alt="" className="w-[70vw] sm:w-[50vw] md:w-[40vw] lg:w-[30vw] rounded-xl bg-transparent" />
+                  <img src={image} alt="" className="w-[30vw] rounded-xl bg-transparent" />
                 </div>
               </div>
             </div>
@@ -556,9 +559,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
       ) : null}
 
       {similarProducts.length > 0 && (
-        <div className="mt-20 flex flex-col gap-6 sm:gap-8 md:gap-10 w-full px-2 sm:px-4 justify-center items-center navfonts">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black textheading uppercase mb-2 sm:mb-4">Similar Products</h2>
-          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 px-1 sm:px-2 w-full">
+        <div className="mt-20 flex flex-col gap-10 w-screen px-4 justify-center items-center navfonts">
+          <h2 className="text-4xl font-bold text-black textheading uppercase mb-6">Similar Products</h2>
+          <div className="grid grid-cols-4 sm:grid-cols-2 lg:grid-cols-4 gap-5 px-2">
             {similarProducts.map((similarProduct) => {
               const prodImages = similarProduct.variants[0]?.imageUrls || [];
               const prodPrice = similarProduct.variants[0]?.price || 0;
@@ -576,19 +579,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                   onClick={() => navigate(`/product/${similarProduct.id}`)}
                 >
                   {prodImages.length > 0 ? (
-                    <div className="w-full overflow-hidden">
-                      <div className="h-56 xs:h-64 sm:h-72 md:h-80 lg:h-96 w-full">
-                        <img
-                          src={prodImages[0]}
-                          alt={`similar-${similarProduct.name}`}
-                          className="w-full h-full object-cover rounded-md"
-                          loading="lazy"
-                          onError={() => console.error(`Failed to load image: ${prodImages[0]} for similar product ${similarProduct.name}`)}
-                        />
+                    <div className="w-full h-[60vh] overflow-hidden">
+                      <div className="flex h-fit">
+                        {prodImages.map((img, i) => (
+                          <img
+                            key={i}
+                            src={img}
+                            alt={`img-${i}`}
+                            className="h-full object-cover flex-shrink-0  rounded-md"
+                            loading="lazy"
+                            onError={() => console.error(`Failed to load image: ${img} for similar product ${similarProduct.name}`)}
+                          />
+                        ))}
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full h-56 xs:h-64 sm:h-72 md:h-80 lg:h-96 overflow-hidden flex items-center justify-center bg-gray-200 rounded-md">
+                    <div className="w-full h-[60vh] overflow-hidden flex items-center justify-center bg-gray-200">
                       <span className="text-gray-600 font-semibold">No Image Available</span>
                     </div>
                   )}

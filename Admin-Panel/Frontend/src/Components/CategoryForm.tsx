@@ -33,12 +33,17 @@ const CategoryForm = ({ onAdd, categories, setLoading, loading }: Props) => {
   const [form, setForm] = useState<FormState>(initialState);
   const fixedCategories = ["Oversized T-shirt", "Topware", "Bottom Ware", "New Arrival", "Center Stage", "CLASSIC FIT T-SHIRTS"];
 
+  const [initialized, setInitialized] = useState(false);
+
   useEffect(() => {
-    const lastCategory = categories.length > 0 ? categories[categories.length - 1] : null;
-    if (lastCategory?.parent && !form.parent) {
-      setForm((prev) => ({ ...prev, parent: lastCategory.parent }));
+    if (!initialized && categories.length > 0) {
+      const lastCategory = categories[categories.length - 1];
+      if (lastCategory?.parent) {
+        setForm((prev) => ({ ...prev, parent: lastCategory.parent }));
+      }
+      setInitialized(true);
     }
-  }, [categories, form.parent]);
+  }, [categories, initialized]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>

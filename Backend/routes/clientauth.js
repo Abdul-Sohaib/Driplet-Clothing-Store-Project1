@@ -1,15 +1,13 @@
-// routes/clientauth.js
 const express = require("express");
-const firebaseAuthMiddleware = require("../middleware/firebaseAuthMiddleware");
+const jwt = require("jsonwebtoken");
 const User = require("../models/Client/clientuser");
 const nodemailer = require("nodemailer");
+const authMiddleware = require("../middleware/clientauthmiddleware");
 const { generateReceiptTemplate } = require("./receiptTemplate");
-
 require("dotenv").config();
 
 const router = express.Router();
 
-// Nodemailer for order receipts
 const transporter = nodemailer.createTransport({
   service: "Gmail",
   auth: {
@@ -18,11 +16,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-/**
- * Send order receipt
- */
+// Send order receipt email
 const sendOrderReceipt = async (user, order) => {
   try {
+    console.log("Sending receipt for order:", {
+      orderId: order._id,
+      items: order.items,
+      customer: order.customer,
+    });
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
@@ -30,327 +31,249 @@ const sendOrderReceipt = async (user, order) => {
       html: generateReceiptTemplate(user, order),
     };
     await transporter.sendMail(mailOptions);
-    console.log(`[EMAIL] ✓ Receipt sent to ${user.email}`);
+    console.log(`Order receipt sent to ${user.email}`);
   } catch (error) {
-    console.error("[EMAIL] ✗ Receipt send error:", {
+    console.error("Error sending order receipt:", {
+      message: error.message,
+      stack: error.stack,
       userEmail: user.email,
       orderId: order._id,
-      message: error.message,
     });
   }
 };
 
-/**
- * GET /api/auth/user
- * Returns current Firebase-linked user
- */
-router.get("/user", firebaseAuthMiddleware, async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
-    console.log("[AUTH] GET /user request from:", req.user.email);
+    const { name, email, password } = req.body;
 
-    if (!req.user || !req.user._id) {
-      console.error("[AUTH] ✗ No user in request");
-      return res.status(401).json({ 
-        success: false,
-        message: "Unauthenticated",
-        requiresAuth: true
-      });
+    console.log("Register request:", { name, email, password: "[REDACTED]" });
+    console.log("JWT_SECRET:", process.env.JWT_SECRET ? "Present" : "Missing");
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    const user = await User.findById(req.user._id)
-      .select("name email gender addresses photoURL")
-      .lean();
-
-    if (!user) {
-      console.error("[AUTH] ✗ User not found in DB:", req.user._id);
-      return res.status(404).json({ 
-        success: false,
-        message: "User not found" 
-      });
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      console.log(`Registration failed: User already exists with email: ${email}`);
+      return res.status(400).json({ message: "User already exists with this email" });
     }
 
-    console.log("[AUTH] ✓ User data fetched:", user.email);
+    const user = new User({
+      name,
+      email: email.toLowerCase(),
+      password,
+      cart: [],
+      addresses: [],
+    });
 
-    res.json({
-      success: true,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        gender: user.gender || '',
-        photoURL: user.photoURL || '',
-        addresses: user.addresses || [],
-      },
+    await user.save();
+    console.log("User saved successfully:", { email: user.email, id: user._id });
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
     });
-  } catch (err) {
-    console.error("[AUTH] ✗ GET /user error:", {
-      message: err.message,
-      userId: req.user?._id,
-      stack: err.stack,
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    res.status(500).json({ 
-      success: false,
-      message: "Server error",
-      error: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
+
+    res.status(201).json({ message: "User registered successfully", user: { name: user.name, email: user.email }, token });
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-/**
- * PUT /api/auth/user
- * Update user profile (gender, name, etc.)
- */
-router.put("/user", firebaseAuthMiddleware, async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
-    const { gender, name } = req.body;
-    
-    console.log("[AUTH] PUT /user request:", { 
-      userId: req.user._id, 
-      updates: { gender, name } 
-    });
+    const { email, password } = req.body;
 
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Unauthenticated" 
-      });
+    console.log("Login request:", { email, password: "[REDACTED]" });
+    console.log("JWT_SECRET:", process.env.JWT_SECRET ? "Present" : "Missing");
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    const updateData = {};
-    if (gender) updateData.gender = gender;
-    if (name) updateData.name = name;
-
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      updateData,
-      { new: true, runValidators: true }
-    ).select("name email gender photoURL");
-
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
-      return res.status(404).json({ 
-        success: false,
-        message: "User not found" 
-      });
+      console.log("User not found for email:", email);
+      return res.status(400).json({ message: "Invalid credentials: Email not found" });
     }
 
-    console.log("[AUTH] ✓ Profile updated:", user.email);
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      console.log("Password mismatch for user:", email);
+      return res.status(400).json({ message: "Invalid credentials: Incorrect password" });
+    }
 
-    res.json({
-      success: true,
-      message: "Profile updated",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        gender: user.gender,
-        photoURL: user.photoURL || '',
-      },
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
     });
-  } catch (err) {
-    console.error("[AUTH] ✗ PUT /user error:", {
-      message: err.message,
-      userId: req.user?._id,
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    res.status(500).json({ 
-      success: false,
-      message: "Server error" 
-    });
+
+    res.json({ message: "Login successful", user: { name: user.name, email: user.email }, token });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-/**
- * GET /api/auth/addresses
- */
-router.get("/addresses", firebaseAuthMiddleware, async (req, res) => {
+router.post("/logout", async (req, res) => {
   try {
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Unauthenticated" 
-      });
-    }
+    res.cookie("token", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      expires: new Date(0),
+    });
+    res.json({ message: "Logout successful" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
+router.get("/user", authMiddleware, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized, user not found" });
+    }
+    const user = await User.findById(req.user._id).select("name email _id");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ user: { name: user.name, email: user.email, _id: user._id } });
+  } catch (error) {
+    console.error("Get user error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/user-details", authMiddleware, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authorized, user not found" });
+    }
     const user = await User.findById(req.user._id).select("addresses");
     if (!user) {
-      return res.status(404).json({ 
-        success: false,
-        message: "User not found" 
-      });
+      return res.status(404).json({ message: "User not found" });
     }
-
-    res.json({ 
-      success: true,
-      addresses: user.addresses || [] 
-    });
-  } catch (err) {
-    console.error("[AUTH] ✗ GET /addresses error:", err.message);
-    res.status(500).json({ 
-      success: false,
-      message: "Server error" 
-    });
+    res.json({ addresses: user.addresses || [] });
+  } catch (error) {
+    console.error("Get user details error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-/**
- * POST /api/auth/address
- */
-router.post("/address", firebaseAuthMiddleware, async (req, res) => {
+router.post("/address", authMiddleware, async (req, res) => {
   try {
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Unauthenticated" 
-      });
-    }
-
     const user = await User.findById(req.user._id);
     if (!user) {
-      return res.status(404).json({ 
-        success: false,
-        message: "User not found" 
-      });
+      return res.status(404).json({ message: "User not found" });
     }
-
     user.addresses = user.addresses || [];
     user.addresses.push(req.body);
     await user.save();
-
-    console.log("[AUTH] ✓ Address added:", req.user.email);
-
-    res.json({ 
-      success: true,
-      message: "Address added", 
-      addresses: user.addresses 
-    });
+    res.json({ message: "Address added", addresses: user.addresses });
   } catch (err) {
-    console.error("[AUTH] ✗ POST /address error:", err.message);
-    res.status(500).json({ 
-      success: false,
-      message: "Failed to add address" 
-    });
+    console.error("Add address error:", err);
+    res.status(500).json({ message: "Failed to add address" });
   }
 });
 
-/**
- * PUT /api/auth/address/:index
- */
-router.put("/address/:index", firebaseAuthMiddleware, async (req, res) => {
+router.put("/address/:index", authMiddleware, async (req, res) => {
   try {
     const { index } = req.params;
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Unauthenticated" 
-      });
-    }
-
     const user = await User.findById(req.user._id);
-    if (!user || !user.addresses || user.addresses.length <= parseInt(index)) {
-      return res.status(404).json({ 
-        success: false,
-        message: "Address not found" 
-      });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-
+    if (!user.addresses || user.addresses.length <= parseInt(index)) {
+      return res.status(404).json({ message: "Address not found" });
+    }
     user.addresses[parseInt(index)] = req.body;
     await user.save();
-
-    console.log("[AUTH] ✓ Address updated:", req.user.email);
-
-    res.json({ 
-      success: true,
-      message: "Address updated", 
-      addresses: user.addresses 
-    });
+    res.json({ message: "Address updated", addresses: user.addresses });
   } catch (err) {
-    console.error("[AUTH] ✗ PUT /address error:", err.message);
-    res.status(500).json({ 
-      success: false,
-      message: "Failed to update address" 
-    });
+    console.error("Update address error:", err);
+    res.status(500).json({ message: "Failed to update address" });
   }
 });
 
-/**
- * DELETE /api/auth/address/:index
- */
-router.delete("/address/:index", firebaseAuthMiddleware, async (req, res) => {
+router.delete("/address/:index", authMiddleware, async (req, res) => {
   try {
     const { index } = req.params;
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ 
-        success: false,
-        message: "Unauthenticated" 
-      });
-    }
-
     const user = await User.findById(req.user._id);
-    if (!user || !user.addresses || user.addresses.length <= parseInt(index)) {
-      return res.status(404).json({ 
-        success: false,
-        message: "Address not found" 
-      });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-
+    if (!user.addresses || user.addresses.length <= parseInt(index)) {
+      return res.status(404).json({ message: "Address not found" });
+    }
     user.addresses.splice(parseInt(index), 1);
     await user.save();
-
-    console.log("[AUTH] ✓ Address deleted:", req.user.email);
-
-    res.json({ 
-      success: true,
-      message: "Address deleted", 
-      addresses: user.addresses 
-    });
+    res.json({ message: "Address deleted", addresses: user.addresses });
   } catch (err) {
-    console.error("[AUTH] ✗ DELETE /address error:", err.message);
-    res.status(500).json({ 
-      success: false,
-      message: "Failed to delete address" 
-    });
+    console.error("Delete address error:", err);
+    res.status(500).json({ message: "Failed to delete address" });
   }
 });
 
-/**
- * POST /api/auth/logout
- * Client-side only – Firebase handles session
- */
-router.post("/logout", (req, res) => {
-  res.json({ 
-    success: true,
-    message: "Logout successful (client-side)" 
-  });
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetCode = resetCode;
+    await user.save();
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset Code",
+      text: `Your password reset code is: ${resetCode}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ message: "Reset code sent to your email" });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
-/**
- * DEPRECATED ENDPOINTS - Use Firebase Auth
- */
-router.post("/register", (req, res) => {
-  res.status(410).json({ 
-    success: false,
-    message: "Use Firebase Auth for registration" 
-  });
-});
+router.post("/verify-code", async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user || user.resetCode !== code) {
+      return res.status(400).json({ message: "Invalid code" });
+    }
 
-router.post("/login", (req, res) => {
-  res.status(410).json({ 
-    success: false,
-    message: "Use Firebase Auth for login" 
-  });
-});
+    user.password = newPassword;
+    user.resetCode = undefined;
+    await user.save();
 
-router.post("/forgot-password", (req, res) => {
-  res.status(410).json({ 
-    success: false,
-    message: "Use Firebase password reset" 
-  });
-});
-
-router.post("/verify-code", (req, res) => {
-  res.status(410).json({ 
-    success: false,
-    message: "Use Firebase password reset" 
-  });
+    res.json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("Verify code error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 module.exports = router;

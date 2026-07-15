@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 import { AiFillStar } from "react-icons/ai";
-import { IoCartOutline } from "react-icons/io5";
 import gsap from "gsap";
 import { useNavigate } from "react-router-dom";
 import Loading from "./Loading";
@@ -10,8 +10,8 @@ import { toast } from "react-toastify";
 import cartgif from '@/assets/load.gif';
 import wishlistlike from '@/assets/wishlist.png';
 import { motion, type Variants } from "framer-motion";
-import axiosInstance from "../lib/axios";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface Product {
   id: string | number;
@@ -44,7 +44,9 @@ const Bestseller_cards = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axiosInstance.get(`/products`);
+        const res = await axios.get(`${API_BASE}/products`, {
+          withCredentials: true,
+        });
         const mockProducts = res.data.slice(0, 4).map((p: Product) => ({
           ...p,
           color: p.color || ["Red", "Blue", "Green"][Math.floor(Math.random() * 3)],
@@ -130,11 +132,15 @@ const Bestseller_cards = () => {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const res = await axiosInstance.post("/cart", { productId, quantity: 1, size });
+      const res = await axios.post(
+        `${API_BASE}/cart`,
+        { productId, quantity: 1, size },
+        { withCredentials: true }
+      );
       console.log(`Added product ${productId} (size: ${size}) to cart`, res.data);
       toast.success("Added to cart!");
       // Fetch updated cart
-      await axiosInstance.get("/cart");
+      await axios.get(`${API_BASE}/cart`, { withCredentials: true });
       // Note: Cart state is managed elsewhere (e.g., App.tsx), so no setCartItems here
     } catch (err) {
       console.error("Add to cart error:", (err as any).response?.data?.message || (err as any).message);
@@ -157,8 +163,12 @@ const Bestseller_cards = () => {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      await axiosInstance.post("/wishlist", { productId, size });
-      console.log(`Added product ${productId} (size: ${size}) to wishlist`);
+      const res = await axios.post(
+        `${API_BASE}/wishlist`,
+        { productId, size },
+        { withCredentials: true }
+      );
+      console.log(`Added product ${productId} (size: ${size}) to wishlist`, res.data);
       toast.success("Added to wishlist!");
     } catch (err) {
       console.error("Add to wishlist error:", (err as any).response?.data?.message || (err as any).message);
@@ -169,11 +179,11 @@ const Bestseller_cards = () => {
   };
 
   if (loading) return <Loading />;
-  if (error) return <div className="text-center text-red-500 text-sm sm:text-base">{error}</div>;
-  if (products.length === 0) return <div className="text-center text-gray-600 text-sm sm:text-base">No products available.</div>;
+  if (error) return <div className="text-center text-red-500">{error}</div>;
+  if (products.length === 0) return <div className="text-center text-gray-600">No products available.</div>;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-3 sm:px-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
       {products.map((product, index) => {
         let images = product.variants[0]?.imageUrls || [];
         if (!images || images.length === 0) {
@@ -211,7 +221,7 @@ const Bestseller_cards = () => {
             
             {images.length > 0 ? (
   images.map((img, i) => (
-    <div key={i} className="relative w-full h-full shrink-0 rounded-lg border border-black overflow-hidden">
+    <div key={i} className="relative w-full h-full flex-shrink-0 rounded-lg border-1 border-black overflow-hidden">
       {/* BEST SELLER Tag */}
       <div className="text-xs font-bold button-55 text-black bg-transparent w-fit text-center p-1 navfonts border-purple-400 absolute top-1 left-1 z-10 navfonts">
         BEST SELLER
@@ -226,14 +236,14 @@ const Bestseller_cards = () => {
   ))
 ) : (
   <div className="w-full h-full flex items-center justify-center bg-gray-200">
-    <span className="text-gray-600 font-semibold text-sm sm:text-base">No Image Available</span>
+    <span className="text-gray-600 font-semibold">No Image Available</span>
   </div>
 )}
 
 
-            <div className="flex justify-between px-2 sm:px-3 py-2 text-xs sm:text-sm items-center">
+            <div className="flex justify-between px-3 py-2 text-sm items-center">
               <div className="flex items-center gap-1 text-orange-500">
-                <AiFillStar className="text-[12px] sm:text-[14px]" />
+                <AiFillStar className="text-[14px]" />
                 4.5 <span className="text-gray-600 ml-1">(241)</span>
               </div>
               <div className="text-xs button-55 text-black bg-transparent w-fit text-center p-1 font-bold navfonts">
@@ -241,26 +251,26 @@ const Bestseller_cards = () => {
               </div>
             </div>
 
-            <div className="px-2 sm:px-3 flex gap-2 items-center">
-              <p className="text-base sm:text-lg font-semibold text-black">₹{price}</p>
-              <p className="text-xs sm:text-sm line-through text-gray-500">₹{mrp}</p>
-              <p className="text-xs sm:text-sm text-green-600 font-semibold">{discount}% OFF</p>
+            <div className="px-3 flex gap-2 items-center">
+              <p className="text-lg font-semibold text-black">₹{price}</p>
+              <p className="text-sm line-through text-gray-500">₹{mrp}</p>
+              <p className="text-sm text-green-600 font-semibold">{discount}% OFF</p>
             </div>
 
-            <div className="px-2 sm:px-3 py-1 text-xs sm:text-sm text-gray-800 line-clamp-2">
+            <div className="px-3 py-1 text-sm text-gray-800 line-clamp-2">
               {product.description}
             </div>
 
             <div
-              className="mx-2 sm:mx-3 mb-3"
+              className="mx-3 mb-3"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex gap-1 sm:gap-2 flex-wrap mb-2">
+              <div className="flex gap-2 flex-wrap mb-2">
                 {product.variants[0]?.sizes.map((size, i) => (
                   <button
                     key={i}
                     onClick={() => setSelectedSizes({ ...selectedSizes, [product.id]: size.size })}
-                    className={`px-2 sm:px-3 py-1 border-2 rounded-md text-xs sm:text-sm font-semibold navfonts uppercase cursor-pointer ${
+                    className={`px-3 py-1 border-2 rounded-md text-sm font-semibold navfonts uppercase cursor-pointer ${
                       selectedSizes[product.id] === size.size
                         ? "border-purple-500 bg-purple-100 text-purple-600"
                         : size.stock > 0
@@ -273,33 +283,27 @@ const Bestseller_cards = () => {
                   </button>
                 ))}
               </div>
-              <div className="grid grid-cols-5 gap-1 sm:gap-2 border-3 border-black rounded-lg overflow-hidden">
+              <div className="grid grid-cols-5 gap-2 border-3 border-black rounded-lg overflow-hidden">
                 <button
-                  className="col-span-4 text-xs sm:text-sm font-semibold button-add rounded-md text-black navfonts cursor-pointer flex justify-center items-center gap-1 sm:gap-2 py-2"
+                  className="col-span-4 text-sm font-semibold button-add rounded-md text-black navfonts cursor-pointer flex justify-center items-center"
                   onClick={() => handleAddToCart(product.id, product.name)}
                   disabled={isAdding[product.id]}
                 >
                   {isAdding[product.id] ? (
-                    <img src={cartgif} alt="Loading..." className="w-6 sm:w-8 md:w-10 bg-transparent " />
+                    <img src={cartgif} alt="Loading..." className="w-10 bg-transparent " />
                   ) : (
-                    <>
-                      <IoCartOutline className="text-sm sm:text-base" />
-                      <span className="hidden sm:inline">ADD TO CART</span>
-                      <span className="sm:hidden">CART</span>
-                    </>
+                    "ADD TO CART"
                   )}
                 </button>
                 <button
-                  className="flex items-center justify-center text-lg sm:text-xl md:text-2xl text-gray-600 hover:text-black cursor-pointer p-1"
+                  className="flex items-center justify-center text-2xl text-gray-600 hover:text-black cursor-pointer"
                   onClick={() => handleAddToWishlist(product.id, product.name)}
                   disabled={isWishlisting[product.id]}
                 >
                   {isWishlisting[product.id] ? (
-                    <span className="text-xs sm:text-sm text-red-500 navfonts">
-                      <img src={wishlistlike} alt="" className="w-4 sm:w-5" />
-                    </span>
+                    <span className="text-sm text-red-500 navfonts"><img src={wishlistlike} alt="" className="w-5" /></span>
                   ) : (
-                    <img src={wishlistlike} alt="" className="w-6 sm:w-8" />
+                    <img src={wishlistlike} alt="" className="w-8" />
                   )}
                 </button>
               </div>

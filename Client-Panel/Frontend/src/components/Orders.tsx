@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import axiosInstance from "@/lib/axios"
+import axios from "axios";
 import { toast } from "react-toastify";
 import noorders from '@/assets/ordersgif.gif';
 import Loading from "./Loading";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 interface Order {
   _id: string;
@@ -34,13 +36,19 @@ const Orders: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
- const fetchOrders = async () => {
+    const fetchOrders = async () => {
       try {
-        const res = await axiosInstance.get("/client/orders");  // ← CHANGE
+        const res = await axios.get(`${API_BASE}/client/orders`, {
+          withCredentials: true,
+        });
         setOrders(Array.isArray(res.data) ? res.data : []);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err: any) {
-        toast.error("Failed to fetch orders.");
+        console.error("Error fetching orders:", {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status,
+        });
+        toast.error("Failed to fetch orders. Please try again.");
         setOrders([]);
       } finally {
         setLoading(false);

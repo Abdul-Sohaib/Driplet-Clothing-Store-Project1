@@ -7,7 +7,7 @@ const Landingpage = () => {
   return (
     <>
     
-      <div className="flex inset-0 bg-[#F5F5DC] w-full">
+      <div className=" flex inset-0 bg-[#F5F5DC]">
         <Mainpage />
       </div>
      

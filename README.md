@@ -54,19 +54,19 @@ export default tseslint.config({
 })
 ```
 =======
-#  Driplet Clothing Store – Full-Stack MERN eCommerce Platform
+# 🛍️ Driplet Clothing Store – Full-Stack MERN eCommerce Platform
 
 A **fashion-focused**, **secure**, and **scalable** full-stack eCommerce platform for customizable T-shirt sales.  
 Includes a **custom-built Admin Panel** & **Client Panel** with seamless UI/UX, secure authentication, and integrated payments.
 
 ---
 
-## Screenshots
+## 📸 Screenshots
 
-###  Admin Panel
+### 🖥️ Admin Panel
 ![Admin Panel](asset/adminhome.png)
 
-###  Client Panel
+### 👕 Client Panel
 ![Client Storefront](asset/clienthome.png)
 
 > *Note:* Replace `assets/admin-dashboard.png` and `assets/client-home.png` with actual screenshots from your project.
@@ -75,18 +75,18 @@ Includes a **custom-built Admin Panel** & **Client Panel** with seamless UI/UX, 
 
 ## 🚀 Features
 
- 1.**Custom Admin Panel** – Manage products, orders, and inventory  
- 2.**Client Panel** – Responsive & fashion-first shopping experience  
- 3.**Authentication** – Clerk for Admin, JWT for Clients  
- 4.**Payments** – Razorpay (Test Mode) integration  
- 5.**Cloud Storage** – Cloudinary for images & videos  
- 6.**Automated Emails** – Order confirmation & details sent instantly  
- 7.**Free Shipping Integration**  
- 8.**Responsive UI** – Optimized for all devices  
+✅ **Custom Admin Panel** – Manage products, orders, and inventory  
+✅ **Client Panel** – Responsive & fashion-first shopping experience  
+✅ **Authentication** – Clerk for Admin, JWT for Clients  
+✅ **Payments** – Razorpay (Test Mode) integration  
+✅ **Cloud Storage** – Cloudinary for images & videos  
+✅ **Automated Emails** – Order confirmation & details sent instantly  
+✅ **Free Shipping Integration**  
+✅ **Responsive UI** – Optimized for all devices  
 
 ---
 
-##  Tech Stack
+## 🛠️ Tech Stack
 
 | Layer         | Technology |
 |---------------|------------|
@@ -110,18 +110,18 @@ Driplet-Clothing-Store-Project1/
 
 
 
-##  Getting Started
+## ⚡ Getting Started
 
-1️ Clone the repo:
+1️⃣ Clone the repo:
 ```bash
 git clone https://github.com/Abdul-Sohaib/Driplet-Clothing-Store-Project1.git
-2️ Install dependencies for each folder:
+2️⃣ Install dependencies for each folder:
 
 
 cd admin && npm install
 cd ../backend && npm install
 cd ../client && npm install
-3️ Create .env files in each relevant folder with:
+3️⃣ Create .env files in each relevant folder with:
 
 Clerk Keys
 
@@ -133,7 +133,7 @@ MongoDB URI
 
 Cloudinary Credentials
 
-4️ Run the development servers:
+4️⃣ Run the development servers:
 
 # Admin
 cd admin
@@ -146,10 +146,10 @@ npm run dev
 # Client
 cd client
 npm run dev
- Contact
+📧 Contact
 Developer: Abdul Sohaib
 LinkedIn | GitHub
 
- License
+📜 License
 This project is licensed under the MIT License.
 >>>>>>> a909a49a74d02d18ae9718545c44e1e464f30903

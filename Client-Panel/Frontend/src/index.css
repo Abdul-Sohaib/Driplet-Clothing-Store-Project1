@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* breakpoints are configured in tailwind.config.ts */
 
 
 :root {
@@ -266,13 +265,6 @@ body {
   animation: typingEffect2 9s steps(30, end) infinite;
 }
 
-.textarea{
-  background-image: url('../src/assets/registerpage.gif');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
 .cedarville-cursive-regular {
   font-family: "Cedarville Cursive", cursive;
   color: #5133A8;
@@ -295,18 +287,6 @@ body {
 }
 .userback{
   background-image: url('./assets/bento1.png');
-  background-size: cover;
-  background-repeat: no-repeat;
-  /* background-position: center; */
-}
-.userback1{
-  background-image: url('./assets/texturedbg.png');
-  background-size: cover;
-  background-repeat: no-repeat;
-  /* background-position: center; */
-}
-.userback2{
-  background-image: url('./assets/userdetailbg.jpg');
   background-size: cover;
   background-repeat: no-repeat;
   /* background-position: center; */
@@ -403,7 +383,7 @@ body {
    background-image: url('./assets/backimg.jpg');
   background-size: cover;
   background-repeat: no-repeat;
-  background-position: center;
+  /* background-position: center; */
 }
 
 .showcasetextback{
@@ -598,33 +578,4 @@ body {
     0% calc(100% - 20px),  /* bottom-left inner */
     0% 20px  /* top-left inner */
   );
-}
-
-@media (min-width: 425px) {
-  .down {
-    gap: 33vh;
-  }
-}
-@media (min-width: 700px) {
-  .down {
-    justify-content: space-between;
-  }
-}
-@media (min-width: 425px) {
-  .xs {
-    margin-top: 6vh;
-  }
-}
-@media (min-width: 375px) {
-  .xs {
-    margin-top: 6vh;
-  }
-}
-
-@media (max-width: 700px) {
-  .product-carousel-section {
-    background: none !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
 }

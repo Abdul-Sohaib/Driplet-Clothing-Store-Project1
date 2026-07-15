@@ -2,12 +2,13 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import AddressManager from "../components/AddressManager";
-import axiosInstance from "@/lib/axios";
 import CartItems from "../components/CartItems";
+import axios from "axios";
 import { VscFoldDown, VscFoldUp } from "react-icons/vsc";
 import { IoClose } from "react-icons/io5";
 import { AnimatePresence, motion } from "framer-motion";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 declare global {
   interface Window {
     Razorpay: any;
@@ -84,9 +85,9 @@ const CheckoutPage = ({
       return;
     }
     try {
-      console.log("Initiating payment at:", "/client/orders/initiate");
-      const { data } = await axiosInstance.post(
-        "/client/orders/initiate",
+      console.log("Initiating payment at:", `${API_BASE}/client/orders/initiate`);
+      const { data } = await axios.post(
+        `${API_BASE}/client/orders/initiate`,
         { amount: total * 100 },
         { withCredentials: true }
       );
@@ -104,9 +105,9 @@ const CheckoutPage = ({
           razorpay_signature: any;
         }) {
           try {
-            console.log("Completing order at:", "/client/orders/complete");
-            await axiosInstance.post(
-              "/client/orders/complete",
+            console.log("Completing order at:", `${API_BASE}/client/orders/complete`);
+            await axios.post(
+              `${API_BASE}/client/orders/complete`,
               {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_order_id: response.razorpay_order_id,
@@ -131,7 +132,6 @@ const CheckoutPage = ({
               console.warn("setCartItems is not a function, skipping cart clear");
             }
             toast.success("Payment Successful! Order placed.");
-            if (setCartItems) setCartItems([]);
             onClose();
           } catch (err: any) {
             console.error("Order completion error:", {
@@ -165,16 +165,16 @@ const CheckoutPage = ({
   };
 
   return (
-    <div className="relative w-[95vw] sm:w-[90vw] max-w-3xl md:max-w-4xl inset-0 bg-[#F5F5DC] rounded-2xl sm:rounded-3xl p-3 sm:p-5 md:p-7 shadow-lg max-h-[90vh] overflow-y-auto overscroll-contain">
+    <div className="relative w-[90vw] max-w-3xl inset-0 bg-[#F5F5DC] rounded-3xl p-7 shadow-lg overflow-hidden">
       <button
         onClick={onClose}
-        className="absolute top-2 right-2 sm:right-4 text-2xl sm:text-3xl font-bold cursor-pointer z-50"
+        className="absolute top-2 right-4 text-3xl font-bold cursor-pointer z-50"
       >
         <IoClose className="text-red-400 hover:text-red-600"/>
       </button>
       <button
         onClick={() => setShowCartItems(!showCartItems)}
-        className="absolute top-2 sm:top-4 right-12 sm:right-20 text-sm sm:text-md font-bold cursor-pointer z-50"
+        className="absolute top-4 right-20 text-md font-bold cursor-pointer z-50"
       >
         {showCartItems ? <VscFoldUp /> : <VscFoldDown />}
       </button>
@@ -185,9 +185,9 @@ const CheckoutPage = ({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "-100%", opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="absolute top-0 left-0 w-full bg-[#F5F5DC] border-b-2 border-black rounded-2xl sm:rounded-3xl p-3 sm:p-5 md:p-7 z-40 shadow-md max-h-[80vh] overflow-y-auto"
+            className="absolute top-0 left-0 w-full bg-[#F5F5DC] border-b-2 border-black rounded-3xl p-7 z-40 shadow-md"
           >
-            <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 textheading tracking-wider text-center">Your Cart</h2>
+            <h2 className="text-xl font-semibold mb-4 textheading tracking-wider text-center">Your Cart</h2>
             <CartItems cartItems={cartItems} />
           </motion.div>
         )}
@@ -197,8 +197,8 @@ const CheckoutPage = ({
           showCartItems ? "opacity-20 pointer-events-none blur-sm" : "opacity-100"
         }`}
       >
-        <h2 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-bold text-center mb-3 sm:mb-5 md:mb-6 uppercase textheading tracking-wider">Checkout</h2>
-        <div className="grid grid-cols-1 items-start justify-center transition-all duration-300 gap-3 sm:gap-4">
+        <h2 className="text-2xl font-bold text-center mb-6 uppercase textheading tracking-wider">Checkout</h2>
+        <div className="grid grid-cols-1 items-start justify-center transition-all duration-300">
           <div className="col-span-1">
             <AddressManager
               user={user}
@@ -207,12 +207,12 @@ const CheckoutPage = ({
             />
           </div>
         </div>
-        <div className="my-3 sm:my-5 font-bold text-base xs:text-lg sm:text-xl text-center navheading tracking-wider uppercase">
+        <div className="my-6 font-bold text-xl text-center navheading tracking-wider uppercase">
           Total: ₹{total}
         </div>
-        <div className="flex justify-center pb-6 sm:pb-0">
+        <div className="flex justify-center">
           <button
-            className="button-add font-bold rounded-md navheading tracking-wider text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3 w-full sm:w-auto"
+            className="button-add font-bold rounded-md navheading tracking-wider"
             onClick={handlePay}
           >
             Pay &amp; Place Order

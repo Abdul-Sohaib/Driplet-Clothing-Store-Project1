@@ -2,13 +2,14 @@ import { motion } from "framer-motion";
 import Navbar from "./Navbar";
 import { Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { auth } from "@/firebase"; // ✅ ADD THIS
-import axiosInstance from "@/lib/axios";
+import axios from "axios";
 import CartDrawer from "./CartDrawer";
 import WishlistDrawer from "./WishlistDrawer";
 import CheckoutPage from "../Pages/Checkoutpage";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 type Address = {
   fullName: string;
@@ -40,49 +41,31 @@ const Layout = () => {
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  // ✅ CRITICAL FIX: Fetch user from localStorage, NOT backend
   useEffect(() => {
     // Register GSAP ScrollTrigger plugin
     gsap.registerPlugin(ScrollTrigger);
 
-    // ✅ Get user from localStorage (synced by App.tsx)
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
+    // Fetch user
+    const fetchUser = async () => {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        console.log("[LAYOUT] ✅ User loaded from localStorage:", parsedUser.email);
-      } catch (err) {
-        console.error("[LAYOUT] ❌ Failed to parse stored user:", err);
-        localStorage.removeItem("user");
-      }
-    } else {
-      console.log("[LAYOUT] No user in localStorage");
-    }
-
-    // ✅ Listen for auth changes from App.tsx
-    const handleAuthChange = () => {
-      console.log("[LAYOUT] Auth change detected, reloading user...");
-      const updatedUser = localStorage.getItem("user");
-      if (updatedUser) {
-        try {
-          setUser(JSON.parse(updatedUser));
-        } catch {
-          setUser(null);
+        const res = await axios.get(`${API_BASE}/auth/user`, {
+          withCredentials: true,
+        });
+        if (res.status === 200) {
+          setUser(res.data.user || null);
         }
-      } else {
-        setUser(null);
+      } catch (err) {
+        console.error("User fetch error:", err);
       }
     };
-
-    window.addEventListener("authChange", handleAuthChange);
+    fetchUser();
 
     // GSAP scroll animation for navbar
     const navbar = document.querySelector(".navbar-container");
     if (navbar) {
       let lastScroll = 0;
 
-      const handleScroll = () => {
+      window.addEventListener("scroll", () => {
         const currentScroll = window.scrollY;
 
         if (currentScroll > lastScroll && currentScroll > 100) {
@@ -101,19 +84,12 @@ const Layout = () => {
           });
         }
         lastScroll = currentScroll;
-      };
-
-      window.addEventListener("scroll", handleScroll);
-
-      // Cleanup
-      return () => {
-        window.removeEventListener("scroll", handleScroll);
-        window.removeEventListener("authChange", handleAuthChange);
-      };
+      });
     }
 
+    // Cleanup event listener on component unmount
     return () => {
-      window.removeEventListener("authChange", handleAuthChange);
+      window.removeEventListener("scroll", () => {});
     };
   }, []);
 
@@ -122,33 +98,20 @@ const Layout = () => {
       alert("Please log in to proceed to checkout.");
       return;
     }
-
-    // ✅ Verify Firebase auth before making API call
-    const firebaseUser = auth.currentUser;
-    if (!firebaseUser) {
-      console.error("[LAYOUT] ❌ No Firebase user, cannot checkout");
-      alert("Session expired. Please log in again.");
-      return;
-    }
-
     try {
-      const res = await axiosInstance.get(`/cart`);
+      const res = await axios.get(`${API_BASE}/cart`, {
+        withCredentials: true,
+      });
       if (Array.isArray(res.data)) {
         setCartItems(res.data);
         setIsCheckoutOpen(true);
         setIsCartOpen(false);
-        console.log("[LAYOUT] ✅ Cart loaded for checkout:", res.data.length, "items");
       } else {
         alert(res.data.message || "Failed to load cart items.");
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      console.error("[LAYOUT] ❌ Cart fetch error:", err.response?.data || err.message);
-      if (err.response?.status === 401) {
-        alert("Session expired. Please log in again.");
-      } else {
-        alert("Failed to load cart items.");
-      }
+    } catch (err) {
+      console.error("Cart fetch error:", err);
+      alert("Failed to load cart items.");
     }
   };
 
@@ -157,15 +120,6 @@ const Layout = () => {
       alert("Please log in to view your wishlist.");
       return;
     }
-
-    // ✅ Verify Firebase auth
-    const firebaseUser = auth.currentUser;
-    if (!firebaseUser) {
-      console.error("[LAYOUT] ❌ No Firebase user, cannot open wishlist");
-      alert("Session expired. Please log in again.");
-      return;
-    }
-
     setIsWishlistOpen(true);
   };
 
@@ -186,7 +140,7 @@ const Layout = () => {
         />
       </motion.div>
 
-      <div className="flex mt-12 sm:mt-14 md:mt-16 lg:mt-18 xl:mt-20">
+      <div className="flex mt-16 lg:mt-20">
         <Outlet />
       </div>
 

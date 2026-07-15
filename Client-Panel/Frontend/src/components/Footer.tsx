@@ -28,7 +28,9 @@ export default function Footer() {
         const catRes = await axios.get(`${API_BASE}/categories`, { withCredentials: true });
         setCategories(catRes.data || []);
       } catch (err) {
-        console.error("Fetch categories error:", err);
+        if ((err as any)?.response?.status !== 404) {
+          console.error("Fetch categories error:", err);
+        }
       }
     };
 
@@ -37,7 +39,9 @@ export default function Footer() {
         const res = await axios.get(`${API_BASE}/auth/user`, { withCredentials: true });
         setUser(res.data.user || null);
       } catch (err) {
-        console.error("Auth check error:", err);
+        if ((err as any)?.response?.status !== 401) {
+          console.error("Auth check error:", err);
+        }
         setUser(null);
       }
     };

@@ -17,8 +17,19 @@ const upload = multer({ storage });
 
 router.get("/", async (req, res) => {
   try {
-    const settings = await SiteSettings.findOne();
-    if (!settings) return res.status(404).json({ message: "No settings found" });
+    let settings = await SiteSettings.findOne();
+    if (!settings) {
+      settings = await SiteSettings.create({
+        logoUrl: "",
+        banners: {
+          section1: [],
+          section2: [],
+          section3: []
+        },
+        tagline: "Welcome to Driplet",
+        about: "Driplet Premium Clothing Store"
+      });
+    }
     res.json(settings);
   } catch (err) {
     res.status(500).json({ message: err.message || "Error fetching site settings" });

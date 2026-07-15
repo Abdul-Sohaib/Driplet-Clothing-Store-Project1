@@ -45,6 +45,8 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    let authTimeout: ReturnType<typeof setTimeout> | null = null;
+
     const fetchData = async () => {
       try {
         const [logoRes, catRes] = await Promise.all([
@@ -54,7 +56,9 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
         setLogoUrl(logoRes.data.logoUrl || "");
         setCategories(catRes.data || []);
       } catch (err) {
-        console.error("Fetch error:", err);
+        if ((err as any)?.response?.status !== 404) {
+          console.error("Fetch error:", err);
+        }
       }
     };
     fetchData();
@@ -64,13 +68,18 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
         const res = await axios.get(`${API_BASE}/auth/user`, { withCredentials: true });
         setUser(res.data.user || null);
       } catch (err) {
-        console.error("Initial auth check error:", (err as any)?.response?.data?.message || (err as any)?.message);
+        if ((err as any)?.response?.status !== 401) {
+          console.error("Initial auth check error:", (err as any)?.response?.data?.message || (err as any)?.message);
+        }
         setUser(null);
-        const timeout = setTimeout(() => setShowAuth(true), 2000);
-        return () => clearTimeout(timeout);
+        authTimeout = setTimeout(() => setShowAuth(true), 2000);
       }
     };
     checkAuth();
+
+    return () => {
+      if (authTimeout) clearTimeout(authTimeout);
+    };
   }, []);
 
   const handleLogout = async () => {

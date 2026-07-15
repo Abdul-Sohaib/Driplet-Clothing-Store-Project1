@@ -106,21 +106,21 @@ userSchema.post("save", function (error, doc, next) {
   if (error && error.name === "MongoServerError" && error.code === 11000) {
     console.error("Duplicate review error:", {
       message: error.message,
-      userId: doc._id,
-      email: doc.email,
+      userId: doc ? doc._id : "unknown",
+      email: doc ? doc.email : "unknown",
       productId: error.keyValue?.["reviews.productId"],
     });
     next(new Error("You have already reviewed this product"));
   } else if (error) {
     console.error("Error saving user with reviews:", {
       message: error.message,
-      userId: doc._id,
-      email: doc.email,
+      userId: doc ? doc._id : "unknown",
+      email: doc ? doc.email : "unknown",
       stack: error.stack,
     });
     next(error);
   } else {
-    if (doc.isModified("reviews")) {
+    if (doc && doc.isModified("reviews")) {
       console.log("User reviews saved successfully:", {
         userId: doc._id,
         email: doc.email,

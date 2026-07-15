@@ -64,48 +64,48 @@ app.use(
   cors({
     origin: function (origin, callback) {
       console.log(`🌐 CORS Check - Origin: ${origin}`);
-      
+
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) {
         console.log(`✅ Allowing request with no origin`);
         return callback(null, true);
       }
-      
+
       // Allow localhost origins
       if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
         console.log(`✅ Allowing localhost origin: ${origin}`);
         return callback(null, true);
       }
-      
+
       // Allow dev tunnel origins (including various tunnel services)
-      if (origin.includes('devtunnels.ms') || 
-          origin.includes('ngrok.io') || 
-          origin.includes('tunnel.local') ||
-          origin.includes('loca.lt') ||
-          origin.includes('serveo.net') ||
-          origin.includes('ngrok-free.app')) {
+      if (origin.includes('devtunnels.ms') ||
+        origin.includes('ngrok.io') ||
+        origin.includes('tunnel.local') ||
+        origin.includes('loca.lt') ||
+        origin.includes('serveo.net') ||
+        origin.includes('ngrok-free.app')) {
         console.log(`✅ Allowing dev tunnel origin: ${origin}`);
         return callback(null, true);
       }
-      
+
       // Allow specific production domains (add your actual domain here)
       const allowedDomains = [
-        'https://yourdomain.com',
-        'https://www.yourdomain.com'
+        'https://driplet.netlify.app/',
+        'https://driplet-admin-pannel.netlify.app/'
       ];
-      
+
       if (allowedDomains.includes(origin)) {
         console.log(`✅ Allowing production domain: ${origin}`);
         return callback(null, true);
       }
-      
+
       // For development, allow all origins temporarily
       // IMPORTANT: Remove this in production and only allow specific domains
       if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
         console.log(`🔓 Development mode: Allowing origin: ${origin}`);
         return callback(null, true);
       }
-      
+
       console.log(`🚫 CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     },
@@ -134,7 +134,7 @@ app.use(
 // 🧾 Log all requests
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}, Origin: ${req.headers.origin}, Cookies:`, req.cookies || "None");
-  
+
   // Log CORS-related headers for debugging
   if (req.method === 'OPTIONS') {
     console.log(`🔄 CORS Preflight Request - Origin: ${req.headers.origin}`);
@@ -144,7 +144,7 @@ app.use((req, res, next) => {
       'origin': req.headers.origin
     });
   }
-  
+
   next();
 });
 
@@ -235,8 +235,8 @@ app.use((err, req, res, next) => {
       method: req.method,
       url: req.url,
     });
-    return res.status(403).json({ 
-      message: "CORS Error: Origin not allowed", 
+    return res.status(403).json({
+      message: "CORS Error: Origin not allowed",
       error: err.message,
       origin: req.headers.origin,
       allowedOrigins: "Check server logs for allowed origins"

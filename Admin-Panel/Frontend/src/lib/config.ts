@@ -1,11 +1,11 @@
 // Configuration file for API endpoints and other settings
 export const config = {
   // API Base URL - defaults to localhost:5000 if not set in environment
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000',
-  
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://driplet-clothing-store-project1.onrender.com/api',
+
   // Development mode
   IS_DEV: import.meta.env.DEV || true,
-  
+
   // API endpoints
   ENDPOINTS: {
     CATEGORIES: '/api/categories',
@@ -31,7 +31,7 @@ export const getApiUrl = (endpoint: string): string => {
 
 // Helper function to check if running on dev tunnel
 export const isDevTunnel = (): boolean => {
-  return window.location.hostname.includes('devtunnels.ms') || 
-         window.location.hostname.includes('ngrok.io') ||
-         window.location.hostname.includes('tunnel.local');
+  return window.location.hostname.includes('devtunnels.ms') ||
+    window.location.hostname.includes('ngrok.io') ||
+    window.location.hostname.includes('tunnel.local');
 };

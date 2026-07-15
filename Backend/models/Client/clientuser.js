@@ -81,9 +81,6 @@ const userSchema = new mongoose.Schema({
 }],
 });
 
-// Ensure unique reviews per user and product
-userSchema.index({ "reviews.productId": 1 }, { unique: true });
-
 // Pre-save hook for debugging reviews
 userSchema.pre("save", function (next) {
   if (this.isModified("reviews")) {

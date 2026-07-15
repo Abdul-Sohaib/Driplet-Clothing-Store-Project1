@@ -70,6 +70,9 @@ const year = format(now, 'yyyy'); // '2025'
         email: formData.email.toLowerCase(),
         password: formData.password.trim()
       }, { withCredentials: true });
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
       onClose(res.data.user);
     } catch (err: any) {
       handleApiError(err);
@@ -83,6 +86,9 @@ const year = format(now, 'yyyy'); // '2025'
         email: formData.email.toLowerCase(),
         password: formData.password.trim()
       }, { withCredentials: true });
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
       onClose(res.data.user);
     } catch (err: any) {
       handleApiError(err);

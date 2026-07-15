@@ -85,6 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({ setIsCartOpen, onWishlistClick }) => {
   const handleLogout = async () => {
     try {
       await axios.post(`${API_BASE}/auth/logout`, {}, { withCredentials: true });
+      localStorage.removeItem("token");
       setUser(null);
       setShowUserCard(false);
       setTimeout(() => setShowAuth(true), 10000);

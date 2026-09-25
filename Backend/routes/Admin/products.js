@@ -1,6 +1,5 @@
 const express = require("express");
 const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../../config/cloudinary");
 const Product = require("../../models/Product");
 const Category = require("../../models/Category");
@@ -11,20 +10,27 @@ const { body, validationResult } = require("express-validator");
 // Initialize router
 const router = express.Router();
 
-// Setup Multer + Cloudinary
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "clothing_store/products",
-    allowed_formats: ["jpg", "png", "jpeg", "webp", "avif"],
-  },
-});
-const upload = multer({ storage });
+// Use memory storage — compatible with multer v2
+// (multer-storage-cloudinary v4 is NOT compatible with multer v2)
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Custom middleware to handle dynamic fields
+// Accept up to 10 variants, each with up to 10 images
 const dynamicUpload = upload.fields(
   Array.from({ length: 10 }, (_, i) => ({ name: `variants[${i}][images]`, maxCount: 10 }))
 );
+
+// Helper: upload a single buffer to Cloudinary and return secure_url
+const uploadToCloudinary = (buffer, mimetype) =>
+  new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "clothing_store/products", resource_type: "image" },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result.secure_url);
+      }
+    );
+    stream.end(buffer);
+  });
 
 // Validation middleware
 const productValidations = [
@@ -124,15 +130,21 @@ router.post(
       const parsedVariants = JSON.parse(variants);
       const variantImages = req.files || {};
 
-      const variantsWithImages = parsedVariants.map((variant, index) => {
-        const fieldName = `variants[${index}][images]`;
-        const variantFiles = variantImages[fieldName] || [];
-        return {
-          ...variant,
-          price: Number(variant.price),
-          imageUrls: variantFiles.map((file) => file.path),
-        };
-      });
+      // Upload each variant's images to Cloudinary from memory buffer
+      const variantsWithImages = await Promise.all(
+        parsedVariants.map(async (variant, index) => {
+          const fieldName = `variants[${index}][images]`;
+          const variantFiles = variantImages[fieldName] || [];
+          const imageUrls = await Promise.all(
+            variantFiles.map((file) => uploadToCloudinary(file.buffer, file.mimetype))
+          );
+          return {
+            ...variant,
+            price: Number(variant.price),
+            imageUrls,
+          };
+        })
+      );
 
       const product = new Product({
         name: name.trim(),
@@ -185,16 +197,22 @@ router.put(
       const parsedVariants = JSON.parse(variants);
       const variantImages = req.files || {};
 
-      const variantsWithImages = parsedVariants.map((variant, index) => {
-        const fieldName = `variants[${index}][images]`;
-        const variantFiles = variantImages[fieldName] || [];
-        const existingImages = Array.isArray(variant.imageUrls) ? variant.imageUrls : [];
-        return {
-          ...variant,
-          price: Number(variant.price),
-          imageUrls: [...existingImages, ...variantFiles.map((file) => file.path)],
-        };
-      });
+      // Upload new images from memory buffer, keep existing imageUrls
+      const variantsWithImages = await Promise.all(
+        parsedVariants.map(async (variant, index) => {
+          const fieldName = `variants[${index}][images]`;
+          const variantFiles = variantImages[fieldName] || [];
+          const existingImages = Array.isArray(variant.imageUrls) ? variant.imageUrls : [];
+          const newImageUrls = await Promise.all(
+            variantFiles.map((file) => uploadToCloudinary(file.buffer, file.mimetype))
+          );
+          return {
+            ...variant,
+            price: Number(variant.price),
+            imageUrls: [...existingImages, ...newImageUrls],
+          };
+        })
+      );
 
       const updated = await Product.findByIdAndUpdate(
         id,

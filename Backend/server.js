@@ -60,66 +60,67 @@ if (!fs.existsSync(imagesPath)) {
 
 // 🔐 Middleware
 app.use(helmet());
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      console.log(`🌐 CORS Check - Origin: ${origin}`);
+const corsOptions = {
+  origin: function (origin, callback) {
+    console.log(`🌐 CORS Check - Origin: ${origin}`);
 
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) {
-        console.log(`✅ Allowing request with no origin`);
-        return callback(null, true);
-      }
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      console.log(`✅ Allowing request with no origin`);
+      return callback(null, true);
+    }
 
-      // Allow localhost origins
-      if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
-        console.log(`✅ Allowing localhost origin: ${origin}`);
-        return callback(null, true);
-      }
+    // Allow localhost origins
+    if (origin.startsWith('http://localhost:') || origin.startsWith('https://localhost:')) {
+      console.log(`✅ Allowing localhost origin: ${origin}`);
+      return callback(null, true);
+    }
 
-      // Allow dev tunnel origins (including various tunnel services)
-      if (origin.includes('devtunnels.ms') ||
-        origin.includes('ngrok.io') ||
-        origin.includes('tunnel.local') ||
-        origin.includes('loca.lt') ||
-        origin.includes('serveo.net') ||
-        origin.includes('ngrok-free.app')) {
-        console.log(`✅ Allowing dev tunnel origin: ${origin}`);
-        return callback(null, true);
-      }
+    // Allow dev tunnel origins (including various tunnel services)
+    if (origin.includes('devtunnels.ms') ||
+      origin.includes('ngrok.io') ||
+      origin.includes('tunnel.local') ||
+      origin.includes('loca.lt') ||
+      origin.includes('serveo.net') ||
+      origin.includes('ngrok-free.app')) {
+      console.log(`✅ Allowing dev tunnel origin: ${origin}`);
+      return callback(null, true);
+    }
 
-      // Allow specific production domains (add your actual domain here)
-      const allowedDomains = [
-        'https://driplet.netlify.app',
-        'https://driplet-admin-pannel.netlify.app'
-      ];
+    // Allow specific production domains
+    const allowedDomains = [
+      'https://driplet.netlify.app',
+      'https://driplet-admin-pannel.netlify.app',
+      'https://driplet-client.netlify.app'
+    ];
 
-      if (allowedDomains.includes(origin)) {
-        console.log(`✅ Allowing production domain: ${origin}`);
-        return callback(null, true);
-      }
+    if (allowedDomains.includes(origin)) {
+      console.log(`✅ Allowing production domain: ${origin}`);
+      return callback(null, true);
+    }
 
-      // For development, allow all origins temporarily
-      // IMPORTANT: Remove this in production and only allow specific domains
-      if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production') {
-        console.log(`🔓 Development mode: Allowing origin: ${origin}`);
-        return callback(null, true);
-      }
+    // For development, allow all origins temporarily
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`🔓 Development mode: Allowing origin: ${origin}`);
+      return callback(null, true);
+    }
 
-      console.log(`🚫 CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    exposedHeaders: ['X-Cache'],
-    optionsSuccessStatus: 200, // Some legacy browsers choke on 204
-    preflightContinue: false
-  })
-);
+    console.log(`🚫 CORS blocked origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['X-Cache'],
+  optionsSuccessStatus: 200,
+  preflightContinue: false
+};
 
-// Add CORS preflight handling
-app.options('*', cors());
+app.use(cors(corsOptions));
+
+// ✅ Fix: Use same corsOptions for preflight — bare cors() would return wildcard '*'
+// which browsers reject when credentials:true is set.
+app.options('*', cors(corsOptions));
 app.use(cookieParser());
 app.use(compression());
 app.use(express.json());

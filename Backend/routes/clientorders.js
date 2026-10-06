@@ -170,7 +170,20 @@ router.post("/complete", authMiddleware, async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, { $set: { cart: [] } });
     await sendOrderReceipt(req.user, order);
 
-    res.json({ message: "Order placed successfully!" });
+    res.json({
+      message: "Order placed successfully!",
+      order: {
+        _id: order._id,
+        paymentOrderId: order.paymentOrderId,
+        amount: order.amount,
+        date: order.date,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+        items: order.items,
+        customer: order.customer,
+        category: order.category,
+      },
+    });
   } catch (err) {
     console.error("Order save error:", {
       message: err.message,

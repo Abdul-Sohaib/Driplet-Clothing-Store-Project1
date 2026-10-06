@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AddressManager from "../components/AddressManager";
 import CartItems from "../components/CartItems";
@@ -64,6 +65,7 @@ const CheckoutPage = ({
   setCartItems,
 }: CheckoutPageProps) => {
   const [showCartItems, setShowCartItems] = useState(false);
+  const navigate = useNavigate();
 
   if (!isOpen) return null;
 
@@ -106,7 +108,7 @@ const CheckoutPage = ({
         }) {
           try {
             console.log("Completing order at:", `${API_BASE}/client/orders/complete`);
-            await axios.post(
+            const completeRes = await axios.post(
               `${API_BASE}/client/orders/complete`,
               {
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -118,7 +120,7 @@ const CheckoutPage = ({
                 customer: {
                   name: user.name,
                   email: user.email,
-                  address: `${selectedAddress.addressLine1}, ${selectedAddress.addressLine2}, ${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}, ${selectedAddress.country}`,
+                  address: `${selectedAddress.addressLine1}, ${selectedAddress.addressLine2 ? selectedAddress.addressLine2 + ", " : ""}${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}, ${selectedAddress.country}`,
                 },
                 paymentStatus: "Paid",
                 status: "Placed",
@@ -126,13 +128,38 @@ const CheckoutPage = ({
               },
               { withCredentials: true }
             );
+
+            const confirmedOrder = completeRes.data?.order || {
+              _id: response.razorpay_order_id,
+              paymentOrderId: response.razorpay_order_id,
+              amount: total,
+              date: new Date().toISOString(),
+              status: "Placed",
+              paymentStatus: "Paid",
+              items: cartItems.map((item) => ({
+                name: item.product.name,
+                quantity: item.quantity,
+                size: item.size,
+                price: item.product.price,
+                productId: item.productId,
+                image: item.product.imageUrls?.[0] || "",
+              })),
+              customer: {
+                name: user.name,
+                email: user.email,
+                address: `${selectedAddress.addressLine1}, ${selectedAddress.addressLine2 ? selectedAddress.addressLine2 + ", " : ""}${selectedAddress.city}, ${selectedAddress.state} - ${selectedAddress.pincode}, ${selectedAddress.country}`,
+              },
+            };
+
             if (typeof setCartItems === "function") {
               setCartItems([]);
             } else {
               console.warn("setCartItems is not a function, skipping cart clear");
             }
+
             toast.success("Payment Successful! Order placed.");
             onClose();
+            navigate("/order-confirmation", { state: { order: confirmedOrder } });
           } catch (err: any) {
             console.error("Order completion error:", {
               message: err.message,

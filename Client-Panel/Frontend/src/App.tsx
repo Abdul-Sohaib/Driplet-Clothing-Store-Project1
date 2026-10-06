@@ -11,6 +11,7 @@ import ProductCard from "./Pages/Productcard";
 import Account from "./components/Account";
 import Orders from "./components/Orders";
 import ReturnExchange from "./components/ReturnExchange";
+import OrderConfirmation from "./Pages/OrderConfirmation";
 import Layout from "./components/Layout";
 
 
@@ -69,6 +70,7 @@ const App = () => {
                 <Route path="/category/:categoryId" element={<ProductCard />} />
                 <Route path="/account" element={<Account />} />
                 <Route path="/orders" element={<Orders />} />
+                <Route path="/order-confirmation" element={<OrderConfirmation />} />
                 <Route path="/return-exchange" element={<ReturnExchange />} />
               </Route>
             </Routes>

@@ -36,6 +36,9 @@ interface Product {
   fitType: string;
   neckType: string;
   pattern: string;
+  rating?: number;
+  numReviews?: number;
+  isBestseller?: boolean;
   variants: {
     price: number;
     imageUrls: string[];
@@ -106,8 +109,25 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
         }
       };
       fetchCategoryProducts();
+    } else if (id && (!initialProducts || initialProducts.length === 0)) {
+      setLoading(true);
+      setError(null);
+      const fetchAllProducts = async () => {
+        try {
+          const response = await axios.get(`${API_BASE}/products`, {
+            withCredentials: true,
+          });
+          setProducts(response.data);
+        } catch (err) {
+          console.error("Error fetching products:", (err as any).response?.data?.message || (err as any).message);
+          setError("Failed to load product.");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchAllProducts();
     }
-  }, [categoryId]);
+  }, [categoryId, id]);
 
   const product = id ? products.find((p) => p.id.toString() === id) : null;
 
@@ -297,7 +317,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                         <div className="flex justify-between px-3 py-2 text-sm items-center">
                           <div className="flex items-center gap-1 text-orange-500">
                             <AiFillStar className="text-[14px]" />
-                            4.5 <span className="text-gray-600 ml-1">(241)</span>
+                            {prod.rating && prod.rating > 0 ? prod.rating.toFixed(1) : "4.5"}{" "}
+                            <span className="text-gray-600 ml-1">({prod.numReviews || 0})</span>
                           </div>
                           <div className="text-xs border-2 border-[#101A13] px-2 py-1 rounded-md text-purple-600 font-bold">
                             {prodTotalStock} left
@@ -416,8 +437,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                 </div>
                 <div className="flex items-center gap-1 text-orange-500 tracking-wider navheading">
                   <AiFillStar className="text-sm" />
-                  <span className="text-sm font-semibold tracking-wider navheading">4.5</span>
-                  <span className="text-sm text-gray-600 ml-1 tracking-wider navheading">(166 reviews)</span>
+                  <span className="text-sm font-semibold tracking-wider navheading">
+                    {product.rating && product.rating > 0 ? product.rating.toFixed(1) : "4.5"}
+                  </span>
+                  <span className="text-sm text-gray-600 ml-1 tracking-wider navheading">
+                    ({product.numReviews || 0} reviews)
+                  </span>
                 </div>
               </div>
               <div className="flex items-center gap-52 tracking-wider navheading">
@@ -601,7 +626,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                   <div className="flex justify-between px-3 py-2 text-sm items-center">
                     <div className="flex items-center gap-1 text-orange-500">
                       <AiFillStar className="text-[14px]" />
-                      4.5 <span className="text-gray-600 ml-1">(241)</span>
+                      {similarProduct.rating && similarProduct.rating > 0 ? similarProduct.rating.toFixed(1) : "4.5"}{" "}
+                      <span className="text-gray-600 ml-1">({similarProduct.numReviews || 0})</span>
                     </div>
                     <div className="text-xs button-55 text-black bg-transparent w-fit text-center p-1 font-bold">
                       {prodTotalStock} left

@@ -23,6 +23,11 @@ const reviewSchema = new mongoose.Schema({
     maxlength: [500, "Comment cannot exceed 500 characters"],
     default: "",
   },
+  userName: {
+    type: String,
+    trim: true,
+    default: "Customer",
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -3,7 +3,9 @@ const { body, validationResult } = require("express-validator");
 const mongoose = require("mongoose");
 const Product = require("../models/Product");
 const User = require("../models/Client/clientuser");
+const Review = require("../models/Review");
 const authMiddleware = require("../middleware/clientauthmiddleware");
+const cache = require("memory-cache");
 
 const router = express.Router();
 
@@ -25,7 +27,6 @@ const validateReviews = (validations) => {
     await Promise.all(validations.map((validation) => validation.run(req)));
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log("Validation errors:", errors.array());
       return res.status(400).json({ message: "Validation failed", errors: errors.array() });
     }
     next();
@@ -43,120 +44,100 @@ router.post(
       const { rating, comment } = req.body;
       const userId = req.user?._id;
 
-      console.log("POST /api/reviews/:productId request:", {
-        productId,
-        userId: userId?.toString(),
-        rating,
-        comment,
-        user: { id: req.user?._id?.toString(), email: req.user?.email },
-      });
-
-      // Check authentication
       if (!userId) {
-        console.log("Authentication failed: No user ID in req.user");
         return res.status(401).json({ message: "Unauthorized: Please log in" });
       }
 
-      // Verify MongoDB connection
-      if (mongoose.connection.readyState !== 1) {
-        console.error("MongoDB not connected:", mongoose.connection.readyState);
-        return res.status(500).json({ message: "Database not connected" });
-      }
-
-      // Validate productId
       if (!mongoose.Types.ObjectId.isValid(productId)) {
-        console.log("Invalid productId format:", productId);
         return res.status(400).json({ message: "Invalid product ID format" });
       }
 
-      // Verify product exists
       const product = await Product.findById(productId);
       if (!product) {
-        console.log("Product not found for ID:", productId);
         return res.status(404).json({ message: "Product not found" });
       }
 
-      // Find user
       const user = await User.findById(userId);
       if (!user) {
-        console.log("User not found for ID:", userId);
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Check for existing review
-      const existingReview = user.reviews.find(
-        (review) => review.productId?.toString() === productId
-      );
-      if (existingReview) {
-        console.log("Duplicate review attempt:", {
+      const userName = user.name || "Customer";
+
+      // 1. Create or update in Review collection
+      const savedReview = await Review.findOneAndUpdate(
+        { productId, userId },
+        {
           productId,
-          userId: userId.toString(),
-          email: user.email,
+          userId,
+          rating: Number(rating),
+          comment: comment?.trim() || "",
+          userName,
+          createdAt: new Date(),
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+
+      // 2. Also keep user's reviews array synchronized
+      const existingUserReviewIndex = user.reviews.findIndex(
+        (r) => r.productId?.toString() === productId
+      );
+      if (existingUserReviewIndex > -1) {
+        user.reviews[existingUserReviewIndex].rating = Number(rating);
+        user.reviews[existingUserReviewIndex].comment = comment?.trim() || "";
+        user.reviews[existingUserReviewIndex].createdAt = new Date();
+      } else {
+        user.reviews.push({
+          productId: new mongoose.Types.ObjectId(productId),
+          rating: Number(rating),
+          comment: comment?.trim() || "",
+          createdAt: new Date(),
         });
-        return res.status(400).json({ message: "You have already reviewed this product" });
       }
+      await user.save();
 
-      // Create new review
-      const newReview = {
-        productId: new mongoose.Types.ObjectId(productId),
-        rating,
-        comment: comment || "",
-        createdAt: new Date(),
-      };
+      // 3. Recalculate real-time average rating & total reviews for the product
+      const allProductReviews = await Review.find({ productId });
+      const numReviews = allProductReviews.length;
+      const avgRating =
+        numReviews > 0
+          ? Number(
+              (
+                allProductReviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) /
+                numReviews
+              ).toFixed(1)
+            )
+          : Number(rating);
 
-      // Add review to user's reviews array
-      user.reviews.push(newReview);
-
-      // Save user with new review
-      const updatedUser = await user.save();
-      console.log("User saved with new review:", {
-        userId: userId.toString(),
-        email: user.email,
-        reviewsCount: updatedUser.reviews.length,
+      await Product.findByIdAndUpdate(productId, {
+        rating: avgRating,
+        numReviews: numReviews,
       });
 
-      // Retrieve the saved review
-      const savedReview = updatedUser.reviews.find(
-        (review) => review.productId?.toString() === productId
-      );
-
-      if (!savedReview) {
-        console.error("Failed to retrieve saved review:", {
-          productId,
-          userId: userId.toString(),
-          email: user.email,
-        });
-        return res.status(500).json({ message: "Failed to retrieve saved review" });
+      // 4. Invalidate memory-cache so all users immediately see updated reviews & ratings
+      try {
+        cache.clear();
+      } catch (cErr) {
+        console.warn("Cache clear error:", cErr);
       }
 
-      const response = {
+      res.status(201).json({
         message: "Review submitted successfully",
         review: {
-          id: savedReview._id?.toString() || new Date().toISOString(),
+          id: savedReview._id?.toString(),
           productId: savedReview.productId.toString(),
-          userName: user.name || "User",
+          userName,
           rating: savedReview.rating,
           comment: savedReview.comment,
           createdAt: savedReview.createdAt,
         },
-      };
-
-      console.log("Sending POST response:", response);
-      res.status(201).json(response);
-    } catch (err) {
-      console.error("Error creating review:", {
-        message: err.message,
-        stack: err.stack,
-        productId: req.params.productId,
-        userId: req.user?._id?.toString(),
-        email: req.user?.email,
+        productStats: {
+          rating: avgRating,
+          numReviews,
+        },
       });
-      if (err.message === "You have already reviewed this product") {
-        return res.status(400).json({ message: err.message });
-      }
-      if (err.name === "ValidationError") {
-        return res.status(400).json({ message: "Invalid review data", errors: err.errors });
-      }
+    } catch (err) {
+      console.error("Error creating review:", err);
       res.status(500).json({ message: "Error saving review", error: err.message });
     }
   }
@@ -166,56 +147,62 @@ router.post(
 router.get("/:productId", async (req, res) => {
   try {
     const { productId } = req.params;
-    console.log("GET /api/reviews/:productId request:", { productId });
 
-    // Validate productId
     if (!mongoose.Types.ObjectId.isValid(productId)) {
-      console.log("Invalid productId format:", productId);
       return res.status(400).json({ message: "Invalid product ID format" });
     }
 
-    // Verify MongoDB connection
-    if (mongoose.connection.readyState !== 1) {
-      console.error("MongoDB not connected:", mongoose.connection.readyState);
-      return res.status(500).json({ message: "Database not connected" });
-    }
+    // 1. Fetch from Review collection
+    const reviewsFromCollection = await Review.find({ productId })
+      .populate("userId", "name")
+      .sort({ createdAt: -1 });
 
-    // Verify product exists
-    const product = await Product.findById(productId);
-    if (!product) {
-      console.log("Product not found for ID:", productId);
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    // Find all users with reviews for this product
-    const users = await User.find({
+    // 2. Fetch from User subdocuments as fallback/legacy
+    const usersWithReviews = await User.find({
       "reviews.productId": productId,
     }).select("name reviews");
 
-    const reviews = users
-      .flatMap((user) =>
-        user.reviews
-          .filter((review) => review.productId?.toString() === productId)
-          .map((review) => ({
-            id: review._id?.toString() || new Date().toISOString(),
-            productId: review.productId?.toString() || "",
-            userName: user.name || "User",
-            rating: review.rating,
-            comment: review.comment,
-            createdAt: review.createdAt,
-          }))
-      )
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const reviewsMap = new Map();
 
-    console.log("Sending GET reviews response:", { length: reviews.length, reviews });
+    // Add standalone reviews
+    reviewsFromCollection.forEach((r) => {
+      const uName = r.userName || r.userId?.name || "Customer";
+      reviewsMap.set(r._id.toString(), {
+        id: r._id.toString(),
+        productId: r.productId.toString(),
+        userName: uName,
+        rating: r.rating,
+        comment: r.comment,
+        createdAt: r.createdAt,
+      });
+    });
+
+    // Add any legacy subdoc reviews not in standalone collection
+    usersWithReviews.forEach((user) => {
+      user.reviews
+        .filter((r) => r.productId?.toString() === productId)
+        .forEach((r) => {
+          const key = r._id?.toString() || `${user._id}_${productId}`;
+          if (!reviewsMap.has(key)) {
+            reviewsMap.set(key, {
+              id: key,
+              productId: r.productId.toString(),
+              userName: user.name || "Customer",
+              rating: r.rating,
+              comment: r.comment,
+              createdAt: r.createdAt,
+            });
+          }
+        });
+    });
+
+    const reviews = Array.from(reviewsMap.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
     res.status(200).json(reviews);
   } catch (err) {
-    console.error("Error fetching reviews:", {
-      message: err.message,
-      stack: err.stack,
-      productId: req.params.productId,
-    });
+    console.error("Error fetching reviews:", err);
     res.status(500).json({ message: "Error fetching reviews", error: err.message });
   }
 });

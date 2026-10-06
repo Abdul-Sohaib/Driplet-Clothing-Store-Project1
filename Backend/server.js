@@ -186,7 +186,7 @@ app.use("/api/products", cacheMiddleware(300), productRoutes);
 app.use("/api/categories", cacheMiddleware(300), categoryRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
-app.use("/api/reviews", cacheMiddleware(300), reviewRoutes);
+app.use("/api/reviews", reviewRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/support-tickets", supportTicketRoutes);
 app.use("/api/search", cacheMiddleware(300), searchRoutes);

@@ -21,6 +21,8 @@ interface Product {
   color?: string;
   fabric?: string;
   gender?: "Men" | "Women" | "Unisex";
+  rating?: number;
+  numReviews?: number;
   isBestseller?: boolean;
   variants: {
     price: number;
@@ -248,7 +250,8 @@ const Bestseller_cards = () => {
             <div className="flex justify-between px-3 py-2 text-sm items-center">
               <div className="flex items-center gap-1 text-orange-500">
                 <AiFillStar className="text-[14px]" />
-                4.5 <span className="text-gray-600 ml-1">(241)</span>
+                {product.rating && product.rating > 0 ? product.rating.toFixed(1) : "4.5"}{" "}
+                <span className="text-gray-600 ml-1">({product.numReviews || 0})</span>
               </div>
               <div className="text-xs button-55 text-black bg-transparent w-fit text-center p-1 font-bold navfonts">
                 {totalStock} left

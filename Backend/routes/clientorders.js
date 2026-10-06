@@ -9,6 +9,9 @@ const Transaction = require("../models/Transaction");
 const { generateReceiptTemplate } = require("./receiptTemplate");
 const { format } = require("date-fns");
 
+const Product = require("../models/Product");
+const cache = require("memory-cache");
+
 const router = express.Router();
 
 const razorpay = new Razorpay({
@@ -168,6 +171,55 @@ router.post("/complete", authMiddleware, async (req, res) => {
     await transaction.save();
 
     await User.findByIdAndUpdate(req.user._id, { $set: { cart: [] } });
+
+    // Deduct stock for each variant & size ordered
+    for (const item of cartItems) {
+      try {
+        if (!item.productId) continue;
+        const product = await Product.findById(item.productId);
+        if (!product || !Array.isArray(product.variants)) continue;
+
+        let variantUpdated = false;
+        // If variantIndex specified and exists
+        if (typeof item.variantIndex === "number" && product.variants[item.variantIndex]) {
+          const variant = product.variants[item.variantIndex];
+          const sizeObj = variant.sizes.find(
+            (s) => s.size.trim().toLowerCase() === String(item.size).trim().toLowerCase()
+          );
+          if (sizeObj) {
+            sizeObj.stock = Math.max(0, sizeObj.stock - Number(item.quantity || 1));
+            variantUpdated = true;
+          }
+        } else {
+          // Find matching size across all variants
+          for (const variant of product.variants) {
+            const sizeObj = variant.sizes.find(
+              (s) => s.size.trim().toLowerCase() === String(item.size).trim().toLowerCase()
+            );
+            if (sizeObj) {
+              sizeObj.stock = Math.max(0, sizeObj.stock - Number(item.quantity || 1));
+              variantUpdated = true;
+              break;
+            }
+          }
+        }
+
+        if (variantUpdated) {
+          await product.save();
+          console.log(`Updated stock for product ${item.productId}, size ${item.size}`);
+        }
+      } catch (stockErr) {
+        console.error(`Error updating stock for product ${item.productId}:`, stockErr);
+      }
+    }
+
+    // Invalidate product caches so fresh stock is returned immediately
+    try {
+      cache.clear();
+    } catch (cErr) {
+      console.warn("Cache clear error:", cErr);
+    }
+
     await sendOrderReceipt(req.user, order);
 
     res.json({

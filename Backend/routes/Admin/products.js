@@ -103,6 +103,8 @@ router.get("/", async (req, res) => {
       neckType: p.neckType,
       pattern: p.pattern,
       isBestseller: p.isBestseller ?? false,
+      rating: p.rating ?? 0,
+      numReviews: p.numReviews ?? 0,
       variants: p.variants,
     }));
     res.json(mapped);

@@ -53,13 +53,7 @@ const Bestseller_cards = () => {
         const allProducts = res.data;
         const bestsellerProducts = allProducts.filter((p: any) => p.isBestseller);
         const productsToDisplay = (bestsellerProducts.length > 0 ? bestsellerProducts : allProducts).slice(0, 4);
-        const mockProducts = productsToDisplay.map((p: Product) => ({
-          ...p,
-          color: p.color || ["Red", "Blue", "Green"][Math.floor(Math.random() * 3)],
-          fabric: p.fabric || ["Cotton", "Polyester", "Silk"][Math.floor(Math.random() * 3)],
-          gender: p.gender || ["Men", "Women", "Unisex"][Math.floor(Math.random() * 3)],
-        }));
-        setProducts(mockProducts);
+        setProducts(productsToDisplay);
         setError(null);
       } catch (err: any) {
         console.error("Fetch products error:", err.response?.data?.message || err.message);
@@ -193,15 +187,7 @@ const Bestseller_cards = () => {
       {products.map((product, index) => {
         let images = product.variants[0]?.imageUrls || [];
         if (!images || images.length === 0) {
-          console.log(`Variant 0 has no images for product ${product.id}, falling back to Variant 1`);
           images = product.variants[1]?.imageUrls || [];
-          if (!images || images.length === 0) {
-            console.log(`Variant 1 also has no images for product ${product.id}, using empty array`);
-          } else {
-            console.log(`Using Variant 1 images for product ${product.id}:`, images);
-          }
-        } else {
-          console.log(`Using Variant 0 images for product ${product.id}:`, images);
         }
 
         const price = product.variants[0]?.price || 0;
@@ -229,9 +215,11 @@ const Bestseller_cards = () => {
   images.map((img, i) => (
     <div key={i} className="relative w-full h-full flex-shrink-0 rounded-lg border-1 border-black overflow-hidden">
       {/* BEST SELLER Tag */}
-      <div className="text-xs font-bold button-55 text-black bg-transparent w-fit text-center p-1 navfonts border-purple-400 absolute top-1 left-1 z-10 navfonts">
-        BEST SELLER
-      </div>
+      {product.isBestseller && (
+        <div className="text-xs font-bold button-55 text-black bg-transparent w-fit text-center p-1 navfonts border-purple-400 absolute top-1 left-1 z-10">
+          BEST SELLER
+        </div>
+      )}
 
       <img
         src={img}
@@ -250,7 +238,7 @@ const Bestseller_cards = () => {
             <div className="flex justify-between px-3 py-2 text-sm items-center">
               <div className="flex items-center gap-1 text-orange-500">
                 <AiFillStar className="text-[14px]" />
-                {product.rating && product.rating > 0 ? product.rating.toFixed(1) : "4.5"}{" "}
+                {product.rating && product.rating > 0 ? product.rating.toFixed(1) : "0.0"}{" "}
                 <span className="text-gray-600 ml-1">({product.numReviews || 0})</span>
               </div>
               <div className="text-xs button-55 text-black bg-transparent w-fit text-center p-1 font-bold navfonts">

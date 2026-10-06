@@ -40,13 +40,7 @@ const Bestseller = () => {
         const allProducts = res.data;
         const bestsellers = allProducts.filter((p: any) => p.isBestseller);
         const productsToDisplay = bestsellers.length > 0 ? bestsellers : allProducts;
-        const mockProducts = productsToDisplay.map((p: Product) => ({
-          ...p,
-          color: p.color || ["Red", "Blue", "Green"][Math.floor(Math.random() * 3)],
-          fabric: p.fabric || ["Cotton", "Polyester", "Silk"][Math.floor(Math.random() * 3)],
-          gender: p.gender || ["Men", "Women", "Unisex"][Math.floor(Math.random() * 3)],
-        }));
-        setProducts(mockProducts);
+        setProducts(productsToDisplay);
         setError(null);
       } catch (err) {
         console.error("Fetch products error:", (err as any).response?.data?.message || (err as any).message);

@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import tshirt1 from '@/assets/bento2.png';
-import tshirt2 from '@/assets/bento1.png';
-import tshirt3 from '@/assets/driplet.png';
-import tshirt4 from '@/assets/image2.png';
 import axios from "axios";
-import { toast } from "react-toastify";
 import AdContainer1 from "@/components/AdContainer1";
 import Bestsellerintro from "@/components/Bestsellerintro";
 import Loading from "@/components/Loading";
@@ -59,95 +54,22 @@ const Mainpage = () => {
     const fetchProducts = async () => {
       try {
         const res = await axios.get(`${API_BASE}/products`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}` },
+          withCredentials: true,
         });
-        const mockProducts = res.data.slice(0, 8).map((p: Product) => ({
+        const realProducts = res.data.map((p: any) => ({
           ...p,
           id: String(p.id),
-          color: p.color || ["Red", "Blue", "Green"][Math.floor(Math.random() * 3)],
-          fabric: p.fabric || ["Cotton", "Polyester", "Silk"][Math.floor(Math.random() * 3)],
-          gender: p.gender || ["Men", "Women", "Unisex"][Math.floor(Math.random() * 3)],
         }));
-        setProducts(mockProducts);
+        setProducts(realProducts);
       } catch (err) {
         console.error("Failed to fetch products", err);
-        toast.error("Failed to fetch products for slider. Using fallback data.");
-        setProducts([
-          {
-            id: "1",
-            name: "Classic T-Shirt",
-            description: "Comfortable cotton t-shirt",
-            category: "Clothing",
-            color: "Blue",
-            fabric: "Cotton",
-            gender: "Unisex",
-            variants: [
-              {
-                price: 499,
-                imageUrls: [tshirt1, tshirt2, tshirt3, tshirt4],
-                sizes: [{ size: "M", stock: 10 }, { size: "L", stock: 5 }],
-              },
-            ],
-          },
-          {
-            id: "2",
-            name: "Graphic Tee",
-            description: "Stylish graphic t-shirt",
-            category: "Clothing",
-            color: "Red",
-            fabric: "Polyester",
-            gender: "Men",
-            variants: [
-              {
-                price: 599,
-                imageUrls: [tshirt2, tshirt3, tshirt1, tshirt4],
-                sizes: [{ size: "S", stock: 8 }, { size: "M", stock: 3 }],
-              },
-            ],
-          },
-          {
-            id: "3",
-            name: "Casual Shirt",
-            description: "Casual unisex shirt",
-            category: "Clothing",
-            color: "Green",
-            fabric: "Silk",
-            gender: "Unisex",
-            variants: [
-              {
-                price: 799,
-                imageUrls: [tshirt3, tshirt1, tshirt2, tshirt4],
-                sizes: [{ size: "L", stock: 6 }, { size: "XL", stock: 4 }],
-              },
-            ],
-          },
-          {
-            id: "4",
-            name: "Sporty Tee",
-            description: "Breathable sport t-shirt",
-            category: "Clothing",
-            color: "Black",
-            fabric: "Cotton",
-            gender: "Women",
-            variants: [
-              {
-                price: 649,
-                imageUrls: [tshirt4, tshirt2, tshirt3, tshirt1],
-                sizes: [{ size: "S", stock: 7 }, { size: "M", stock: 2 }],
-              },
-            ],
-          },
-        ]);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
-    const timer = setTimeout(() => {
-      fetchProducts();
-    }, 2000);
-
-    return () => clearTimeout(timer);
+    fetchProducts();
   }, []);
 
   return (

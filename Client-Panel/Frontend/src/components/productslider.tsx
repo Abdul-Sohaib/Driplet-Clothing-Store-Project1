@@ -1,7 +1,8 @@
 
 "use client";
 
-import React, { useEffect, useRef, useState, } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../lib/utils";
 
@@ -44,6 +45,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
   backgroundColor = "transparent",
   isMobileSwipe = true,
 }) => {
+  const navigate = useNavigate();
   const [active, setActive] = useState(0);
   const [products, setProducts] = useState<Product[]>(initialProducts.slice(0, 8));
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -177,13 +179,14 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
                 <motion.div
                   key={product.id}
                   className={cn(
-                    "absolute top-0 w-full max-w-md  cursor-pointer transform transition-all duration-500 shadow-md rounded-3xl",
+                    "absolute top-0 w-full max-w-md cursor-pointer transform transition-all duration-500 shadow-md rounded-3xl",
                     getCardAnimationClass(index),
                     cardClassName
                   )}
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.9, opacity: 0 }}
+                  onClick={() => navigate(`/product/${product.id}`)}
                 >
                   <div
                     className="border-2 border-black rounded-3xl bg-[#DADAD0] shadow-md hover:shadow-xl transition duration-300 overflow-hidden"

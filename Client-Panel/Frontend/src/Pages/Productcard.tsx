@@ -238,8 +238,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen w-screen bg-[#F5F5DC]">
+        <Loading />
+      </div>
+    );
+  }
+
   if (!product && id) {
-    return <div className="text-center text-gray-600">Product not found.</div>;
+    return <div className="text-center text-gray-600 mt-20">Product not found.</div>;
   }
 
   const price = product?.variants[selectedVariant]?.price || 0;
@@ -317,7 +325,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                         <div className="flex justify-between px-3 py-2 text-sm items-center">
                           <div className="flex items-center gap-1 text-orange-500">
                             <AiFillStar className="text-[14px]" />
-                            {prod.rating && prod.rating > 0 ? prod.rating.toFixed(1) : "4.5"}{" "}
+                            {prod.rating && prod.rating > 0 ? prod.rating.toFixed(1) : "0.0"}{" "}
                             <span className="text-gray-600 ml-1">({prod.numReviews || 0})</span>
                           </div>
                           <div className="text-xs border-2 border-[#101A13] px-2 py-1 rounded-md text-purple-600 font-bold">
@@ -438,7 +446,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                 <div className="flex items-center gap-1 text-orange-500 tracking-wider navheading">
                   <AiFillStar className="text-sm" />
                   <span className="text-sm font-semibold tracking-wider navheading">
-                    {product.rating && product.rating > 0 ? product.rating.toFixed(1) : "4.5"}
+                    {product.rating && product.rating > 0 ? product.rating.toFixed(1) : "0.0"}
                   </span>
                   <span className="text-sm text-gray-600 ml-1 tracking-wider navheading">
                     ({product.numReviews || 0} reviews)
@@ -543,12 +551,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                     { label: "Color", value: product.color },
                     { label: "Gender", value: product.gender },
                     { label: "Category", value: categoryName },
-                  ].map(({ label, value }) => (
-                    <li key={label} className="flex flex-col gap-3">
-                      <span className="font-semibold">{label}</span> <span className="flex w-full">{value}</span>
-                      <hr className="border-t border-gray-300 mt-1" />
-                    </li>
-                  ))}
+                  ]
+                    .filter(({ value }) => Boolean(value && value !== "Unknown"))
+                    .map(({ label, value }) => (
+                      <li key={label} className="flex flex-col gap-3">
+                        <span className="font-semibold">{label}</span> <span className="flex w-full">{value}</span>
+                        <hr className="border-t border-gray-300 mt-1" />
+                      </li>
+                    ))}
                 </ul>
               </div>
               </div>
@@ -626,7 +636,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ products: initialProducts }) 
                   <div className="flex justify-between px-3 py-2 text-sm items-center">
                     <div className="flex items-center gap-1 text-orange-500">
                       <AiFillStar className="text-[14px]" />
-                      {similarProduct.rating && similarProduct.rating > 0 ? similarProduct.rating.toFixed(1) : "4.5"}{" "}
+                      {similarProduct.rating && similarProduct.rating > 0 ? similarProduct.rating.toFixed(1) : "0.0"}{" "}
                       <span className="text-gray-600 ml-1">({similarProduct.numReviews || 0})</span>
                     </div>
                     <div className="text-xs button-55 text-black bg-transparent w-fit text-center p-1 font-bold">

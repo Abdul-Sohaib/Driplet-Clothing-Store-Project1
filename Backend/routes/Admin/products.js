@@ -89,10 +89,19 @@ const productValidations = [
   }),
 ];
 
-// GET all products
+// GET all products (with optional query filter)
 router.get("/", async (req, res) => {
   try {
-    const products = await Product.find();
+    const { category, categoryId, isBestseller } = req.query;
+    const filter = {};
+    if (category || categoryId) {
+      filter.category = category || categoryId;
+    }
+    if (isBestseller !== undefined) {
+      filter.isBestseller = isBestseller === "true" || isBestseller === true;
+    }
+
+    const products = await Product.find(filter);
     const mapped = products.map((p) => ({
       id: p._id.toString(),
       name: p.name,
@@ -110,6 +119,35 @@ router.get("/", async (req, res) => {
     res.json(mapped);
   } catch (err) {
     res.status(500).json({ message: "Server error while fetching products", error: err.message });
+  }
+});
+
+// GET single product by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || id === "undefined" || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    const p = await Product.findById(id);
+    if (!p) return res.status(404).json({ message: "Product not found" });
+
+    res.json({
+      id: p._id.toString(),
+      name: p.name,
+      price: p.price,
+      description: p.description,
+      category: p.category,
+      fitType: p.fitType,
+      neckType: p.neckType,
+      pattern: p.pattern,
+      isBestseller: p.isBestseller ?? false,
+      rating: p.rating ?? 0,
+      numReviews: p.numReviews ?? 0,
+      variants: p.variants,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error while fetching product", error: err.message });
   }
 });
 

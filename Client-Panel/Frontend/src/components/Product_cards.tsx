@@ -262,10 +262,12 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
           >
             
        <div className="w-full h-[60vh] overflow-hidden relative">
-  {/* BEST SELLER Tag in top-right */}
-  <div className="text-xs font-bold button-55 text-black bg-transparent w-fit text-center p-1 navfonts border-purple-400 absolute top-1 left-1 z-10 navfonts">
-    BEST SELLER
-  </div>
+  {/* BEST SELLER Tag */}
+  {product.isBestseller && (
+    <div className="text-xs font-bold button-55 text-black bg-transparent w-fit text-center p-1 navfonts border-purple-400 absolute top-1 left-1 z-10">
+      BEST SELLER
+    </div>
+  )}
 
   {/* Loader (if image not loaded) */}
   {!imageLoaded[product.id] && (
@@ -304,7 +306,7 @@ const Bestseller_cards: React.FC<BestsellerCardsProps> = ({ products, isFilterVi
             <div className="flex justify-between px-3 py-2 text-sm items-center">
               <div className="flex items-center gap-1 text-orange-500">
                 <AiFillStar className="text-[14px]" />
-                {product.rating && product.rating > 0 ? product.rating.toFixed(1) : "4.5"}{" "}
+                {product.rating && product.rating > 0 ? product.rating.toFixed(1) : "0.0"}{" "}
                 <span className="text-gray-600 ml-1">({product.numReviews || 0})</span>
               </div>
               <div className="text-xs button-55 text-black bg-transparent w-fit text-center p-1 font-bold">

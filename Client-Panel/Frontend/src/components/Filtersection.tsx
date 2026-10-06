@@ -52,17 +52,17 @@ const FilterSection: React.FC<FilterSectionProps> = ({ products, renderProducts 
   );
 
   const availableColors = useMemo(
-    () => Array.from(new Set(products.map((p) => p.color))).sort(),
+    () => Array.from(new Set(products.map((p) => p.color).filter(Boolean))).sort(),
     [products]
   );
 
   const availableFabrics = useMemo(
-    () => Array.from(new Set(products.map((p) => p.fabric))).sort(),
+    () => Array.from(new Set(products.map((p) => p.fabric).filter(Boolean))).sort(),
     [products]
   );
 
   const availableGenders = useMemo(
-    () => Array.from(new Set(products.map((p) => p.gender))).sort(),
+    () => Array.from(new Set(products.map((p) => p.gender).filter(Boolean))).sort(),
     [products]
   );
 

@@ -148,19 +148,16 @@ router.get("/:productId", async (req, res) => {
   try {
     const { productId } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return res.status(400).json({ message: "Invalid product ID format" });
+    if (!productId || productId === "undefined" || !mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(200).json([]);
     }
 
     // 1. Fetch from Review collection
-    const reviewsFromCollection = await Review.find({ productId })
+    const reviewsFromCollection = await Review.find({
+      productId: new mongoose.Types.ObjectId(productId),
+    })
       .populate("userId", "name")
       .sort({ createdAt: -1 });
-
-    // 2. Fetch from User subdocuments as fallback/legacy
-    const usersWithReviews = await User.find({
-      "reviews.productId": productId,
-    }).select("name reviews");
 
     const reviewsMap = new Map();
 
@@ -177,24 +174,34 @@ router.get("/:productId", async (req, res) => {
       });
     });
 
-    // Add any legacy subdoc reviews not in standalone collection
-    usersWithReviews.forEach((user) => {
-      user.reviews
-        .filter((r) => r.productId?.toString() === productId)
-        .forEach((r) => {
-          const key = r._id?.toString() || `${user._id}_${productId}`;
-          if (!reviewsMap.has(key)) {
-            reviewsMap.set(key, {
-              id: key,
-              productId: r.productId.toString(),
-              userName: user.name || "Customer",
-              rating: r.rating,
-              comment: r.comment,
-              createdAt: r.createdAt,
+    // 2. Fetch from User subdocuments as fallback/legacy
+    try {
+      const usersWithReviews = await User.find({
+        "reviews.productId": new mongoose.Types.ObjectId(productId),
+      }).select("name reviews");
+
+      usersWithReviews.forEach((user) => {
+        if (user.reviews && Array.isArray(user.reviews)) {
+          user.reviews
+            .filter((r) => r.productId?.toString() === productId.toString())
+            .forEach((r) => {
+              const key = r._id?.toString() || `${user._id}_${productId}`;
+              if (!reviewsMap.has(key)) {
+                reviewsMap.set(key, {
+                  id: key,
+                  productId: r.productId.toString(),
+                  userName: user.name || "Customer",
+                  rating: r.rating,
+                  comment: r.comment,
+                  createdAt: r.createdAt,
+                });
+              }
             });
-          }
-        });
-    });
+        }
+      });
+    } catch (uErr) {
+      console.warn("User reviews fallback warning:", uErr.message);
+    }
 
     const reviews = Array.from(reviewsMap.values()).sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

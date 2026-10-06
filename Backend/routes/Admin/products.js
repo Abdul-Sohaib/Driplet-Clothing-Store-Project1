@@ -60,33 +60,33 @@ const productValidations = [
     .trim()
     .isIn(["Graphic Print", "Solid", "Striped"])
     .withMessage("Invalid pattern"),
-  body("variants")
-    .notEmpty()
-    .withMessage("Variants are required")
-    .custom((value) => {
-      try {
-        const parsed = JSON.parse(value);
-        if (!Array.isArray(parsed) || parsed.length === 0) {
-          throw new Error("Variants must be a non-empty array");
-        }
-        parsed.forEach((v, i) => {
-          if (!v.sizes || !Array.isArray(v.sizes) || v.sizes.length === 0) {
-            throw new Error(`Variant ${i + 1} must have at least one size`);
-          }
-          if (!v.price || isNaN(Number(v.price)) || Number(v.price) < 0) {
-            throw new Error(`Variant ${i + 1} has an invalid price`);
-          }
-          v.sizes.forEach((s, j) => {
-            if (!s.size || isNaN(Number(s.stock)) || Number(s.stock) < 0) {
-              throw new Error(`Size ${j + 1} in variant ${i + 1} is invalid`);
-            }
-          });
-        });
-        return true;
-      } catch (e) {
-        throw new Error(`Invalid variants format: ${e.message}`);
+  body("variants").custom((value) => {
+    if (!value) {
+      throw new Error("Variants are required");
+    }
+    try {
+      const parsed = typeof value === "string" ? JSON.parse(value) : value;
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        throw new Error("Variants must be a non-empty array");
       }
-    }),
+      parsed.forEach((v, i) => {
+        if (!v.sizes || !Array.isArray(v.sizes) || v.sizes.length === 0) {
+          throw new Error(`Variant ${i + 1} must have at least one size`);
+        }
+        if (v.price === undefined || v.price === null || isNaN(Number(v.price)) || Number(v.price) < 0) {
+          throw new Error(`Variant ${i + 1} has an invalid price`);
+        }
+        v.sizes.forEach((s, j) => {
+          if (!s.size || isNaN(Number(s.stock)) || Number(s.stock) < 0) {
+            throw new Error(`Size ${j + 1} in variant ${i + 1} is invalid`);
+          }
+        });
+      });
+      return true;
+    } catch (e) {
+      throw new Error(`Invalid variants format: ${e.message}`);
+    }
+  }),
 ];
 
 // GET all products
@@ -127,7 +127,7 @@ router.post(
       console.log("Received body:", req.body);
       console.log("Received files:", req.files);
 
-      const parsedVariants = JSON.parse(variants);
+      const parsedVariants = typeof variants === "string" ? JSON.parse(variants) : variants;
       const variantImages = req.files || {};
 
       // Upload each variant's images to Cloudinary from memory buffer
@@ -194,7 +194,7 @@ router.put(
       console.log("Received body:", req.body);
       console.log("Received files:", req.files);
 
-      const parsedVariants = JSON.parse(variants);
+      const parsedVariants = typeof variants === "string" ? JSON.parse(variants) : variants;
       const variantImages = req.files || {};
 
       // Upload new images from memory buffer, keep existing imageUrls

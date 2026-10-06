@@ -33,6 +33,9 @@ const clientorderRoutes = require("./routes/clientorders");
 
 const app = express();
 
+// 🛡️ Enable trust proxy for Render / reverse proxies (fixes express-rate-limit X-Forwarded-For warning)
+app.set("trust proxy", 1);
+
 // 🔗 Connect MongoDB
 connectDB()
   .then(() => console.log("✅ MongoDB connected successfully"))
@@ -59,7 +62,12 @@ if (!fs.existsSync(imagesPath)) {
 }
 
 // 🔐 Middleware
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+
 const corsOptions = {
   origin: function (origin, callback) {
     console.log(`🌐 CORS Check - Origin: ${origin}`);

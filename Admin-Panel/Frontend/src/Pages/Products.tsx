@@ -108,14 +108,16 @@ const Products = () => {
       formData.append("neckType", data.neckType);
       formData.append("pattern", data.pattern);
 
+      const variantsMetadata = data.variants.map((v) => ({
+        price: parseFloat(v.price) || 0,
+        sizes: v.sizes.map((s) => ({
+          size: s.size,
+          stock: parseInt(s.stock, 10) || 0,
+        })),
+      }));
+      formData.append("variants", JSON.stringify(variantsMetadata));
+
       data.variants.forEach((v, index) => {
-        formData.append(`variants[${index}][price]`, v.price);
-        formData.append(`variants[${index}][sizes]`, JSON.stringify(
-          v.sizes.map((s) => ({
-            size: s.size,
-            stock: parseInt(s.stock),
-          }))
-        ));
         v.images?.forEach((file) => {
           formData.append(`variants[${index}][images]`, file);
         });

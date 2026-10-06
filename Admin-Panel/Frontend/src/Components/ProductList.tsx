@@ -31,9 +31,16 @@ const ProductList: React.FC<ProductListProps> = ({ products, onDelete, onEdit, l
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
-                      {product.name}
-                    </h3>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
+                        {product.name}
+                      </h3>
+                      {product.isBestseller && (
+                        <span className="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-purple-300 flex items-center gap-1">
+                          ⭐ Bestseller
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-600 leading-relaxed">
                       {product.description || "No description available"}
                     </p>

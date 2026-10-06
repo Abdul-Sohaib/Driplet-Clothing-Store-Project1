@@ -11,6 +11,7 @@ export type ProductFormData = {
   fitType: string;
   neckType: string;
   pattern: string;
+  isBestseller: boolean;
   variants: {
     price: string;
     images: File[];
@@ -37,6 +38,7 @@ const ProductForm = ({ onAdd, categories, initialData, setLoading, loading }: Pr
           fitType: initialData.fitType || "Oversized",
           neckType: initialData.neckType || "Round Neck",
           pattern: initialData.pattern || "Graphic Print",
+          isBestseller: Boolean(initialData.isBestseller),
           variants: initialData.variants.map((v: any) => ({
             price: String(v.price),
             images: [],
@@ -51,6 +53,7 @@ const ProductForm = ({ onAdd, categories, initialData, setLoading, loading }: Pr
           fitType: "Oversized",
           neckType: "Round Neck",
           pattern: "Graphic Print",
+          isBestseller: false,
           variants: [
             { price: "", images: [], sizes: [{ size: "", stock: "" }] },
           ],
@@ -95,6 +98,7 @@ const ProductForm = ({ onAdd, categories, initialData, setLoading, loading }: Pr
         fitType: "Oversized",
         neckType: "Round Neck",
         pattern: "Graphic Print",
+        isBestseller: false,
         variants: [{ price: "", images: [], sizes: [{ size: "", stock: "" }] }],
       });
     } catch (error) {
@@ -257,6 +261,28 @@ const ProductForm = ({ onAdd, categories, initialData, setLoading, loading }: Pr
             <option value="Solid">Solid</option>
             <option value="Striped">Striped</option>
           </select>
+        </div>
+
+        {/* Bestseller Toggle Tag */}
+        <div className="space-y-2 sm:col-span-2 lg:col-span-3">
+          <label className="flex items-center gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors">
+            <input
+              type="checkbox"
+              name="isBestseller"
+              checked={formData.isBestseller}
+              onChange={(e) => setFormData({ ...formData, isBestseller: e.target.checked })}
+              className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer"
+              disabled={loading}
+            />
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-purple-900 flex items-center gap-2">
+                ⭐ Feature as Bestseller
+              </span>
+              <span className="text-xs text-purple-700">
+                When enabled, this product will be highlighted in the Bestsellers section on the homepage.
+              </span>
+            </div>
+          </label>
         </div>
       </div>
       

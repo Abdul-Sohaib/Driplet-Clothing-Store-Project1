@@ -102,6 +102,7 @@ router.get("/", async (req, res) => {
       fitType: p.fitType,
       neckType: p.neckType,
       pattern: p.pattern,
+      isBestseller: p.isBestseller ?? false,
       variants: p.variants,
     }));
     res.json(mapped);
@@ -123,7 +124,7 @@ router.post(
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { name, price, description, category, fitType, neckType, pattern, variants } = req.body;
+      const { name, price, description, category, fitType, neckType, pattern, isBestseller, variants } = req.body;
       console.log("Received body:", req.body);
       console.log("Received files:", req.files);
 
@@ -154,6 +155,7 @@ router.post(
         fitType: fitType.trim(),
         neckType: neckType.trim(),
         pattern: pattern.trim(),
+        isBestseller: isBestseller === true || isBestseller === "true",
         variants: variantsWithImages,
       });
 
@@ -167,6 +169,7 @@ router.post(
         fitType: saved.fitType,
         neckType: saved.neckType,
         pattern: saved.pattern,
+        isBestseller: saved.isBestseller ?? false,
         variants: saved.variants,
       });
     } catch (err) {
@@ -190,7 +193,7 @@ router.put(
       }
 
       const { id } = req.params;
-      const { name, price, description, category, fitType, neckType, pattern, variants } = req.body;
+      const { name, price, description, category, fitType, neckType, pattern, isBestseller, variants } = req.body;
       console.log("Received body:", req.body);
       console.log("Received files:", req.files);
 
@@ -224,6 +227,7 @@ router.put(
           fitType: fitType.trim(),
           neckType: neckType.trim(),
           pattern: pattern.trim(),
+          isBestseller: isBestseller === true || isBestseller === "true",
           variants: variantsWithImages,
         },
         { new: true }
@@ -240,6 +244,7 @@ router.put(
         fitType: updated.fitType,
         neckType: updated.neckType,
         pattern: updated.pattern,
+        isBestseller: updated.isBestseller ?? false,
         variants: updated.variants,
       });
     } catch (err) {

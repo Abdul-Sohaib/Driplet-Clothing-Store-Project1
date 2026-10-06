@@ -21,6 +21,7 @@ interface Product {
   color?: string;
   fabric?: string;
   gender?: "Men" | "Women" | "Unisex";
+  isBestseller?: boolean;
   variants: {
     price: number;
     imageUrls: string[];
@@ -47,7 +48,10 @@ const Bestseller_cards = () => {
         const res = await axios.get(`${API_BASE}/products`, {
           withCredentials: true,
         });
-        const mockProducts = res.data.slice(0, 4).map((p: Product) => ({
+        const allProducts = res.data;
+        const bestsellerProducts = allProducts.filter((p: any) => p.isBestseller);
+        const productsToDisplay = (bestsellerProducts.length > 0 ? bestsellerProducts : allProducts).slice(0, 4);
+        const mockProducts = productsToDisplay.map((p: Product) => ({
           ...p,
           color: p.color || ["Red", "Blue", "Green"][Math.floor(Math.random() * 3)],
           fabric: p.fabric || ["Cotton", "Polyester", "Silk"][Math.floor(Math.random() * 3)],

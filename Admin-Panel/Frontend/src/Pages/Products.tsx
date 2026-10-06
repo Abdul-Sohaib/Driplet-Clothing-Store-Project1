@@ -16,6 +16,7 @@ export interface Product {
   fitType: string;
   neckType: string;
   pattern: string;
+  isBestseller?: boolean;
   variants: {
     price: number;
     imageUrls: string[];
@@ -33,8 +34,6 @@ const Products = () => {
   const navigate = useNavigate();
 
   const fetchCategories = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const token = await getToken();
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/categories`, {
@@ -54,9 +53,7 @@ const Products = () => {
       }));
       setCategories(mapped);
     } catch (err: any) {
-      setError(err.message || "Error fetching categories");
-    } finally {
-      setLoading(false);
+      console.error("Error fetching categories:", err);
     }
   }, [getToken]);
 
@@ -79,6 +76,7 @@ const Products = () => {
         fitType: p.fitType || "Oversized",
         neckType: p.neckType || "Round Neck",
         pattern: p.pattern || "Graphic Print",
+        isBestseller: Boolean(p.isBestseller),
         variants: p.variants,
       }));
       setProducts(mapped);
@@ -107,6 +105,7 @@ const Products = () => {
       formData.append("fitType", data.fitType);
       formData.append("neckType", data.neckType);
       formData.append("pattern", data.pattern);
+      formData.append("isBestseller", String(data.isBestseller));
 
       const variantsMetadata = data.variants.map((v) => ({
         price: parseFloat(v.price) || 0,

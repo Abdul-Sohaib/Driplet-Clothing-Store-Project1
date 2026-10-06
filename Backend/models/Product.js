@@ -76,6 +76,10 @@ const productSchema = new mongoose.Schema({
     enum: ["Graphic Print", "Solid", "Striped"],
     default: "Graphic Print",
   },
+  isBestseller: {
+    type: Boolean,
+    default: false,
+  },
   variants: {
     type: [variantSchema],
     required: true,
